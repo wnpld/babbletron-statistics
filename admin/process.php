@@ -60,8 +60,10 @@ if (isset($_REQUEST['administrator'])) {
         //Error being false means everything looks good.  Add the user.
         $query = $db->prepare("INSERT INTO `USERS` (`UserName`, `LastName`, `FirstName`, UNHEX(`Password`), `Salt`, `UserRole`) VALUES (?, ?, ?, ?, ?, 'Admin')");
         $query->bind_param("sssss", $username, $lastname, $firstname, $pwhash, $salt);
-        if (!$query->execute()) {
-            echo "Error adding user: " . $db->error;
+        try {
+            $query->execute();
+         } catch (mysqli_sql_exception $e) {
+            echo "Error adding user: " . $e->getMessage();
             $query->close();
             $db->close();
             exit();
@@ -129,8 +131,10 @@ if (isset($_REQUEST['administrator'])) {
         //False error means everything's fine
         $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`) VALUES (?, ?, ?, 0, ?)');
         $query->bind_param('ssss', $libraryname, $address, $city, $fystart);
-        if(!$query->execute()) {
-            echo "Error adding library info: " . $db->error;
+        try {
+            $query->execute();
+         } catch (mysqli_sql_exception $e) {
+            echo "Error adding library info: " . $e->getMessage();
             $query->close();
             $db->close();
             exit();

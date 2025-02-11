@@ -23,8 +23,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Check for a user table.  If there is none, create it.
     $result = $db->query("SHOW TABLES LIKE 'Users'");
     if ($result->num_rows == 0) {
-        if (!$db->query($users_table)) {
-            echo "Error creating Users table: " . $db->error;
+        try {
+            $db->query($users_table);
+        } catch (mysqli_sql_exception $e) {
+            echo "Error creating Users table: " . $e->getMessage();
             $db->close();
             exit();
         }
@@ -33,8 +35,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Check for the State Reports Sections table.  If there is none, create it.
     $result = $db->query("SHOW TABLES LIKE 'SRSections'");
     if ($result->num_rows == 0) {
-        if(!$db->query( $report_sections)) {
-            echo "Error creating state report sections table: ". $db->error;
+        try {
+            $db->query( $report_sections);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating state report sections table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -42,8 +46,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         $insert_query = $db->prepare($report_sections_prepared_statement);
         foreach ($report_sections_data AS $section_data) {
             $insert_query->bind_param("is", $section_data[0], $section_data[1]);
-            if(!$insert_query->execute()) {
-                echo "Error inserting section data: " . $db->error;
+            try {
+                $insert_query->execute();
+            } catch (mysqli_sql_exception $e) {
+                echo "Error inserting section data: " . $e->getMessage();
                 $db->close();
                 exit();
             }
@@ -53,8 +59,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Check for the State Reports Questions table.  If there is none, create it.
     $result = $db->query("SHOW TABLES LIKE 'SRQuestions'");
     if ($result->num_rows == 0) {
-        if (!$db->query($report_questions)) {
-            echo "Error creating state report questions table: " . $db->error;
+        try {
+            $db->query($report_questions);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating state report questions table: " . $e->getMessage();
             $db->close();
             exit();
         }
@@ -62,8 +70,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         $insert_query = $db->prepare($report_questions_prepared_statement);
         foreach ($report_questions_data AS $question_data) {
             $insert_query->bind_param("iisssss", $question_data[0], $question_data[1], $question_data[2], $question_data[3], $question_data[4], $question_data[5], $question_data[6]);
-            if(!$insert_query->execute()) {
-                echo "Error inserting question data: ". $db->error;
+            try {
+                $insert_query->execute();
+            } catch (mysqli_sql_exception $e) {
+                echo "Error inserting question data: ". $e->getMessage();
                 $db->close();
                 exit();
             }
@@ -80,8 +90,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Check for a Library Information table.  If there is none, create it.
     $result = $db->query("SHOW TABLES LIKE 'LibraryInfo'");
     if ($result->num_rows == 0) {
-        if (!$db->query($libraries_table)) {
-            echo "Error creating LibraryInfo table: ". $db->error;
+        try {
+            $db->query($libraries_table);
+        } catch (mysqli_sql_exception $e) {
+            echo "Error creating LibraryInfo table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -93,8 +105,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Spaces Table
     $result = $db->query("SHOW TABLES LIKE 'SRSpaces'");
     if ($result->num_rows == 0) {
-        if (!$db->query($spaces_table)) {
-            echo "Error creating SRSpaces table: ". $db->error;
+        try {
+            $db->query($spaces_table);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating SRSpaces table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -103,8 +117,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #SpaceUse Table
     $result = $db->query("SHOW TABLES LIKE 'SRSpaceUse'");
     if ($result->num_rows == 0) {
-        if (!$db->query($spaceuse_table)) {
-            echo "Error creating SRSpaceUse table: ". $db->error;
+        try {
+            $db->query($spaceuse_table);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating SRSpaceUse table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -113,8 +129,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #BudgetCategories Table
     $result = $db->query("SHOW TABLES LIKE 'SRBudgetCategories'");
     if ($result->num_rows == 0) {
-        if (!$db->query($budgetcategories_table)) {
-            echo "Error creating SRBudgetCategories table: ". $db->error;
+        try {
+            $db->query($budgetcategories_table);
+        } catch (mysqli_sql_exception $e) {
+            echo "Error creating SRBudgetCategories table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -123,8 +141,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         $insert_query = $db->prepare($budgetcategories_stmt);
         foreach ($budgetcategories_data as $budgetcategory) {
             $insert_query->bind_param("ss", $budgetcategory[0], $budgetcategory[1]);
-            if (!$insert_query->execute()) {
-                echo "Error adding Budget Category data: ". $db->error;
+            try {
+                $insert_query->execute();
+            } catch (mysqli_sql_exception $e) {
+                echo "Error adding Budget Category data: ". $e->getMessage();
                 $db->close();
                 exit();
             }
@@ -134,8 +154,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Budget Adjustment Table - Monthly Expenses & Income Go Here
     $result = $db->query("SHOW TABLES LIKE 'SRBudgetAdjustments'");
     if ($result->num_rows == 0) {
-        if (!$db->query($budgetadjustments_table)) {
-            echo "Error creating SRBudgetAdjustments table: ". $db->error;
+        try {
+            $db->query($budgetadjustments_table);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating SRBudgetAdjustments table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -144,8 +166,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Library Visits Table
     $result = $db->query("SHOW TABLES LIKE 'SRVisits'");
     if ($result->num_rows == 0) {
-        if (!$db->query($visits_table)) {
-            echo "Error creating SRVisits table: ". $db->error;
+        try {
+            $db->query($visits_table);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating SRVisits table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -154,8 +178,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Library Programs Table
     $result = $db->query("SHOW TABLES LIKE 'SRPrograms'");
     if ($result->num_rows == 0) {
-        if (!$db->query($programs_table)) {
-            echo "Error creating SRPrograms table: ". $db->error;
+        try {
+            $db->query($programs_table);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating SRPrograms table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -164,8 +190,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Library Physical Collection Table
     $result = $db->query("SHOW TABLES LIKE 'SRPhysicalCollection'");
     if ($result->num_rows == 0) {
-        if (!$db->query($physicalcollection_table)) {
-            echo "Error creating SRPhysicalCollection table: ". $db->error;
+        try {
+            $db->query($physicalcollection_table);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating SRPhysicalCollection table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -174,8 +202,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Interlibrary Loan Table
     $result = $db->query("SHOW TABLES LIKE 'SRILL'");
     if ($result->num_rows == 0) {
-        if (!$db->query($ill_table)) {
-            echo "Error creating SRILL table: ". $db->error;
+        try {
+            $db->query($ill_table);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating SRILL table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -184,8 +214,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Computer Inventory Table
     $result = $db->query("SHOW TABLES LIKE 'SRComputers'");
     if ($result->num_rows == 0) {
-        if (!$db->query($computers_table)) {
-            echo "Error creating SRComputers table: ". $db->error;
+        try {
+            $db->query($computers_table);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating SRComputers table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -194,8 +226,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Technology Use Table
     $result = $db->query("SHOW TABLES LIKE 'SRTechnologyCounts'");
     if ($result->num_rows == 0) {
-        if (!$db->query($technologies_table)) {
-            echo "Error creating SRTechnologyCounts table: ". $db->error;
+        try {
+            $db->query($technologies_table);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating SRTechnologyCounts table: ". $e->getMessage();
             $db->close();
             exit();
         }
@@ -204,8 +238,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #Reference Questions & Assistance Table
     $result = $db->query("SHOW TABLES LIKE 'SRPatronAssistance'");
     if ($result->num_rows == 0) {
-        if (!$db->query($patronassistance_table)) {
-            echo "Error creating SRPatronAssistance table: ". $db->error;
+        try {
+            $db->query($patronassistance_table);
+         } catch (mysqli_sql_exception $e) {
+            echo "Error creating SRPatronAssistance table: ". $e->getMessage();
             $db->close();
             exit();
         }
