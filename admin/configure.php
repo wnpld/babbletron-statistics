@@ -21,7 +21,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Check for a user table.  If there is none, create it.
-    if (!$db->query("SHOW TABLES LIKE 'Users'")) {
+    $result = $db->query("SHOW TABLES LIKE 'Users'");
+    if ($result->num_rows == 0) {
         if (!$db->query($users_table)) {
             echo "Error creating Users table: " . $db->error;
             $db->close();
@@ -30,7 +31,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Check for the State Reports Sections table.  If there is none, create it.
-    if (!$db->query("SHOW TABLES LIKE 'SRSections'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRSections'");
+    if ($result->num_rows == 0) {
         if(!$db->query( $report_sections)) {
             echo "Error creating state report sections table: ". $db->error;
             $db->close();
@@ -49,7 +51,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Check for the State Reports Questions table.  If there is none, create it.
-    if (!$db->query("SHOW TABLES LIKE 'SRQuestions'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRQuestions'");
+    if ($result->num_rows == 0) {
         if (!$db->query($report_questions)) {
             echo "Error creating state report questions table: " . $db->error;
             $db->close();
@@ -75,7 +78,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Check for a Library Information table.  If there is none, create it.
-    if (!$db->query("SHOW TABLES LIKE 'LibraryInfo'")) {
+    $result = $db->query("SHOW TABLES LIKE 'LibraryInfo'");
+    if ($result->num_rows == 0) {
         if (!$db->query($libraries_table)) {
             echo "Error creating LibraryInfo table: ". $db->error;
             $db->close();
@@ -87,7 +91,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     #support tables.  Many of these use this table so it should be created first
 
     #Spaces Table
-    if (!$db->query("SHOW TABLES LIKE 'SRSpaces'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRSpaces'");
+    if ($result->num_rows == 0) {
         if (!$db->query($spaces_table)) {
             echo "Error creating SRSpaces table: ". $db->error;
             $db->close();
@@ -96,7 +101,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #SpaceUse Table
-    if (!$db->query("SHOW TABLES LIKE 'SRSpaceUse'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRSpaceUse'");
+    if ($result->num_rows == 0) {
         if (!$db->query($spaceuse_table)) {
             echo "Error creating SRSpaceUse table: ". $db->error;
             $db->close();
@@ -105,7 +111,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #BudgetCategories Table
-    if (!$db->query("SHOW TABLES LIKE 'SRBudgetCategories'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRBudgetCategories'");
+    if ($result->num_rows == 0) {
         if (!$db->query($budgetcategories_table)) {
             echo "Error creating SRBudgetCategories table: ". $db->error;
             $db->close();
@@ -125,7 +132,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Budget Adjustment Table - Monthly Expenses & Income Go Here
-    if (!$db->query("SHOW TABLES LIKE 'SRBudgetAdjustments'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRBudgetAdjustments'");
+    if ($result->num_rows == 0) {
         if (!$db->query($budgetadjustments_table)) {
             echo "Error creating SRBudgetAdjustments table: ". $db->error;
             $db->close();
@@ -134,7 +142,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Library Visits Table
-    if (!$db->query("SHOW TABLES LIKE 'SRVisits'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRVisits'");
+    if ($result->num_rows == 0) {
         if (!$db->query($visits_table)) {
             echo "Error creating SRVisits table: ". $db->error;
             $db->close();
@@ -143,7 +152,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Library Programs Table
-    if (!$db->query("SHOW TABLES LIKE 'SRPrograms'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRPrograms'");
+    if ($result->num_rows == 0) {
         if (!$db->query($programs_table)) {
             echo "Error creating SRPrograms table: ". $db->error;
             $db->close();
@@ -152,7 +162,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Library Physical Collection Table
-    if (!$db->query("SHOW TABLES LIKE 'SRPhysicalCollection'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRPhysicalCollection'");
+    if ($result->num_rows == 0) {
         if (!$db->query($physicalcollection_table)) {
             echo "Error creating SRPhysicalCollection table: ". $db->error;
             $db->close();
@@ -161,7 +172,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Interlibrary Loan Table
-    if (!$db->query("SHOW TABLES LIKE 'SRILL'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRILL'");
+    if ($result->num_rows == 0) {
         if (!$db->query($ill_table)) {
             echo "Error creating SRILL table: ". $db->error;
             $db->close();
@@ -170,7 +182,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Computer Inventory Table
-    if (!$db->query("SHOW TABLES LIKE 'SRComputers'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRComputers'");
+    if ($result->num_rows == 0) {
         if (!$db->query($computers_table)) {
             echo "Error creating SRComputers table: ". $db->error;
             $db->close();
@@ -179,7 +192,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Technology Use Table
-    if (!$db->query("SHOW TABLES LIKE 'SRTechnologyCounts'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRTechnologyCounts'");
+    if ($result->num_rows == 0) {
         if (!$db->query($technologies_table)) {
             echo "Error creating SRTechnologyCounts table: ". $db->error;
             $db->close();
@@ -188,7 +202,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Reference Questions & Assistance Table
-    if (!$db->query("SHOW TABLES LIKE 'SRPatronAssistance'")) {
+    $result = $db->query("SHOW TABLES LIKE 'SRPatronAssistance'");
+    if ($result->num_rows == 0) {
         if (!$db->query($patronassistance_table)) {
             echo "Error creating SRPatronAssistance table: ". $db->error;
             $db->close();
