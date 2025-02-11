@@ -117,36 +117,38 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         </div>
     </nav>
     <main>
-        <h1>Login</h1>
-        <form action="login.php" method="POST"  onsubmit="hashPassword(event)">
-            <?php
-                if (isset($_REQUEST['nomatch'])) {
-                    if ($_REQUEST['nomatch'] == "credentials") { ?>
-                        <div class="alert alert-danger" type="alert">The provided password and/or username was incorrect.</div>
-                    <?php } else if ($_REQUEST['nomatch'] == "privilege") { ?>
-                        <div class="alert alert-warning" type="alert">You have been logged in, but you do not have the appropriate rights to access the page you wanted to go to.</div>
-                    <?php }
+        <div class="container-fluid">
+            <h1>Login</h1>
+            <form action="login.php" method="POST"  onsubmit="hashPassword(event)">
+                <?php
+                    if (isset($_REQUEST['nomatch'])) {
+                        if ($_REQUEST['nomatch'] == "credentials") { ?>
+                            <div class="alert alert-danger" type="alert">The provided password and/or username was incorrect.</div>
+                        <?php } else if ($_REQUEST['nomatch'] == "privilege") { ?>
+                            <div class="alert alert-warning" type="alert">You have been logged in, but you do not have the appropriate rights to access the page you wanted to go to.</div>
+                        <?php }
+                    }
+                ?>
+                <div class="mb-3">
+                    <label for="username" class="form-label">User Name</label>
+                    <input type="text" class="form-control" id="username" name="username">
+                    </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password">
+                </div>
+                <input type="hidden" id="pwhash" name="pwhash" value="">
+            <?php 
+                if (isset($_REQUEST['destination'])) {
+                    $destination = $_REQUEST['destination'];
+                    if ($destination == 'nomain') { ?>
+                        <input type="hidden" name="destination" value="nomain">
+                <?php }
                 }
             ?>
-            <div class="mb-3">
-                <label for="username" class="form-label">User Name</label>
-                <input type="text" class="form-control" id="username" name="username">
-                </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password">
-            </div>
-            <input type="hidden" id="pwhash" name="pwhash" value="">
-        <?php 
-            if (isset($_REQUEST['destination'])) {
-                $destination = $_REQUEST['destination'];
-                if ($destination == 'nomain') { ?>
-                    <input type="hidden" name="destination" value="nomain">
-            <?php }
-            }
-        ?>
-        <button class="btn btn-primary" type="submit">Log In</button> 
-        </form>
+            <button class="btn btn-primary" type="submit">Log In</button> 
+            </form>
+        </div>
     </main>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
     <script>

@@ -81,7 +81,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Check to see if there's a defined administrative user
-    if ($db->query("SELECT `Userid` FROM `Users` WHERE `UserRole` = 'Admin'")) {
+    $result = $db->query("SELECT `Userid` FROM `Users` WHERE `UserRole` = 'Admin'");
+    if ($result->num_rows > 0) {
         $adminset = true;
     } else {
         $adminset = false;
@@ -248,7 +249,8 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Check to see if there's a defined main library (library defined as not being a branch)
-    if ($db->query("SELECT `LibraryID` FROM `LibraryInfo` WHERE `Branch` = 0")) {
+    $result = $db->query("SELECT `LibraryID` FROM `LibraryInfo` WHERE `Branch` = 0");
+    if ($result->num_rows > 0) {
         $mainlibset = true;
     } else {
         $mainlibset = false;
