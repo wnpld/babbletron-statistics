@@ -10,7 +10,7 @@ try {
 }
 
 # Do a quick test to make sure that the site's been configured since this is the main page
-if (!$db->query("SHOW TABLES LIKE `LibraryInfo`")) {
+if (!$db->query("SHOW TABLES LIKE 'LibraryInfo'")) {
     #Site's not configured.  Redirect to configuration page.
     $db->close();
     header("Location: $protocol://$server$webdir/admin/configure.php");
