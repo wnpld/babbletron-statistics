@@ -11,10 +11,10 @@ $libraries_table = "CREATE TABLE `LibraryInfo` (`LibraryID` tinyint UNSIGNED AUT
 
 ##State Report Support Tables
 #Library Spaces (Meeting rooms & study Rooms)
-$spaces_table = "CREATE TABLE `SRSpaces` (`SpaceID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SpaceDescription` varchar(75), `LibraryID` tinyint UNSIGNED, `SpaceType` enum('Meeting Room', 'Study Room), INDEX libraryspace_fk (`LibraryID`) FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
+$spaces_table = "CREATE TABLE `SRSpaces` (`SpaceID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SpaceDescription` varchar(75), `LibraryID` tinyint UNSIGNED, `SpaceType` enum('Meeting Room', 'Study Room), INDEX libraryspace_fk (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Space Use
-$spaceuse_table = "CREATE TABLE `SRSpaceUse` (`SpaceUseID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SpaceID` tinyint UNSIGNED, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `Total` smallint UNSIGNED, INDEX spaceid_fk (`SpaceID`) FOREIGN KEY (`SpaceID`) REFERENCES `SRSpaces`(`SpaceID`))";
+$spaceuse_table = "CREATE TABLE `SRSpaceUse` (`SpaceUseID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SpaceID` tinyint UNSIGNED, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `Total` smallint UNSIGNED, INDEX spaceid_fk (`SpaceID`), FOREIGN KEY (`SpaceID`) REFERENCES `SRSpaces`(`SpaceID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Budget Categories
 $budgetcategories_table = "CREATE TABLE `SRBudgetCategories` (`CategoryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, CategoryDescription varchar(100), CategoryType enum('Income', 'Expense'))";
@@ -37,10 +37,10 @@ array_push($budgetcategories_data, array('Other Operating Expenditures', 'Expens
 array_push($budgetcategories_data, array('Capital Expenditures', 'Expense'));
 
 #Budget Expenses/Income
-$budgetadjustments_table = "CREATE TABLE `SRBudgetAdjustments` (`AdjustmentID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CategoryID` tinyint UNSIGNED, Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `Total` decimal(8,2), INDEX budgetcategory_fk (`CategoryID`) FOREIGN KEY (`CategoryID`) REFERENCES `SRBudgetCategories`(`CategoryID`))";
+$budgetadjustments_table = "CREATE TABLE `SRBudgetAdjustments` (`AdjustmentID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CategoryID` tinyint UNSIGNED, Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `Total` decimal(8,2), INDEX budgetcategory_fk (`CategoryID`), FOREIGN KEY (`CategoryID`) REFERENCES `SRBudgetCategories`(`CategoryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Library Visits
-$visits_table = "CREATE TABLE `SRVisits` (`VisitID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryID` tinyint UNSIGNED, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `Total` int UNSIGNED, INDEX libraryvisits_fk (`LibraryID`) FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
+$visits_table = "CREATE TABLE `SRVisits` (`VisitID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryID` tinyint UNSIGNED, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `Total` int UNSIGNED, INDEX libraryvisits_fk (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Registered Library Cards
 $cards_table = "CREATE TABLE `SRCards` (`CardCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, CountType = enum('Resident', 'Non-Resident'), `TotalCards` int UNSIGNED)";
@@ -71,10 +71,10 @@ $patronassistance_table = "CREATE TABLE `SRPatronAssistance` (`AssistanceCountID
 
 ##State Report Tables
 #Sections Table
-$report_sections = "CREATE TABLE `SRSections` (`SectionID` tinyint UNSIGNED AUTORINCREMENT PRIMARY KEY, `SectionDescription` varchar(75))";
+$report_sections = "CREATE TABLE `SRSections` (`SectionID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SectionDescription` varchar(75))";
 
 #Questions Table
-$report_questions = "CREATE TABLE `SRQuestions` (`QuestionID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SectionID` tinyint UNSIGNED, Number varchar(10), `Question` varchar(550), `Source` enum('Direct', 'Query', 'Multiple', 'Calculation'), `Query` text DEFAULT NULL, `Format` enum('Integer', 'Currency', 'Text'), INDEX section_fk (`SectionID`) FOREIGN KEY (`SectionID`) REFERENCES `SRSections`(`SectionID`))";
+$report_questions = "CREATE TABLE `SRQuestions` (`QuestionID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SectionID` tinyint UNSIGNED, `Number` varchar(10), `Question` varchar(550), `Source` enum('Direct', 'Query', 'Multiple', 'Calculation'), `Query` text DEFAULT NULL, `Format` enum('Integer', 'Currency', 'Text'), INDEX section_fk (`SectionID`), FOREIGN KEY (`SectionID`) REFERENCES `SRSections`(`SectionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Sections Data
 $report_sections_prepared_statement = "INSERT INTO SRSections (`SectionID`, `SectionDescription`) VALUES (?, ?)";
@@ -443,5 +443,5 @@ array_push($report_questions_data, array(331, 99, '05', 'External Wi-Fi access a
 array_push($report_questions_data, array(332, 99, '06', 'Staff re-assigned during COVID-19', 'Direct', NULL, 'Text'));
 
 #State Reporting Collected Data
-$report_data = "CREATE TABLE `SRData` (`ReportYear` YEAR, `QuestionID` smallint UNSIGNED, `IntegerData` int UNSIGNED NULL, `CurrencyData` decimal(8,2) NULL, `TextData` text NULL, PRIMARY KEY(`ReportYear`, `QuestionID`), INDEX srquestion_fk (`QuestionID`) FOREIGN KEY (`QuestionID`) REFERENCES `SRQuestions`(`QuestionID`))";
+$report_data = "CREATE TABLE `SRData` (`ReportYear` YEAR, `QuestionID` smallint UNSIGNED, `IntegerData` int UNSIGNED NULL, `CurrencyData` decimal(8,2) NULL, `TextData` text NULL, PRIMARY KEY(`ReportYear`, `QuestionID`), INDEX, srquestion_fk (`QuestionID`) FOREIGN KEY (`QuestionID`) REFERENCES `SRQuestions`(`QuestionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 ?>
