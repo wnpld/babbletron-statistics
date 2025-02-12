@@ -3,7 +3,7 @@ session_start();
 require "../config.php";
 require "sqlconfig.php";
 
-if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
+if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     if ( isset($_REQUEST['nomain'])) {
         $mainlibset = false;
         $adminset = true;

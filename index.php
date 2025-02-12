@@ -30,7 +30,7 @@ try {
 }
 
 if ($entryrestriction > 0) {
-    if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
+    if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         if (( $_SESSION['UserRole'] == "Edit") || ($_SESSION['UserRole'] == "Admin")) {
             $edit = 1;
             $view = 1;

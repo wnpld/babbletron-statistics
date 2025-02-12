@@ -2,7 +2,7 @@
 session_start();
 require "../config.php";
 
-if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
+if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserId"]) ) {
     if (!$_SESSION['UserRole'] == "Admin") {
         #Send to the main site page
         header("Location: $protocol://$server$webdir/login.php?nomatch=privilege");

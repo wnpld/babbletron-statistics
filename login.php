@@ -95,7 +95,7 @@ if (isset($_REQUEST["username"]) && isset($_REQUEST["pwhash"])) {
     }
 }
 
-if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserId"]) ) {
+if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     if ( isset($_REQUEST['logout'])) {
         session_destroy();
         header("Location: $protocol://$server$webdir/login.php");
