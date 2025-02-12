@@ -15,8 +15,10 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     try {
         $db = new mysqli($mysqlhost, $dbadmin, $dbadminpw, $dbname);
     } catch (mysqli_sql_exception $e) {
-        echo "Configuration problem";
-        echo "It was not possible to establish a connection to a MySQL or MariaDB server to begin site configuration.  Make sure that you have established a MySQL database following the instructions in the README and have added the required information to the config.php file in the root directory.  Here is the exact error message that was returned from the connection attempt: " . $e->getMessage();
+        echo "<html><head><title>Configuration problem</title></head><body>";
+        echo "<h1>Configuration problem</h1>";
+        echo "<p>It was not possible to establish a connection to a MySQL or MariaDB server to begin site configuration.  Make sure that you have established a MySQL database following the instructions in the README and have added the required information to the config.php file in the root directory.  Here is the exact error message that was returned from the connection attempt: " . $e->getMessage();
+        echo "</p></body></html>";
         exit();
     }
 
@@ -26,7 +28,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($users_table);
         } catch (mysqli_sql_exception $e) {
-            echo "Error creating Users table: " . $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating Users table: " . $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -38,7 +42,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query( $report_sections);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating state report sections table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating state report sections table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -49,7 +55,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
             try {
                 $insert_query->execute();
             } catch (mysqli_sql_exception $e) {
-                echo "Error inserting section data: " . $e->getMessage();
+                echo "<html><head><title>Error</title></head><body>";
+                echo "<p>Error inserting section data: " . $e->getMessage();
+                echo "</p></body></html>";
                 $db->close();
                 exit();
             }
@@ -62,7 +70,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($report_questions);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating state report questions table: " . $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating state report questions table: " . $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -73,7 +83,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
             try {
                 $insert_query->execute();
             } catch (mysqli_sql_exception $e) {
-                echo "Error inserting question data: ". $e->getMessage();
+                echo "<html><head><title>Error</title></head><body>";
+                echo "<p>Error inserting question data: ". $e->getMessage();
+                echo "</p></body></html>";
                 $db->close();
                 exit();
             }
@@ -94,7 +106,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($libraries_table);
         } catch (mysqli_sql_exception $e) {
-            echo "Error creating LibraryInfo table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating LibraryInfo table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -109,7 +123,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($spaces_table);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating SRSpaces table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating SRSpaces table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -121,7 +137,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($spaceuse_table);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating SRSpaceUse table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating SRSpaceUse table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -133,7 +151,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($budgetcategories_table);
         } catch (mysqli_sql_exception $e) {
-            echo "Error creating SRBudgetCategories table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating SRBudgetCategories table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -145,7 +165,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
             try {
                 $insert_query->execute();
             } catch (mysqli_sql_exception $e) {
-                echo "Error adding Budget Category data: ". $e->getMessage();
+                echo "<html><head><title>Error</title></head><body>";
+                echo "<p>Error adding Budget Category data: ". $e->getMessage();
+                echo "</p></body></html>";
                 $db->close();
                 exit();
             }
@@ -158,7 +180,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($budgetadjustments_table);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating SRBudgetAdjustments table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating SRBudgetAdjustments table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -170,7 +194,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($visits_table);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating SRVisits table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating SRVisits table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -182,7 +208,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($programs_table);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating SRPrograms table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating SRPrograms table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -194,7 +222,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($physicalcollection_table);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating SRPhysicalCollection table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating SRPhysicalCollection table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -206,7 +236,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($ill_table);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating SRILL table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating SRILL table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -218,7 +250,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($computers_table);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating SRComputers table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating SRComputers table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -230,7 +264,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($technologies_table);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating SRTechnologyCounts table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating SRTechnologyCounts table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }
@@ -242,7 +278,9 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         try {
             $db->query($patronassistance_table);
          } catch (mysqli_sql_exception $e) {
-            echo "Error creating SRPatronAssistance table: ". $e->getMessage();
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error creating SRPatronAssistance table: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
             exit();
         }

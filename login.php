@@ -8,8 +8,9 @@ if (isset($_REQUEST["username"]) && isset($_REQUEST["password"])) {
     try {
         $db = new mysqli($mysqlhost, $dbadmin, $dbadminpw, $dbname);
     } catch (mysqli_sql_exception $e) {
-        echo "Configuration problem";
-        echo "It was not possible to establish a connection to a MySQL or MariaDB server to begin site configuration.  Make sure that you have established a MySQL database following the instructions in the README and have added the required information to the config.php file in the root directory.  Here is the exact error message that was returned from the connection attempt: " . $e->getMessage();
+        echo "<html><head><title>Configuration problem</title></head><body>";
+        echo "<h1>Configuration problem</h1>";
+        echo "<p>It was not possible to establish a connection to a MySQL or MariaDB server to begin site configuration.  Make sure that you have established a MySQL database following the instructions in the README and have added the required information to the config.php file in the root directory.  Here is the exact error message that was returned from the connection attempt: " . $e->getMessage() . "</p></body></html>";
         exit();
     }
 
@@ -21,7 +22,9 @@ if (isset($_REQUEST["username"]) && isset($_REQUEST["password"])) {
         $query = $db->prepare("SELECT salt FROM Users WHERE UserName = ?");
         $query->bind_param("s", $username);
         if (! $query->execute()) {
-            echo "Error executing user search: " . $db->error;
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error executing user search: " . $db->error;
+            echo "<p></body></html>";
             $query->close();
             $db->close();
             exit();
@@ -35,7 +38,9 @@ if (isset($_REQUEST["username"]) && isset($_REQUEST["password"])) {
             $query = $db->prepare('SELECT UserID, FirstName, LastName, UserRole FROM Users WHERE UserName = ? AND Password = UNHEX(?)');
             $query->bind_param('ss', $username, $pwhash);
             if (! $query->execute()) {
-                echo "Error executing password check: " . $db->error;
+                echo "<html><head><title>Error</title></head><body>";
+                echo "<p>Error executing password check: " . $db->error;
+                echo "</p></body></html>";
                 $query->close();
                 $db->close();
                 exit();
