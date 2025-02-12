@@ -106,7 +106,7 @@ if (isset($_REQUEST['administrator'])) {
     #New main library
     $error = false;
     if (isset($_REQUEST['libraryname'])) {
-        preg_match('/^[A-Za-z0-9]{4,100}$/', $_REQUEST['libraryname'], $matches);
+        preg_match('/^[A-Za-z0-9\-\'().,]{4,100}$/', $_REQUEST['libraryname'], $matches);
         if ($matches[0]) {
             $libraryname = $_REQUEST['libraryname'];
         } else {
@@ -139,7 +139,7 @@ if (isset($_REQUEST['administrator'])) {
     }
 
     if (isset($_REQUEST['fystart'])) {
-        preg_match('/^(January|February|March|April|May|June|July|August|September|October|November|December)$/', $_REQUEST['fystart'], $matches);
+        preg_match('/^([1-9]|1[0-2])$/', $_REQUEST['fystart'], $matches);
         if ($matches[0]) {
             $fystart = $_REQUEST['fystart'];
         } else {
@@ -162,11 +162,11 @@ if (isset($_REQUEST['administrator'])) {
         }
         $query->close();
         $db->close();
-        header("Location: $protocol://$server$webdir/index.php");
+        header("Location: $protocol://$server$webdir/admin/index.php");
         exit();
     } else {
         $db->close();
-        header("Location: $protocol://$server$webdir/index.php");
+        header("Location: $protocol://$server$webdir/configure.php?liberror=1");
         exit();
     }
 }

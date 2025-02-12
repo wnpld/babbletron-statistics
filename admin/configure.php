@@ -358,9 +358,9 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 
                 if (/^[A-Za-z \-'.]{3,50}$/.exec(lastname) === null) {
                     success = false;
-                    document.getElementById('badfn').style.display = "block";
+                    document.getElementById('badln').style.display = "block";
                 } else {
-                    document.getElementById('badfn').style.display = "none";
+                    document.getElementById('badln').style.display = "none";
                 }
 
                 if (password.length < 5) {
@@ -461,7 +461,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 var address = document.getElementById('address').value;
                 var city = document.getElementById('city').value;
 
-                if (/^[A-Za-z0-9]{4,100}$/.exec(libraryname) === null) {
+                if (/^[A-Za-z0-9\- '().,]{4,100}$/.exec(libraryname) === null) {
                     success = false;
                     document.getElementById('badln').style.display = "block";
                 } else {
@@ -496,6 +496,9 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <h1>Configure Your Statistics Server</h1>
             <h2>Step 2: Configure a Main Library</h2>
             <p>Once you've created a main library you can create branches or modify main library or branch library details in the administrative module.</p>
+            <?php if (isset($_REQUEST['liberror'])) {?>
+                <div class="alert alert-danger" type="alert">There was some kind of problem processing the main library's information.</div>
+            <?php } ?>
             <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
                 <div alert="alert alert-danger" type="alert" id="badln" style="display:none;">The provided library name was too long, too short, or contained unusual characters.</div>
                 <label for="libraryname" class="form-label">Library Name</label>
