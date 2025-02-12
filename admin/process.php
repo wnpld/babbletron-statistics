@@ -88,11 +88,13 @@ if (isset($_REQUEST['administrator'])) {
         }
         $query->close();
         $db->close();
-        if (isset($_REQUEST["mainlibrary"])) {
-            header("Location: $protocol://$server$webdir/login.php?destination=nomain");
+        if (isset($_REQUEST["mainlibset"])) {
+            //The "mainlibrary" variable being set means that a library already exists
+            //Somehow the admin(s) had been deleted and needed to be reestablished.
+            header("Location: $protocol://$server$webdir/login.php");
             exit();
         } else {
-            header("Location: $protocol://$server$webdir/login.php");
+            header("Location: $protocol://$server$webdir/login.php?destination=nomain");
             exit();
         }
     } else {

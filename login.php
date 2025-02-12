@@ -104,7 +104,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     if ( isset($_REQUEST['destination'])) {
         $destination = $_REQUEST['destination'];
         if ($destination == "nomain") {
-            header("Location: $protocol://$server$webdir/admin/configure.php?nomain=1");
+            header("Location: $protocol://$server$webdir/admin/configure.php");
             exit();
         } else {
             str_replace("_", "/", $destination);

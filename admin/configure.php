@@ -3,26 +3,34 @@ session_start();
 require "../config.php";
 require "sqlconfig.php";
 
+//If we're on this page it's likely we'll need to use the database,
+//so just establish a connection
+try {
+    $db = new mysqli($mysqlhost, $dbadmin, $dbadminpw, $dbname);
+} catch (mysqli_sql_exception $e) {
+    echo "<html><head><title>Configuration problem</title></head><body>";
+    echo "<h1>Configuration problem</h1>";
+    echo "<p>It was not possible to establish a connection to a MySQL or MariaDB server to begin site configuration.  Make sure that you have established a MySQL database following the instructions in the README and have added the required information to the config.php file in the root directory.  Here is the exact error message that was returned from the connection attempt: " . $e->getMessage();
+    echo "</p></body></html>";
+    exit();
+}
+
 if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
-    if ( isset($_REQUEST['nomain'])) {
-        $mainlibset = false;
+    if ($_SESSION['UserRole'] == "Admin") {
+        //Don't know if the main library is set or not yet
+        //so check for that
         $adminset = true;
+        $result = $db->query("SELECT `LibraryID` FROM `LibraryInfo` WHERE `Branch` = 0");
+        if ($result->num_rows > 0) {
+            $mainlibset = true;
+        } else {
+            $mainlibset = false;
+        }
     } else {
-        header("Location: $protocol://$server$webdir/login.php");
+        header("Location: $protocol://$server$webdir/index.php");
         exit;
     }
 } else {
-
-    try {
-        $db = new mysqli($mysqlhost, $dbadmin, $dbadminpw, $dbname);
-    } catch (mysqli_sql_exception $e) {
-        echo "<html><head><title>Configuration problem</title></head><body>";
-        echo "<h1>Configuration problem</h1>";
-        echo "<p>It was not possible to establish a connection to a MySQL or MariaDB server to begin site configuration.  Make sure that you have established a MySQL database following the instructions in the README and have added the required information to the config.php file in the root directory.  Here is the exact error message that was returned from the connection attempt: " . $e->getMessage();
-        echo "</p></body></html>";
-        exit();
-    }
-
     #Check for a user table.  If there is none, create it.
     try {
         $result = $db->query("SHOW TABLES LIKE 'Users'");
@@ -432,8 +440,8 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <input type="hidden" id="pwhash" name="pwhash" value="">
                 <input type="hidden" id="hashalgo" name="hashalgo" value="sha256">
                 <input type="hidden" name="administrator" value="1">
-                <?php if ($mainlibset == true) { ?>
-                    <input type="hidden" name="mainlibrary" value="1">
+                <?php if ($mainlibset) { ?>
+                    <input type="hidden" name="mainlibset" value="1">
                 <?php } ?>
                 <button class="btn btn-primary" type="submit">Submit User Information</button>
             </form>
@@ -449,9 +457,9 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         <script type="text/javascript" language="javascript">
             function validateForm(event) {
                 var success = true;
-                var libraryname = document.getElementById('username').value;
-                var address = document.getElementById('firstname').value;
-                var city = document.getElementById('lastname').value;
+                var libraryname = document.getElementById('libraryname').value;
+                var address = document.getElementById('address').value;
+                var city = document.getElementById('city').value;
 
                 if (/^[A-Za-z0-9]{4,100}$/.exec(libraryname) === null) {
                     success = false;
@@ -462,16 +470,16 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 
                 if (/^[A-Za-z0-9 #\'\-.]{5,150}$/.exec(address) === null) {
                     success = false;
-                    document.getElementById('badfn').style.display = "block";
+                    document.getElementById('badad').style.display = "block";
                 } else {
-                    document.getElementById('badfn').style.display = "none";
+                    document.getElementById('badad').style.display = "none";
                 }
 
                 if (/^[A-Za-z \-'.]{2,75}$/.exec(city) === null) {
                     success = false;
-                    document.getElementById('badfn').style.display = "block";
+                    document.getElementById('badcity').style.display = "block";
                 } else {
-                    document.getElementById('badfn').style.display = "none";
+                    document.getElementById('badcity').style.display = "none";
                 }
 
                 if (!success) {
