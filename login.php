@@ -124,6 +124,42 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Log In</title>
     <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" language="javascript">
+        async function hashPassword(event) {
+            //Hash password before submitting.
+            //The javascript web crypto library requires a secure context
+            //which can't be guaranteed with this implementation.
+            //Check for a secure context and just send the password plain
+            //if there isn't one.
+
+            var password = document.getElementById('password').value;
+
+            if (window.location.protocol === "https:") {
+                //The hash gets hashed again with salt on the server side
+                //but this obscures the password more
+
+                //Encode password
+                const encodedpw = new TextEncoder().encode(password);
+
+                //Hash the password
+                const hashBuffer = await crypto.subtle.digest('SHA-256', encodedpw);
+
+                //Convert ArrayBuffer into an Array
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+                //Convert bytes into hex
+                const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+                //Write hashed password to field in form
+                document.getElementById('pwhash').value = hashHex;
+            } else {
+                document.getElementById('pwhash').value = password;
+                document.getElementById('hashalgo').value = "none";
+            }
+            //Submit form
+            return true;
+        }
+    </script>
   </head>
   <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
@@ -180,42 +216,6 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         </div>
     </main>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
-    <script>
-        async function hashPassword(event) {
-            //Hash password before submitting.
-            //The javascript web crypto library requires a secure context
-            //which can't be guaranteed with this implementation.
-            //Check for a secure context and just send the password plain
-            //if there isn't one.
-
-            var password = document.getElementById('password').value;
-
-            if (window.location.protocol === "https:") {
-                //The hash gets hashed again with salt on the server side
-                //but this obscures the password more
-
-                //Encode password
-                const encodedpw = new TextEncoder().encode(password);
-
-                //Hash the password
-                const hashBuffer = await crypto.subtle.digest('SHA-256', encodedpw);
-
-                //Convert ArrayBuffer into an Array
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-                //Convert bytes into hex
-                const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
-
-                //Write hashed password to field in form
-                document.getElementById('pwhash').value = hashHex;
-            } else {
-                document.getElementById('pwhash').value = password;
-                document.getElementById('hashalgo').value = "none";
-            }
-            //Submit form
-            return true;
-        }
-    </script>
   </body>
 </html>
 <?php }

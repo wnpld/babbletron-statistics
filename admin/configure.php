@@ -41,12 +41,12 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         $result = $db->query("SHOW TABLES LIKE 'SRSections'");
         if ($result->num_rows == 0) {
             $db->query( $report_sections);
-        }
-        #After creating the table, add data
-        $insert_query = $db->prepare($report_sections_prepared_statement);
-        foreach ($report_sections_data AS $section_data) {
-            $insert_query->bind_param("is", $section_data[0], $section_data[1]);
-            $insert_query->execute();
+            #After creating the table, add data
+            $insert_query = $db->prepare($report_sections_prepared_statement);
+            foreach ($report_sections_data AS $section_data) {
+                $insert_query->bind_param("is", $section_data[0], $section_data[1]);
+                $insert_query->execute();
+            }
         }
     } catch (mysqli_sql_exception $e) {
         echo "<html><head><title>Error</title></head><body>";
@@ -61,12 +61,12 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         $result = $db->query("SHOW TABLES LIKE 'SRQuestions'");
         if ($result->num_rows == 0) {
             $db->query($report_questions);
-        }
-        #After creating the table, add data
-        $insert_query = $db->prepare($report_questions_prepared_statement);
-        foreach ($report_questions_data AS $question_data) {
-            $insert_query->bind_param("iisssss", $question_data[0], $question_data[1], $question_data[2], $question_data[3], $question_data[4], $question_data[5], $question_data[6]);
-            $insert_query->execute();
+            #After creating the table, add data
+            $insert_query = $db->prepare($report_questions_prepared_statement);
+            foreach ($report_questions_data AS $question_data) {
+                $insert_query->bind_param("iisssss", $question_data[0], $question_data[1], $question_data[2], $question_data[3], $question_data[4], $question_data[5], $question_data[6]);
+                $insert_query->execute();
+            }
         }
     } catch (mysqli_sql_exception $e) {
         echo "<html><head><title>Error</title></head><body>";
@@ -134,13 +134,13 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         $result = $db->query("SHOW TABLES LIKE 'SRBudgetCategories'");
         if ($result->num_rows == 0) {
             $db->query($budgetcategories_table);
-        }
-        #BudgetCategories Data
-        #Unlike most of these tables there are some fixed values that should be added here
-        $insert_query = $db->prepare($budgetcategories_stmt);
-        foreach ($budgetcategories_data as $budgetcategory) {
-            $insert_query->bind_param("ss", $budgetcategory[0], $budgetcategory[1]);
-            $insert_query->execute();
+            #BudgetCategories Data
+            #Unlike most of these tables there are some fixed values that should be added here
+            $insert_query = $db->prepare($budgetcategories_stmt);
+            foreach ($budgetcategories_data as $budgetcategory) {
+                $insert_query->bind_param("ss", $budgetcategory[0], $budgetcategory[1]);
+                $insert_query->execute();
+            }
         }
     } catch (mysqli_sql_exception $e) {
         echo "<html><head><title>Error</title></head><body>";
@@ -319,49 +319,13 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
 ?>
 <!doctype html>
 <html lang="en">
+<?php if (!$adminset) { ?>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Configure Your Statistics Server</title>
     <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
-  </head>
-  <body>
-    <div class="container-fluid">
-        <h1>Configure Your Statistics Server</h1>
-        <?php if (!$adminset) { ?>
-            <h2>Step 1: Configure an Administor Account</h2>
-            <p>You need to create one initial administrative account.  After that you can create new accounts from the administrative interface.</p>
-            <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
-                <div class="alert alert-danger" type="alert" id="badun" style="display:none;">The provided username contains non-alphanumeric characters, is shorter than 2 characters or is more than 25 characters.</div>
-                <label for="username" class="form-label">Username</label>
-                <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips">
-                <div id="usernametips" class="form-text">
-                    Username is not case sensitive.  Please use only alpha-numeric characters and no spaces.
-                </div>
-                <div id="badfn" class="alert alert-danger" type="alert" style="display:none;">The provided first name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
-                <label for="firstname" class="form-label">First Name</label>
-                <input type="text" id="firstname" name="firstname" class="form-control">
-                <div id="badln" class="alert alert-danger" type="alert" style="display:none;">The provided last name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
-                <label for="lastname" class="form-label">Last Name</label>
-                <input type="text" id="lastname" name="lastname" class="form-control">
-                <div id="badpw" class="alert alert-danger" type="alert" style="display:none;">The password cannot be extremely short or blank.</div>
-                <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" class="form-control" aria-describedby="passwordtips">
-                <div id="passwordtips" class="form-text">
-                    All characters are accepted.  Bare minimum is five characters although you should make this a good password (10+ characters) if this site is going to be publicly accessible, though.
-                </div>
-                <div id="badpc" class="alert alert-danger" type="alert" style="display:none;">The second copy of the password did not match the first.</div>
-                <label for="passwordcheck" class="form-label">Password (again)</label>
-                <input type="password" id="passwordcheck" class="form-control">
-                <input type="hidden" id="pwhash" name="pwhash" value="">
-                <input type="hidden" id="hashalgo" name="hashalgo" value="sha256">
-                <input type="hidden" name="administrator" value="1">
-                <?php if ($mainlibset == true) { ?>
-                    <input type="hidden" name="mainlibrary" value="1">
-                <?php } ?>
-                <button class="btn btn-primary" type="submit">Submit User Information</button>
-            </form>
-        <script type="javascript">
+    <script type="text/javascript" language="javascript">
             async function validateForm(event) {
                 var success = true;
                 var username = document.getElementById('username').value;
@@ -436,45 +400,52 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
                 }
             }
         </script>
+  </head>
+  <body>
+    <div class="container-fluid">
+        <h1>Configure Your Statistics Server</h1>
+            <h2>Step 1: Configure an Administor Account</h2>
+            <p>You need to create one initial administrative account.  After that you can create new accounts from the administrative interface.</p>
+            <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
+                <div class="alert alert-danger" type="alert" id="badun" style="display:none;">The provided username contains non-alphanumeric characters, is shorter than 2 characters or is more than 25 characters.</div>
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips">
+                <div id="usernametips" class="form-text">
+                    Username is not case sensitive.  Please use only alpha-numeric characters and no spaces.
+                </div>
+                <div id="badfn" class="alert alert-danger" type="alert" style="display:none;">The provided first name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
+                <label for="firstname" class="form-label">First Name</label>
+                <input type="text" id="firstname" name="firstname" class="form-control">
+                <div id="badln" class="alert alert-danger" type="alert" style="display:none;">The provided last name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
+                <label for="lastname" class="form-label">Last Name</label>
+                <input type="text" id="lastname" name="lastname" class="form-control">
+                <div id="badpw" class="alert alert-danger" type="alert" style="display:none;">The password cannot be extremely short or blank.</div>
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" class="form-control" aria-describedby="passwordtips">
+                <div id="passwordtips" class="form-text">
+                    All characters are accepted.  Bare minimum is five characters although you should make this a good password (10+ characters) if this site is going to be publicly accessible, though.
+                </div>
+                <div id="badpc" class="alert alert-danger" type="alert" style="display:none;">The second copy of the password did not match the first.</div>
+                <label for="passwordcheck" class="form-label">Password (again)</label>
+                <input type="password" id="passwordcheck" class="form-control">
+                <input type="hidden" id="pwhash" name="pwhash" value="">
+                <input type="hidden" id="hashalgo" name="hashalgo" value="sha256">
+                <input type="hidden" name="administrator" value="1">
+                <?php if ($mainlibset == true) { ?>
+                    <input type="hidden" name="mainlibrary" value="1">
+                <?php } ?>
+                <button class="btn btn-primary" type="submit">Submit User Information</button>
+            </form>
+            <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
+        </div>
+  </body>
     <?php } else if (!$mainlibset) { ?>
-        <h2>Step 2: Configure a Main Library</h2>
-        <p>Once you've created a main library you can create branches or modify main library or branch library details in the administrative module.</p>
-        <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
-            <div alert="alert alert-danger" type="alert" id="badln" style="display:none;">The provided library name was too long, too short, or contained unusual characters.</div>
-            <label for="libraryname" class="form-label">Library Name</label>
-            <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips">
-            <div id="librarynametips" class="form-text">
-                This should represent the common way you refer to the main library.  It can be as simple as "Main Library" or it can be more descriptive ("Harold Washington Library Center of the Chicago Public Library").
-            </div>
-            <div id="badad" class="alert alert-danger" type="alert" style="display:none;">No address was provided, it was extremely long or extremely short, or it contained invalid characters.</div>
-            <label for="address" class="form-label">Address</label>
-            <input type="text" id="address" name="address" class="form-control">
-            <div id="badcity" class="alert alert-danger" type="alert" style="display:none;">No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.</div>
-            <label for="city" class="form-label">City</label>
-            <input type="text" id="city" name="city" class="form-control">
-            <label for="fystart" class="form-label">Fiscal Year Start</label>
-            <select class="custom-select" id="fystart" name="fystart" aria-describedby="fystarttips">
-                <option value="1" selected>January</option>
-                <option value="2">February</option>
-                <option value="3">March</option>
-                <option value="4">April</option>
-                <option value="5">May</option>
-                <option value="6">June</option>
-                <option value="7">July</option>
-                <option value="8">August</option>
-                <option value="9">September</option>
-                <option value="10">October</option>
-                <option value="11">November</option>
-                <option value="12">December</option>
-            </select>
-            <div id="fystarttips" class="form-text">
-                Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
-            </div>
-
-            <input type="hidden" name="mainlibrary" value="1">
-            <button class="btn btn-primary" type="submit">Submit Library Information</button>
-        </form>
-        <script type="javascript">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Configure Your Statistics Server</title>
+        <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
+        <script type="text/javascript" language="javascript">
             function validateForm(event) {
                 var success = true;
                 var libraryname = document.getElementById('username').value;
@@ -509,9 +480,50 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
                     return true;
                 }
             }
-        </script>
-    <?php } ?>
-    <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
+        </script>        
+    </head>
+    <body>
+        <div class="container-fluid">
+            <h1>Configure Your Statistics Server</h1>
+            <h2>Step 2: Configure a Main Library</h2>
+            <p>Once you've created a main library you can create branches or modify main library or branch library details in the administrative module.</p>
+            <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
+                <div alert="alert alert-danger" type="alert" id="badln" style="display:none;">The provided library name was too long, too short, or contained unusual characters.</div>
+                <label for="libraryname" class="form-label">Library Name</label>
+                <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips">
+                <div id="librarynametips" class="form-text">
+                    This should represent the common way you refer to the main library.  It can be as simple as "Main Library" or it can be more descriptive ("Harold Washington Library Center of the Chicago Public Library").
+                </div>
+                <div id="badad" class="alert alert-danger" type="alert" style="display:none;">No address was provided, it was extremely long or extremely short, or it contained invalid characters.</div>
+                <label for="address" class="form-label">Address</label>
+                <input type="text" id="address" name="address" class="form-control">
+                <div id="badcity" class="alert alert-danger" type="alert" style="display:none;">No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.</div>
+                <label for="city" class="form-label">City</label>
+                <input type="text" id="city" name="city" class="form-control">
+                <label for="fystart" class="form-label">Fiscal Year Start</label>
+                <select class="custom-select" id="fystart" name="fystart" aria-describedby="fystarttips">
+                    <option value="1" selected>January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+                <div id="fystarttips" class="form-text">
+                    Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
+                </div>
+
+                <input type="hidden" name="mainlibrary" value="1">
+                <button class="btn btn-primary" type="submit">Submit Library Information</button>
+            </form>
+        <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
         </div>
   </body>
+    <?php } ?>
 </html>
