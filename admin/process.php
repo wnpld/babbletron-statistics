@@ -19,7 +19,7 @@ if (isset($_REQUEST['administrator'])) {
     $error = false;
     if (isset($_REQUEST['username'])) {
         preg_match('/^[A-Za-z0-9]{2,25}$/', $_REQUEST['username'], $matches);
-        if ($matches[1]) {
+        if ($matches[0]) {
             $username = strtolower($_REQUEST['username']);
         } else {
             $error = true;
@@ -30,7 +30,7 @@ if (isset($_REQUEST['administrator'])) {
 
     if (isset($_REQUEST['firstname'])) {
         preg_match('/^[A-Za-z \-\'.]{2,50}$/', $_REQUEST['firstname'], $matches);
-        if ($matches[1]) {
+        if ($matches[0]) {
             $firstname = $_REQUEST['firstname'];
         } else {
             $error = true;
@@ -41,7 +41,7 @@ if (isset($_REQUEST['administrator'])) {
 
     if (isset($_REQUEST['lastname'])) {
         preg_match('/^[A-Za-z \-\'.]{2,50}$/', $_REQUEST['lastname'], $matches);
-        if ($matches[1]) {
+        if ($matches[0]) {
             $lastname = $_REQUEST['lastname'];
         } else {
             $error = true;
@@ -91,7 +91,7 @@ if (isset($_REQUEST['administrator'])) {
     $error = false;
     if (isset($_REQUEST['libraryname'])) {
         preg_match('/^[A-Za-z0-9]{4,100}$/', $_REQUEST['libraryname'], $matches);
-        if ($matches[1]) {
+        if ($matches[0]) {
             $libraryname = $_REQUEST['libraryname'];
         } else {
             $error = true;
@@ -102,7 +102,7 @@ if (isset($_REQUEST['administrator'])) {
 
     if (isset($_REQUEST['address'])) {
         preg_match('/^[A-Za-z0-9 #\'\-.]{5,150}$/', $_REQUEST['address'], $matches);
-        if ($matches[1]) {
+        if ($matches[0]) {
             $address = $_REQUEST['address'];
         } else {
             $error = true;
@@ -113,7 +113,7 @@ if (isset($_REQUEST['administrator'])) {
 
     if (isset($_REQUEST['city'])) {
         preg_match('/^[A-Za-z.\' \-]{2,75}$/', $_REQUEST['city'], $matches);
-        if ($matches[1]) {
+        if ($matches[0]) {
             $city = $_REQUEST['city'];
         } else {
             $error = true;
@@ -124,7 +124,7 @@ if (isset($_REQUEST['administrator'])) {
 
     if (isset($_REQUEST['fystart'])) {
         preg_match('/^(January|February|March|April|May|June|July|August|September|October|November|December)$/', $_REQUEST['fystart'], $matches);
-        if ($matches[1]) {
+        if ($matches[0]) {
             $fystart = $_REQUEST['fystart'];
         } else {
             $error = true;

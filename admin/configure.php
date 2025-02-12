@@ -342,39 +342,40 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
   </head>
   <body>
-    <h1>Configure Your Statistics Server</h1>
-    <?php if (!$adminset) { ?>
-        <h2>Step 1: Configure an Administor Account</h2>
-        <p>You need to create one initial administrative account.  After that you can create new accounts from the administrative interface.</p>
-        <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
-            <div class="alert alert-danger" type="alert" id="badun" style="display:none;">The provided username contains non-alphanumeric characters, is shorter than 2 characters or is more than 25 characters.</div>
-            <label for="username" class="form-label">Username</label>
-            <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips">
-            <div id="usernametips" class="form-text">
-                Username is not case sensitive.  Please use only alpha-numeric characters and no spaces.
-            </div>
-            <div id="badfn" class="alert alert-danger" type="alert" style="display:none;">The provided first name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
-            <label for="firstname" class="form-label">First Name</label>
-            <input type="text" id="firstname" name="firstname" class="form-control">
-            <div id="badln" class="alert alert-danger" type="alert" style="display:none;">The provided last name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
-            <label for="lastname" class="form-label">Last Name</label>
-            <input type="text" id="lastname" name="lastname" class="form-control">
-            <div id="badpw" class="alert alert-danger" type="alert" style="display:none;">The password cannot be extremely short or blank.</div>
-            <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" class="form-control" aria-describedby="passwordtips">
-            <div id="passwordtips" class="form-text">
-                All characters are accepted.  Bare minimum is five characters although you should make this a good password (10+ characters) if this site is going to be publicly accessible, though.
-            </div>
-            <div id="badpc" class="alert alert-danger" type="alert" style="display:none;">The second copy of the password did not match the first.</div>
-            <label for="passwordcheck" class="form-label">Password (again)</label>
-            <input type="password" id="passwordcheck" class="form-control">
-            <input type="hidden" id="pwhash" name="pwhash" value="">
-            <input type="hidden" name="administrator" value="1">
-            <?php if ($mainlibset == true) { ?>
-                <input type="hidden" name="mainlibrary" value="1">
-            <?php } ?>
-            <button type="submit">Submit User Information</button>
-        </form>
+    <div class="container-fluid">
+        <h1>Configure Your Statistics Server</h1>
+        <?php if (!$adminset) { ?>
+            <h2>Step 1: Configure an Administor Account</h2>
+            <p>You need to create one initial administrative account.  After that you can create new accounts from the administrative interface.</p>
+            <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
+                <div class="alert alert-danger" type="alert" id="badun" style="display:none;">The provided username contains non-alphanumeric characters, is shorter than 2 characters or is more than 25 characters.</div>
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips">
+                <div id="usernametips" class="form-text">
+                    Username is not case sensitive.  Please use only alpha-numeric characters and no spaces.
+                </div>
+                <div id="badfn" class="alert alert-danger" type="alert" style="display:none;">The provided first name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
+                <label for="firstname" class="form-label">First Name</label>
+                <input type="text" id="firstname" name="firstname" class="form-control">
+                <div id="badln" class="alert alert-danger" type="alert" style="display:none;">The provided last name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
+                <label for="lastname" class="form-label">Last Name</label>
+                <input type="text" id="lastname" name="lastname" class="form-control">
+                <div id="badpw" class="alert alert-danger" type="alert" style="display:none;">The password cannot be extremely short or blank.</div>
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" class="form-control" aria-describedby="passwordtips">
+                <div id="passwordtips" class="form-text">
+                    All characters are accepted.  Bare minimum is five characters although you should make this a good password (10+ characters) if this site is going to be publicly accessible, though.
+                </div>
+                <div id="badpc" class="alert alert-danger" type="alert" style="display:none;">The second copy of the password did not match the first.</div>
+                <label for="passwordcheck" class="form-label">Password (again)</label>
+                <input type="password" id="passwordcheck" class="form-control">
+                <input type="hidden" id="pwhash" name="pwhash" value="">
+                <input type="hidden" name="administrator" value="1">
+                <?php if ($mainlibset == true) { ?>
+                    <input type="hidden" name="mainlibrary" value="1">
+                <?php } ?>
+                <button class="btn btn-primary" type="submit">Submit User Information</button>
+            </form>
         <script type="javascript">
             async function validateForm(event) {
                 var success = true;
@@ -480,7 +481,7 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
             </div>
 
             <input type="hidden" name="mainlibrary" value="1">
-            <button type="submit">Submit Library Information</button>
+            <button class="btn btn-primary" type="submit">Submit Library Information</button>
         </form>
         <script type="javascript">
             function validateForm(event) {
@@ -520,5 +521,6 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
         </script>
     <?php } ?>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
+        </div>
   </body>
 </html>

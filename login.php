@@ -16,9 +16,9 @@ if (isset($_REQUEST["username"]) && isset($_REQUEST["password"])) {
 
     #Check username for safety
     preg_match("/^[A-Za-z0-9]{5,25}$/", $_REQUEST['username'], $matches);
-    if (isset($matches[1])) {
+    if (isset($matches[0])) {
         #Get salt for this username if there is any
-        $username = $matches[1];
+        $username = $matches[0];
         $query = $db->prepare("SELECT salt FROM Users WHERE UserName = ?");
         $query->bind_param("s", $username);
         if (! $query->execute()) {
