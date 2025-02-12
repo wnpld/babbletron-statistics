@@ -1,8 +1,9 @@
 <?php
+session_start();
 require "config.php";
 
 #If there is login information to be processed, do that
-if (isset($_REQUEST["username"]) && isset($_REQUEST["password"])) {
+if (isset($_REQUEST["username"]) && isset($_REQUEST["pwhash"])) {
 
     #Connect to the database
     try {
@@ -64,9 +65,8 @@ if (isset($_REQUEST["username"]) && isset($_REQUEST["password"])) {
                 $results = $query->get_result();
                 if ($results->num_rows > 0) {
                     $row = $results->fetch_assoc();
-                    #Start session
-                    $options = array("cookie_path" => $webdir);
-                    session_start($options);
+                    #Establish Session Variables
+                    $_SESSION['SessionID'] = session_id();
                     $_SESSION['UserID'] = $row['UserID'];
                     $_SESSION['FirstName'] = $row['FirstName'];
                     $_SESSION['LastName'] = $row['LastName'];
@@ -83,6 +83,7 @@ if (isset($_REQUEST["username"]) && isset($_REQUEST["password"])) {
                 $query->close();
                 $db->close();
                 header("Location: $protocol://$server$webdir/login.php?nomatch=credentials");
+                exit();
             }
         } catch (mysqli_sql_exception $e) {
             echo "<html><head><title>Error</title></head><body>";
@@ -94,7 +95,7 @@ if (isset($_REQUEST["username"]) && isset($_REQUEST["password"])) {
     }
 }
 
-if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
+if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserId"]) ) {
     if ( isset($_REQUEST['logout'])) {
         session_destroy();
         header("Location: $protocol://$server$webdir/login.php");
