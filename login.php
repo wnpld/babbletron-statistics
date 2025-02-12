@@ -19,28 +19,13 @@ if (isset($_REQUEST["username"]) && isset($_REQUEST["password"])) {
     if (isset($matches[0])) {
         #Get salt for this username if there is any
         $username = $matches[0];
-        $query = $db->prepare("SELECT salt FROM Users WHERE UserName = ?");
-        $query->bind_param("s", $username);
-        if (! $query->execute()) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error executing user search: " . $db->error;
-            echo "<p></body></html>";
-            $query->close();
-            $db->close();
-            exit();
-        }
-        $results = $query->get_result();
-        if ($results->num_rows > 0) {
-            $row = $results->fetch_assoc();
-            $salt = $row['salt'];
-            $saltedpw = $_REQUEST['pwhash'] . $salt;
-            $pwhash = hash('sha256', $saltedpw);
-            $query = $db->prepare('SELECT UserID, FirstName, LastName, UserRole FROM Users WHERE UserName = ? AND Password = UNHEX(?)');
-            $query->bind_param('ss', $username, $pwhash);
+        try {
+            $query = $db->prepare("SELECT salt FROM Users WHERE UserName = ?");
+            $query->bind_param("s", $username);
             if (! $query->execute()) {
                 echo "<html><head><title>Error</title></head><body>";
-                echo "<p>Error executing password check: " . $db->error;
-                echo "</p></body></html>";
+                echo "<p>Error executing user search: " . $db->error;
+                echo "<p></body></html>";
                 $query->close();
                 $db->close();
                 exit();
@@ -48,25 +33,63 @@ if (isset($_REQUEST["username"]) && isset($_REQUEST["password"])) {
             $results = $query->get_result();
             if ($results->num_rows > 0) {
                 $row = $results->fetch_assoc();
-                #Start session
-                $options = array("cookie_path" => $webdir);
-                session_start($options);
-                $_SESSION['UserID'] = $row['UserID'];
-                $_SESSION['FirstName'] = $row['FirstName'];
-                $_SESSION['LastName'] = $row['LastName'];
-                $_SESSION['UserRole'] = $row['UserRole'];
+                $salt = $row['salt'];
+                //In an https context the password will be hashed
+                //in javascript, while this is not possible in a
+                //http context.  Use the hashalgo field to determine what to do
+                if (isset($_REQUEST['hashalgo'])) {
+                    $algorithm = $_REQUEST['hashalgo'];
+                } else {
+                    $algorithm = "none";
+                }
+                //An unhashed password needs to be hashed first before
+                //being hashed with salt
+                if ($algorithm == "none") {
+                    $password = hash('sha256', $_REQUEST['pwhash']);
+                } else {
+                    $password = $_REQUEST['pwhash'];
+                }
+                $saltedpw = $password . $salt;
+                $pwhash = hash('sha256', $saltedpw);
+                $query = $db->prepare('SELECT UserID, FirstName, LastName, UserRole FROM Users WHERE UserName = ? AND Password = UNHEX(?)');
+                $query->bind_param('ss', $username, $pwhash);
+                if (! $query->execute()) {
+                    echo "<html><head><title>Error</title></head><body>";
+                    echo "<p>Error executing password check: " . $db->error;
+                    echo "</p></body></html>";
+                    $query->close();
+                    $db->close();
+                    exit();
+                }
+                $results = $query->get_result();
+                if ($results->num_rows > 0) {
+                    $row = $results->fetch_assoc();
+                    #Start session
+                    $options = array("cookie_path" => $webdir);
+                    session_start($options);
+                    $_SESSION['UserID'] = $row['UserID'];
+                    $_SESSION['FirstName'] = $row['FirstName'];
+                    $_SESSION['LastName'] = $row['LastName'];
+                    $_SESSION['UserRole'] = $row['UserRole'];
+                } else {
+                    #Password was wrong
+                    $query->close();
+                    $db->close();
+                    header("Location: $protocol://$server$webdir/login.php?nomatch=credentials");
+                    exit();
+                }
             } else {
-                #Password was wrong
+                #Invalid username
                 $query->close();
                 $db->close();
                 header("Location: $protocol://$server$webdir/login.php?nomatch=credentials");
-                exit();
             }
-        } else {
-            #Invalid username
-            $query->close();
+        } catch (mysqli_sql_exception $e) {
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error checking user account information: ". $e->getMessage();
+            echo "</p></body></html>";
             $db->close();
-            header("Location: $protocol://$server$webdir/login.php?nomatch=credentials");
+            exit();
         }
     }
 }
@@ -143,6 +166,7 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
                     <input type="password" class="form-control" id="password">
                 </div>
                 <input type="hidden" id="pwhash" name="pwhash" value="">
+                <input type="hidden" id="hashalgo" name="hashalgo" value="sha256">
             <?php 
                 if (isset($_REQUEST['destination'])) {
                     $destination = $_REQUEST['destination'];
@@ -159,25 +183,35 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     <script>
         async function hashPassword(event) {
             //Hash password before submitting.
-            //The hash gets hashed again with salt on the server side
-            //but this obscures the password more in the case of an unencrypted connection
-            var password = Document.getElementById('password').value;
-            
-            //Encode password
-            const encodedpw = new TextEncoder().encode(password);
+            //The javascript web crypto library requires a secure context
+            //which can't be guaranteed with this implementation.
+            //Check for a secure context and just send the password plain
+            //if there isn't one.
 
-            //Hash the password
-            const hashBuffer = await crypto.subtle.digest('SHA-256', encodedpw);
+            var password = document.getElementById('password').value;
 
-            //Convert ArrayBuffer into an Array
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            if (window.location.protocol === "https:") {
+                //The hash gets hashed again with salt on the server side
+                //but this obscures the password more
 
-            //Convert bytes into hex
-            const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+                //Encode password
+                const encodedpw = new TextEncoder().encode(password);
 
-            //Write hashed password to field in form
-            Document.getElementById('pwhash').value = hashHex;
+                //Hash the password
+                const hashBuffer = await crypto.subtle.digest('SHA-256', encodedpw);
 
+                //Convert ArrayBuffer into an Array
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+                //Convert bytes into hex
+                const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+                //Write hashed password to field in form
+                document.getElementById('pwhash').value = hashHex;
+            } else {
+                document.getElementById('pwhash').value = password;
+                document.getElementById('hashalgo').value = "none";
+            }
             //Submit form
             return true;
         }

@@ -12,11 +12,19 @@ try {
 }
 
 # Do a quick test to make sure that the site's been configured since this is the main page
-$result = $db->query("SHOW TABLES LIKE 'LibraryInfo'");
-if ($result->num_rows == 0) {
-    #Site's not configured.  Redirect to configuration page.
+try {
+    $result = $db->query("SHOW TABLES LIKE 'LibraryInfo'");
+    if ($result->num_rows == 0) {
+        #Site's not configured.  Redirect to configuration page.
+        $db->close();
+        header("Location: $protocol://$server$webdir/admin/configure.php");
+        exit();
+    }
+} catch (mysqli_sql_exception $e) {
+    echo "<html><head><title>Error</title></head><body>";
+    echo "<p>Error checking for LibraryInfo table: ". $e->getMessage();
+    echo "</p></body></html>";
     $db->close();
-    header("Location: $protocol://$server$webdir/admin/configure.php");
     exit();
 }
 

@@ -51,8 +51,22 @@ if (isset($_REQUEST['administrator'])) {
     }
 
     if (isset($_REQUEST['pwhash'])) {
+        if (isset($_REQUEST['hashalgo'])) {
+            $algorithm = $_REQUEST['hashalgo'];
+        } else {
+            //Should have something in it, but 
+            //if there's nothing assume none
+            $algorithm = "none";
+        }
+        //In an http context getting a hash in javascript isn't possible
+        //so it will be hashed twice here: once on its own and then with salt
+        if ($algorithm == "none") {
+            $password = hash('sha256', $_REQUEST['pwhash']);
+        } else {
+            $password = $_REQUEST['pwhash'];
+        }
         $salt = saltmachine();
-        $password = $_REQUEST['pwhash'] . $salt;
+        $password .= $salt;
         $pwhash = hash('sha256', $password);
     } else {
         $error = true;
@@ -60,15 +74,14 @@ if (isset($_REQUEST['administrator'])) {
 
     if ($error == false) {
         //Error being false means everything looks good.  Add the user.
-        $query = $db->prepare("INSERT INTO `USERS` (`UserName`, `LastName`, `FirstName`, UNHEX(`Password`), `Salt`, `UserRole`) VALUES (?, ?, ?, ?, ?, 'Admin')");
-        $query->bind_param("sssss", $username, $lastname, $firstname, $pwhash, $salt);
         try {
+            $query = $db->prepare("INSERT INTO `Users` (`UserName`, `LastName`, `FirstName`, `Password`, `Salt`, `UserRole`) VALUES (?, ?, ?, UNHEX(?), ?, 'Admin')");
+            $query->bind_param("sssss", $username, $lastname, $firstname, $pwhash, $salt);
             $query->execute();
          } catch (mysqli_sql_exception $e) {
             echo "<html><head><title>Error</title></head><body>";
             echo "<p>Error adding user: " . $e->getMessage();
             echo "</p></body></html>";
-            $query->close();
             $db->close();
             exit();
         }
@@ -133,15 +146,14 @@ if (isset($_REQUEST['administrator'])) {
 
     if ($error == false) {
         //False error means everything's fine
-        $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`) VALUES (?, ?, ?, 0, ?)');
-        $query->bind_param('ssss', $libraryname, $address, $city, $fystart);
-        try {
+        try{
+            $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`) VALUES (?, ?, ?, 0, ?)');
+            $query->bind_param('ssss', $libraryname, $address, $city, $fystart);
             $query->execute();
          } catch (mysqli_sql_exception $e) {
             echo "<html><head><title>Error</title></head><body>";
             echo "<p>Error adding library info: " . $e->getMessage();
             echo "</p></body></html>";
-            $query->close();
             $db->close();
             exit();
         }

@@ -23,73 +23,57 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Check for a user table.  If there is none, create it.
-    $result = $db->query("SHOW TABLES LIKE 'Users'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'Users'");
+        if ($result->num_rows == 0) {
             $db->query($users_table);
-        } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating Users table: " . $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating Users table: " . $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Check for the State Reports Sections table.  If there is none, create it.
-    $result = $db->query("SHOW TABLES LIKE 'SRSections'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRSections'");
+        if ($result->num_rows == 0) {
             $db->query( $report_sections);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating state report sections table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
         #After creating the table, add data
         $insert_query = $db->prepare($report_sections_prepared_statement);
         foreach ($report_sections_data AS $section_data) {
             $insert_query->bind_param("is", $section_data[0], $section_data[1]);
-            try {
-                $insert_query->execute();
-            } catch (mysqli_sql_exception $e) {
-                echo "<html><head><title>Error</title></head><body>";
-                echo "<p>Error inserting section data: " . $e->getMessage();
-                echo "</p></body></html>";
-                $db->close();
-                exit();
-            }
+            $insert_query->execute();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating state report sections table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Check for the State Reports Questions table.  If there is none, create it.
-    $result = $db->query("SHOW TABLES LIKE 'SRQuestions'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRQuestions'");
+        if ($result->num_rows == 0) {
             $db->query($report_questions);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating state report questions table: " . $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
         #After creating the table, add data
         $insert_query = $db->prepare($report_questions_prepared_statement);
         foreach ($report_questions_data AS $question_data) {
             $insert_query->bind_param("iisssss", $question_data[0], $question_data[1], $question_data[2], $question_data[3], $question_data[4], $question_data[5], $question_data[6]);
-            try {
-                $insert_query->execute();
-            } catch (mysqli_sql_exception $e) {
-                echo "<html><head><title>Error</title></head><body>";
-                echo "<p>Error inserting question data: ". $e->getMessage();
-                echo "</p></body></html>";
-                $db->close();
-                exit();
-            }
+            $insert_query->execute();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating state report questions table: " . $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Check to see if there's a defined administrative user
@@ -101,197 +85,197 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
     }
 
     #Check for a Library Information table.  If there is none, create it.
-    $result = $db->query("SHOW TABLES LIKE 'LibraryInfo'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'LibraryInfo'");
+        if ($result->num_rows == 0) {
             $db->query($libraries_table);
-        } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating LibraryInfo table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
-     }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating LibraryInfo table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
+    }
 
     #After creating the Library Information Table, add the state report
     #support tables.  Many of these use this table so it should be created first
 
     #Spaces Table
-    $result = $db->query("SHOW TABLES LIKE 'SRSpaces'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRSpaces'");
+        if ($result->num_rows == 0) {
             $db->query($spaces_table);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating SRSpaces table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating SRSpaces table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #SpaceUse Table
-    $result = $db->query("SHOW TABLES LIKE 'SRSpaceUse'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRSpaceUse'");
+        if ($result->num_rows == 0) {
             $db->query($spaceuse_table);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating SRSpaceUse table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating SRSpaceUse table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #BudgetCategories Table
-    $result = $db->query("SHOW TABLES LIKE 'SRBudgetCategories'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRBudgetCategories'");
+        if ($result->num_rows == 0) {
             $db->query($budgetcategories_table);
-        } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating SRBudgetCategories table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
         #BudgetCategories Data
         #Unlike most of these tables there are some fixed values that should be added here
         $insert_query = $db->prepare($budgetcategories_stmt);
         foreach ($budgetcategories_data as $budgetcategory) {
             $insert_query->bind_param("ss", $budgetcategory[0], $budgetcategory[1]);
-            try {
-                $insert_query->execute();
-            } catch (mysqli_sql_exception $e) {
-                echo "<html><head><title>Error</title></head><body>";
-                echo "<p>Error adding Budget Category data: ". $e->getMessage();
-                echo "</p></body></html>";
-                $db->close();
-                exit();
-            }
+            $insert_query->execute();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating SRBudgetCategories table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Budget Adjustment Table - Monthly Expenses & Income Go Here
-    $result = $db->query("SHOW TABLES LIKE 'SRBudgetAdjustments'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRBudgetAdjustments'");
+        if ($result->num_rows == 0) {
             $db->query($budgetadjustments_table);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating SRBudgetAdjustments table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating SRBudgetAdjustments table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Library Visits Table
-    $result = $db->query("SHOW TABLES LIKE 'SRVisits'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRVisits'");
+        if ($result->num_rows == 0) {
             $db->query($visits_table);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating SRVisits table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating SRVisits table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Library Programs Table
-    $result = $db->query("SHOW TABLES LIKE 'SRPrograms'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRPrograms'");
+        if ($result->num_rows == 0) {
             $db->query($programs_table);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating SRPrograms table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating SRPrograms table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Library Physical Collection Table
-    $result = $db->query("SHOW TABLES LIKE 'SRPhysicalCollection'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRPhysicalCollection'");
+        if ($result->num_rows == 0) {
             $db->query($physicalcollection_table);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating SRPhysicalCollection table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating SRPhysicalCollection table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Interlibrary Loan Table
-    $result = $db->query("SHOW TABLES LIKE 'SRILL'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRILL'");
+        if ($result->num_rows == 0) {
             $db->query($ill_table);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating SRILL table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating SRILL table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Computer Inventory Table
-    $result = $db->query("SHOW TABLES LIKE 'SRComputers'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRComputers'");
+        if ($result->num_rows == 0) {
             $db->query($computers_table);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating SRComputers table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating SRComputers table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Technology Use Table
-    $result = $db->query("SHOW TABLES LIKE 'SRTechnologyCounts'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRTechnologyCounts'");
+        if ($result->num_rows == 0) {
             $db->query($technologies_table);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating SRTechnologyCounts table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating SRTechnologyCounts table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Reference Questions & Assistance Table
-    $result = $db->query("SHOW TABLES LIKE 'SRPatronAssistance'");
-    if ($result->num_rows == 0) {
-        try {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRPatronAssistance'");
+        if ($result->num_rows == 0) {
             $db->query($patronassistance_table);
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error creating SRPatronAssistance table: ". $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
         }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating SRPatronAssistance table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     #Check to see if there's a defined main library (library defined as not being a branch)
-    $result = $db->query("SELECT `LibraryID` FROM `LibraryInfo` WHERE `Branch` = 0");
-    if ($result->num_rows > 0) {
-        $mainlibset = true;
-    } else {
-        $mainlibset = false;
+    try {
+        $result = $db->query("SELECT `LibraryID` FROM `LibraryInfo` WHERE `Branch` = 0");
+        if ($result->num_rows > 0) {
+            $mainlibset = true;
+        } else {
+            $mainlibset = false;
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error checking for library in LibraryInfo table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
     }
 
     # Database operations are complete;
@@ -370,6 +354,7 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
                 <label for="passwordcheck" class="form-label">Password (again)</label>
                 <input type="password" id="passwordcheck" class="form-control">
                 <input type="hidden" id="pwhash" name="pwhash" value="">
+                <input type="hidden" id="hashalgo" name="hashalgo" value="sha256">
                 <input type="hidden" name="administrator" value="1">
                 <?php if ($mainlibset == true) { ?>
                     <input type="hidden" name="mainlibrary" value="1">
@@ -423,22 +408,28 @@ if ( isset($_SESSION["PHPSESSID"]) && !empty($_SESSION["PHPSESSID"]) ) {
                     event.preventDefault();
                     return false;
                 } else {
-                    //Hash the password and put it into the
-                    //password hash hidden field
-                    //Encode password
-                    const encodedpw = new TextEncoder().encode(password);
+                    if (window.location.protocol === "https:") {
+                        //The hash gets hashed again with salt on the server side
+                        //but this obscures the password more
 
-                    //Hash the password
-                    const hashBuffer = await crypto.subtle.digest('SHA-256', encodedpw);
+                        //Encode password
+                        const encodedpw = new TextEncoder().encode(password);
 
-                    //Convert ArrayBuffer into an Array
-                     const hashArray = Array.from(new Uint8Array(hashBuffer));
+                        //Hash the password
+                        const hashBuffer = await crypto.subtle.digest('SHA-256', encodedpw);
 
-                    //Convert bytes into hex
-                    const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+                        //Convert ArrayBuffer into an Array
+                        const hashArray = Array.from(new Uint8Array(hashBuffer));
 
-                    //Write hashed password to field in form
-                    Document.getElementById('pwhash').value = hashHex;
+                        //Convert bytes into hex
+                        const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+                        //Write hashed password to field in form
+                        document.getElementById('pwhash').value = hashHex;
+                    } else {
+                        document.getElementById('pwhash').value = password;
+                        document.getElementById('hashalgo').value = "none";
+                    }
 
                     //submit form with hashed password
                     return true;
