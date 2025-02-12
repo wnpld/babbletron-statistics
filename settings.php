@@ -74,7 +74,7 @@ if ($view == 1) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                        <a class="nav-link" href="index.php">Home</a>
                     </li>
                 </ul>
             </div>
@@ -93,7 +93,7 @@ if ($view == 1) {
                     <?php }
                     ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="settings.php">Settings</a>
+                        <a class="nav-link active" aria-current="true" href="settings.php">Settings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="login.php?logout=1">(Log Out)</a>

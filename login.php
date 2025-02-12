@@ -107,7 +107,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             header("Location: $protocol://$server$webdir/admin/configure.php");
             exit();
         } else {
-            str_replace("_", "/", $destination);
+            $destination = str_replace("_", "/", $destination);
             $destination .= ".php";
             header("Location: $protocol://$server$webdir/$destination");
             exit();

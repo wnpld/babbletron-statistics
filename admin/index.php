@@ -2,7 +2,7 @@
 session_start();
 require "../config.php";
 
-if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserId"]) ) {
+if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     if (!$_SESSION['UserRole'] == "Admin") {
         #Send to the main site page
         header("Location: $protocol://$server$webdir/login.php?nomatch=privilege");
@@ -51,7 +51,62 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserId"]) ) {
         </div>
     </nav>
     <main>
-
+    <div class="container-fluid">
+        <h1>Data Administration Modules</h1>
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Users</h5>
+                        <p class="card-text">Add, remove, and manage users.</p>
+                        <a class="card-link" href="users.php?add=1">Add a New User</a>
+                        <a class="card-link" href="users.php">Manage Users</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Library Branches</h5>
+                        <p class="card-text">Add or remove library branches.</p>
+                        <a class="card-link" href="libraries.php">Manage Branches</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">State Report</h5>
+                        <p class="card-text">Manage questions for the annual state report.</p>
+                        <a class="card-link" href="srquestions.php">Manage Questions</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Data Sources</h5>
+                        <p class="card-text">Manage and configure data sources and how they relate to the state report.</p>
+                        <a class="card-link" href="datasources.php">Manage Data Sources</a>
+                        <a class="card-link" href="datarelations.php">Manage Data Relationships</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Reporting</h5>
+                        <p class="card-text">Create and configure reports based on collected data.</p>
+                        <a class="card-link" href="reports.php">Manage Reports</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     </main>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
   </body>
