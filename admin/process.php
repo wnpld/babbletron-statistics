@@ -58,7 +58,7 @@ if (isset($_REQUEST['formtype'])) {
             //If checked returns an array everything's fine.  If it's false there's an error
             try{
                 $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`) VALUES (?, ?, ?, 0, ?)');
-                $query->bind_param('sssi', $checked['libraryname'], $checked['address'], $checked['city'], $checked['fymonth']);
+                $query->bind_param('sssi', $checked['LibraryName'], $checked['LibraryAddress'], $checked['LibraryCity'], $checked['FYMonth']);
                 $query->execute();
             } catch (mysqli_sql_exception $e) {
                 echo "<html><head><title>Error</title></head><body>";
