@@ -4,10 +4,10 @@
 #######################
 
 #Users Table
-$users_table = "CREATE TABLE `Users` (`UserID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `UserName` varchar(25) UNIQUE NOT NULL, `LastName` varchar(50), `FirstName` varchar(50), `Password` binary(32) NOT NULL, `Salt` char(100) NOT NULL, `UserRole` enum('Admin','Edit','View')) NOT NULL";
+$users_table = "CREATE TABLE `Users` (`UserID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `UserName` varchar(25) UNIQUE NOT NULL, `LastName` varchar(50), `FirstName` varchar(50), `Password` binary(32) NOT NULL, `Salt` char(100) NOT NULL, `UserRole` enum('Admin','Edit','View') NOT NULL)";
 
 #Library Information Table
-$libraries_table = "CREATE TABLE `LibraryInfo` (`LibraryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryName` varchar(100) NOT NULL, `LibraryAddress` varchar(150), `LibraryCity` varchar(75), `Branch` tinyint(1) DEFAULT 1, `FYMonth` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')) NOT NULL";
+$libraries_table = "CREATE TABLE `LibraryInfo` (`LibraryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryName` varchar(100) NOT NULL, `LibraryAddress` varchar(150), `LibraryCity` varchar(75), `Branch` tinyint(1) DEFAULT 1, `FYMonth` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL)";
 
 ##State Report Support Tables
 #Library Spaces (Meeting rooms & study Rooms)
@@ -17,7 +17,7 @@ $spaces_table = "CREATE TABLE `SRSpaces` (`SpaceID` tinyint UNSIGNED AUTO_INCREM
 $spaceuse_table = "CREATE TABLE `SRSpaceUse` (`SpaceUseID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SpaceID` tinyint UNSIGNED NOT NULL, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `Total` smallint UNSIGNED NOT NULL, INDEX spaceid_fk (`SpaceID`), FOREIGN KEY (`SpaceID`) REFERENCES `SRSpaces`(`SpaceID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Budget Categories
-$budgetcategories_table = "CREATE TABLE `SRBudgetCategories` (`CategoryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CategoryDescription` varchar(100) NOT NULL, `CategoryType` enum('Income', 'Expense')) NOT NULL";
+$budgetcategories_table = "CREATE TABLE `SRBudgetCategories` (`CategoryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CategoryDescription` varchar(100) NOT NULL, `CategoryType` enum('Income', 'Expense') NOT NULL)";
 
 #Budget Categories - Data
 $budgetcategories_stmt = "INSERT INTO `SRBudgetCategories` (`CategoryDescription`, `CategoryType`) VALUES (?, ?)";

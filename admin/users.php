@@ -9,6 +9,16 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
     #Show Admin modules
+
+    try {
+        $db = new mysqli($mysqlhost, $dbadmin, $dbadminpw, $dbname);
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Configuration Problem</title></head><body>";
+        echo "<h1>Configuration problem</h1>";
+        echo "<p>It was not possible to establish a connection to a MySQL or MariaDB server to begin site configuration.  Make sure that you have established a MySQL database following the instructions in the README and have added the required information to the config.php file in the root directory.  Here is the exact error message that was returned from the connection attempt: " . $e->getMessage();
+        echo "</p></body></html>";
+        exit();
+    }
 ?>
 <!doctype html>
 <html lang="en">

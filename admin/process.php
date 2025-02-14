@@ -19,7 +19,7 @@ try {
 if (isset($_REQUEST['formtype'])) {
     if ($_REQUEST['formtype'] == "administrator") {
         #New administrator login
-        $checked = userchecks($_REQUEST['username'], $_REQUEST['firstname'], $_REQUEST['lastname'], $_REQUEST['pwhash'], $_REQUEST['pwalgo'], null, "new"); 
+        $checked = userchecks($_REQUEST['username'], $_REQUEST['firstname'], $_REQUEST['lastname'], $_REQUEST['pwhash'], $_REQUEST['hashalgo'], null, "new"); 
 
         if ($checked != false) {
             //Error being false means everything looks good.  Add the user.
@@ -54,8 +54,8 @@ if (isset($_REQUEST['formtype'])) {
         #New main library
         $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['fystart'], "new");
 
-        if ($error == false) {
-            //False error means everything's fine
+        if ($checked == false) {
+            //If checked returns an array everything's fine.  If it's false there's an error
             try{
                 $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`) VALUES (?, ?, ?, 0, ?)');
                 $query->bind_param('sssi', $checked['libraryname'], $checked['address'], $checked['city'], $checked['fystart']);
@@ -86,7 +86,7 @@ if (isset($_REQUEST['formtype'])) {
                 exit();
             }
         if ($_REQUEST['formtype'] == "newuser") {
-            $checked = userchecks($_REQUEST['username'], $_REQUEST['firstname'], $_REQUEST['lastname'], $_REQUEST['pwhash'], $_REQUEST['pwalgo'], null, "new");
+            $checked = userchecks($_REQUEST['username'], $_REQUEST['firstname'], $_REQUEST['lastname'], $_REQUEST['pwhash'], $_REQUEST['hashalgo'], null, "new");
 
             if (isset($_REQUEST['userrole'])) {
                 preg_match('/^(Admin|Edit|View)$/', $_REQUEST['userrole'], $matches);
@@ -138,7 +138,7 @@ if (isset($_REQUEST['formtype'])) {
                         $query->free_result();
                         $query->close();
 
-                        $checked = userchecks($_REQUEST['username'], $_REQUEST['firstname'], $_REQUEST['lastname'], $_REQUEST['pwhash'], $_REQUEST['pwalgo'], $salt, "old");
+                        $checked = userchecks($_REQUEST['username'], $_REQUEST['firstname'], $_REQUEST['lastname'], $_REQUEST['pwhash'], $_REQUEST['hashalgo'], $salt, "old");
 
                         if ($checked != false) {
                             $update_sql = "UPDATE Users SET ";
@@ -334,7 +334,7 @@ function saltmachine() {
     return $randomstring;
 }
 
-function userchecks($username, $firstname, $lastname, $pwhash, $pwalgo, $salt, $status) {
+function userchecks($username, $firstname, $lastname, $pwhash, $hashalgo, $salt, $status) {
     $error = false;
     $changed = array();
     if (isset($username)) {
@@ -386,8 +386,8 @@ function userchecks($username, $firstname, $lastname, $pwhash, $pwalgo, $salt, $
     }
 
     if (isset($pwhash)) {
-        if (isset($pwalgo)) {
-            $algorithm = $pwalgo;
+        if (isset($hashalgo)) {
+            $algorithm = $hashalgo;
         } else {
             //Should have something in it, but 
             //if there's nothing assume none
