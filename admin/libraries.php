@@ -123,11 +123,11 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             </form>
             <?php } else if (($_REQUEST['action'] == "modifybranch") && (isset($_REQUEST['branchid']))) { 
                 //Get branch information
-                $query = $db->prepare("SELECT `LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYStart`+0 AS FYStart FROM `LibraryInfo` WHERE `LibraryID` = ?");
+                $query = $db->prepare("SELECT `LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`+0 AS FYMonth FROM `LibraryInfo` WHERE `LibraryID` = ?");
                 $query->bind_param("i", $_REQUEST['branchid']);
                 $query->execute();
                 $query->store_result();
-                $query->bind_result($libraryname, $address, $city, $branch, $fystart); 
+                $query->bind_result($libraryname, $address, $city, $branch, $fymonth); 
                 ?>
                 <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
                 <div alert="alert alert-danger" type="alert" id="badln" style="display:none;">The provided library name was too long, too short, or contained unusual characters.</div>
@@ -144,22 +144,22 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <input type="text" id="city" name="city" class="form-control" value="<?php echo $city; ?>">
                 <?php if ($branch == 0) { 
                     //Only main library has fiscal year adjustable ?>
-                <label for="fystart" class="form-label">Fiscal Year Start</label>
-                <select class="custom-select" id="fystart" name="fystart" aria-describedby="fystarttips">
-                    <option value="1" <?php if ($fystart == 1) { echo " selected"; } ?>>January</option>
-                    <option value="2" <?php if ($fystart == 2) { echo " selected"; } ?>>February</option>
-                    <option value="3" <?php if ($fystart == 3) { echo " selected"; } ?>>March</option>
-                    <option value="4" <?php if ($fystart == 4) { echo " selected"; } ?>>April</option>
-                    <option value="5" <?php if ($fystart == 5) { echo " selected"; } ?>>May</option>
-                    <option value="6" <?php if ($fystart == 6) { echo " selected"; } ?>>June</option>
-                    <option value="7" <?php if ($fystart == 7) { echo " selected"; } ?>>July</option>
-                    <option value="8" <?php if ($fystart == 8) { echo " selected"; } ?>>August</option>
-                    <option value="9" <?php if ($fystart == 9) { echo " selected"; } ?>>September</option>
-                    <option value="10" <?php if ($fystart == 10) { echo " selected"; } ?>>October</option>
-                    <option value="11" <?php if ($fystart == 11) { echo " selected"; } ?>>November</option>
-                    <option value="12" <?php if ($fystart == 12) { echo " selected"; } ?>>December</option>
+                <label for="fymonth" class="form-label">Fiscal Year Start</label>
+                <select class="custom-select" id="fymonth" name="fymonth" aria-describedby="fymonthtips">
+                    <option value="1" <?php if ($fymonth == 1) { echo " selected"; } ?>>January</option>
+                    <option value="2" <?php if ($fymonth == 2) { echo " selected"; } ?>>February</option>
+                    <option value="3" <?php if ($fymonth == 3) { echo " selected"; } ?>>March</option>
+                    <option value="4" <?php if ($fymonth == 4) { echo " selected"; } ?>>April</option>
+                    <option value="5" <?php if ($fymonth == 5) { echo " selected"; } ?>>May</option>
+                    <option value="6" <?php if ($fymonth == 6) { echo " selected"; } ?>>June</option>
+                    <option value="7" <?php if ($fymonth == 7) { echo " selected"; } ?>>July</option>
+                    <option value="8" <?php if ($fymonth == 8) { echo " selected"; } ?>>August</option>
+                    <option value="9" <?php if ($fymonth == 9) { echo " selected"; } ?>>September</option>
+                    <option value="10" <?php if ($fymonth == 10) { echo " selected"; } ?>>October</option>
+                    <option value="11" <?php if ($fymonth == 11) { echo " selected"; } ?>>November</option>
+                    <option value="12" <?php if ($fymonth == 12) { echo " selected"; } ?>>December</option>
                 </select>
-                <div id="fystarttips" class="form-text">
+                <div id="fymonthtips" class="form-text">
                     Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
                 </div>
                 <?php } ?>
@@ -208,7 +208,7 @@ function showList($db) {
     //Get a list of library branches
         
     try {
-        $result = $db->query("SELECT `LibraryID`, `LibraryName`, `Address`, `City`, `Branch`, `FYStart` FROM `LibraryInfo` ORDER BY `Branch` ASC, LibraryName ASC"); ?>
+        $result = $db->query("SELECT `LibraryID`, `LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth` FROM `LibraryInfo` ORDER BY `Branch` ASC, LibraryName ASC"); ?>
         <table class="table">
             <thead>
                 <tr>
@@ -229,7 +229,7 @@ function showList($db) {
                     <td>
                     <td>
                         <?php if ($library['Branch'] == 0) {
-                            echo $library['FYStart'];
+                            echo $library['FYMonth'];
                         } else {
                             echo "-";
                         } ?>

@@ -512,8 +512,8 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <div id="badcity" class="alert alert-danger" type="alert" style="display:none;">No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.</div>
                 <label for="city" class="form-label">City</label>
                 <input type="text" id="city" name="city" class="form-control">
-                <label for="fystart" class="form-label">Fiscal Year Start</label>
-                <select class="custom-select" id="fystart" name="fystart" aria-describedby="fystarttips">
+                <label for="fymonth" class="form-label">Fiscal Year Start</label>
+                <select class="custom-select" id="fymonth" name="fymonth" aria-describedby="fymonthtips">
                     <option value="1" selected>January</option>
                     <option value="2">February</option>
                     <option value="3">March</option>
@@ -527,7 +527,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     <option value="11">November</option>
                     <option value="12">December</option>
                 </select>
-                <div id="fystarttips" class="form-text">
+                <div id="fymonthtips" class="form-text">
                     Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
                 </div>
 
