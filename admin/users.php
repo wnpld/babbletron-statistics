@@ -210,10 +210,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <div class="d-flex flex-row-reverse">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php?logout=1">(Log Out)</a>
+                        <a class="nav-link" href="../login.php?logout=1">(Log Out)</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="settings.php">Settings</a>
+                        <a class="nav-link" href="../settings.php">Settings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" disabled aria-disabled="true">Welcome, <?php echo $_SESSION['FirstName']; ?></a>
@@ -284,23 +284,23 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                         $query = $db->prepare("SELECT `UserName`, `FirstName`, `LastName`, `UserRole` FROM `Users` WHERE `UserID` = ?");
                         $query->bind_param("i", $_REQUEST['userid']);
                         $query->execute();
-                        $query->store_result();
-                        $query->bind_result($username, $firstname, $lastname, $userrole); 
+                        $result = $query->get_result();
+                        $userinfo = $result->fetch_assoc();
                         ?>
                         <h1>Modify User</h1>
                         <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
                             <div class="alert alert-danger" type="alert" id="badun" style="display:none;">The provided username contains non-alphanumeric characters, is shorter than 2 characters or is more than 25 characters.</div>
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips" value="<?php echo $username; ?>">
+                            <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips" value="<?php echo $userinfo['UserName']; ?>">
                             <div id="usernametips" class="form-text">
                                 Username is not case sensitive.  Please use only alpha-numeric characters and no spaces.
                             </div>
                             <div id="badfn" class="alert alert-danger" type="alert" style="display:none;">The provided first name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
                             <label for="firstname" class="form-label">First Name</label>
-                            <input type="text" id="firstname" name="firstname" class="form-control" value="<?php echo $firstname; ?>">
+                            <input type="text" id="firstname" name="firstname" class="form-control" value="<?php echo $userinfo['FirstName']; ?>">
                             <div id="badln" class="alert alert-danger" type="alert" style="display:none;">The provided last name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
                             <label for="lastname" class="form-label">Last Name</label>
-                            <input type="text" id="lastname" name="lastname" class="form-control" value="<?php echo $lastname; ?>">
+                            <input type="text" id="lastname" name="lastname" class="form-control" value="<?php echo $userinfo['LastName']; ?>">
                             <div id="badpw" class="alert alert-danger" type="alert" style="display:none;">The password cannot be extremely short or blank.</div>
                             <label for="password" class="form-label">Password</label>
                             <input type="password" id="password" class="form-control" aria-describedby="passwordtips">
@@ -312,19 +312,19 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                             <input type="password" id="passwordcheck" class="form-control">
                             <h2>User Role (Editor/Viewer applicable if related system-wide settings configured)</h2>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="userrole" value="Admin" id="adminuserrole"<?php if ($userrole == "Admin") { echo " checked"; } ?>>
+                                <input class="form-check-input" type="radio" name="userrole" value="Admin" id="adminuserrole"<?php if ($userinfo['UserRole'] == "Admin") { echo " checked"; } ?>>
                                 <label class="form-check-label" for="adminuserrole">
                                     Administrator
                                 </label> 
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="userrole" value="Edit" id="editoruserrole"<?php if ($userrole == "Edit") { echo " checked"; } ?>>
+                                <input class="form-check-input" type="radio" name="userrole" value="Edit" id="editoruserrole"<?php if ($userinfo['UserRole'] == "Edit") { echo " checked"; } ?>>
                                 <label class="form-check-label" for="editoruserrole">
                                     Editor
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="userrole" value="View" id="vieweruserrole"<?php if ($userrole == "View") { echo " checked"; } ?>>
+                                <input class="form-check-input" type="radio" name="userrole" value="View" id="vieweruserrole"<?php if ($userinfo['UserRole'] == "View") { echo " checked"; } ?>>
                                 <label class="form-check-label" for="vieweruserrole">
                                     Viewer
                                 </label>

@@ -89,10 +89,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <div class="d-flex flex-row-reverse">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php?logout=1">(Log Out)</a>
+                        <a class="nav-link" href="../login.php?logout=1">(Log Out)</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="settings.php">Settings</a>
+                        <a class="nav-link" href="../settings.php">Settings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" disabled aria-disabled="true">Welcome, <?php echo $_SESSION['FirstName']; ?></a>
@@ -121,27 +121,27 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <input type="hidden" name="formtype" value="newbranch">
                 <button class="btn btn-primary" type="submit">Submit Library Branch Information</button>
             </form>
-            <?php } else if (($_REQUEST['action'] == "modifybranch") && (isset($_REQUEST['branchid']))) { 
+            <?php } else if (($_REQUEST['action'] == "modify") && (isset($_REQUEST['branchid']))) { 
                 //Get branch information
                 $query = $db->prepare("SELECT `LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`+0 AS FYMonth FROM `LibraryInfo` WHERE `LibraryID` = ?");
                 $query->bind_param("i", $_REQUEST['branchid']);
                 $query->execute();
-                $query->store_result();
-                $query->bind_result($libraryname, $address, $city, $branch, $fymonth); 
+                $result = $query->get_result();
+                $libraryinfo = $result->fetch_assoc();
                 ?>
                 <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
                 <div alert="alert alert-danger" type="alert" id="badln" style="display:none;">The provided library name was too long, too short, or contained unusual characters.</div>
                 <label for="libraryname" class="form-label">Library Name</label>
-                <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips" value="<?php echo $libraryname; ?>">
+                <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips" value="<?php echo $libraryinfo['LibraryName']; ?>">
                 <div id="librarynametips" class="form-text">
                     This should represent the common way you refer to the main library.  It can be as simple as "Main Library" or it can be more descriptive ("Harold Washington Library Center of the Chicago Public Library").
                 </div>
                 <div id="badad" class="alert alert-danger" type="alert" style="display:none;">No address was provided, it was extremely long or extremely short, or it contained invalid characters.</div>
                 <label for="address" class="form-label">Address</label>
-                <input type="text" id="address" name="address" class="form-control" value="<?php echo $address; ?>">
+                <input type="text" id="address" name="address" class="form-control" value="<?php echo $libraryinfo['LibraryAddress']; ?>">
                 <div id="badcity" class="alert alert-danger" type="alert" style="display:none;">No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.</div>
                 <label for="city" class="form-label">City</label>
-                <input type="text" id="city" name="city" class="form-control" value="<?php echo $city; ?>">
+                <input type="text" id="city" name="city" class="form-control" value="<?php echo $libraryinfo['LibraryCity']; ?>">
                 <?php if ($branch == 0) { 
                     //Only main library has fiscal year adjustable ?>
                 <label for="fymonth" class="form-label">Fiscal Year Start</label>
@@ -226,7 +226,6 @@ function showList($db) {
                     } else {
                         echo "Branch";
                     } ?></td>
-                    <td>
                     <td>
                         <?php if ($library['Branch'] == 0) {
                             echo $library['FYMonth'];

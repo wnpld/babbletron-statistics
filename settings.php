@@ -57,8 +57,9 @@ if (isset($_REQUEST['action']) && ($_REQUEST['action'] == "updatesettings")) {
                 $query = $db->prepare("SELECT Salt FROM Users WHERE UserID = ?");
                 $query->bind_param('i', $_SESSION['UserID']);
                 $query->execute();
-                $query->store_result();
-                $query->bind_result($salt);
+                $result = $query->get_result();
+                $salt = $result->fetch_column(0);
+                $query->close();
                 //Add the salt to the hash
                 $pwhash .= $salt;
                 $fieldlist['Password'] = hash('sha256', $pwhash);
@@ -259,6 +260,7 @@ if (isset($_REQUEST['action']) && ($_REQUEST['action'] == "updatesettings")) {
         </div>
     </nav>
     <main>
+        <div class="container-fluid">
         <h1>User Settings</h1>
         <?php
             if (isset($_REQUEST['updated'])) {
@@ -270,22 +272,22 @@ if (isset($_REQUEST['action']) && ($_REQUEST['action'] == "updatesettings")) {
             $query = $db->prepare("SELECT `UserName`, `FirstName`, `LastName` FROM `Users` WHERE `UserID` = ?");
             $query->bind_param("i", $_SESSION['UserID']);
             $query->execute();
-            $query->store_result();
-            $query->bind_result($username, $firstname, $lastname); 
+            $result = $query->get_result();
+            $userinfo = $result->fetch_assoc();
         ?>
         <form action="<?php echo "$protocol://$server$webdir/settings.php" ?>" method="POST" onsubmit="validateForm(event)">
             <div class="alert alert-danger" type="alert" id="badun" style="display:none;">The provided username contains non-alphanumeric characters, is shorter than 2 characters or is more than 25 characters.</div>
             <label for="username" class="form-label">Username</label>
-            <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips" value="<?php echo $username; ?>">
+            <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips" value="<?php echo $userinfo['UserName']; ?>">
             <div id="usernametips" class="form-text">
                 Username is not case sensitive.  Please use only alpha-numeric characters and no spaces.
             </div>
             <div id="badfn" class="alert alert-danger" type="alert" style="display:none;">The provided first name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
             <label for="firstname" class="form-label">First Name</label>
-            <input type="text" id="firstname" name="firstname" class="form-control" value="<?php echo $firstname; ?>">
+            <input type="text" id="firstname" name="firstname" class="form-control" value="<?php echo $userinfo['FirstName']; ?>">
             <div id="badln" class="alert alert-danger" type="alert" style="display:none;">The provided last name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
             <label for="lastname" class="form-label">Last Name</label>
-            <input type="text" id="lastname" name="lastname" class="form-control" value="<?php echo $lastname; ?>">
+            <input type="text" id="lastname" name="lastname" class="form-control" value="<?php echo $userinfo['LastName']; ?>">
             <div id="badpw" class="alert alert-danger" type="alert" style="display:none;">The password cannot be extremely short or blank.</div>
             <label for="password" class="form-label">Password</label>
             <input type="password" id="password" class="form-control" aria-describedby="passwordtips">
@@ -301,6 +303,7 @@ if (isset($_REQUEST['action']) && ($_REQUEST['action'] == "updatesettings")) {
             <input type="hidden" name="userid" value="<?php echo $_SESSION['UserID']; ?>">
             <button class="btn btn-primary" type="submit">Submit Changes</button>
         </form>
+        </div>
     </main>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
   </body>

@@ -130,14 +130,10 @@ if (isset($_REQUEST['formtype'])) {
                     $query = $db->prepare("SELECT `Salt` FROM `Users` WHERE `UserID` = ?");
                     $query->bind_param('i', $_REQUEST['userid']);
                     $query->execute();
-                    $query->store_result();
-                    $query->bind_result($result);
-                    if ($query->num_rows == 1) {
-                        $stmt->fetch();
-                        $salt = $result;
-                        $query->free_result();
-                        $query->close();
-
+                    $result = $query->get_result();
+                    $salt = $result->fetch_column(0);
+                    $query->close();
+                    if (isset($salt)) {
                         $checked = userchecks($_REQUEST['username'], $_REQUEST['firstname'], $_REQUEST['lastname'], $_REQUEST['pwhash'], $_REQUEST['hashalgo'], $salt, "old");
 
                         if ($checked != false) {
