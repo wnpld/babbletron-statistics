@@ -25,7 +25,7 @@ if (isset($_REQUEST['formtype'])) {
             //Error being false means everything looks good.  Add the user.
             try {
                 $query = $db->prepare("INSERT INTO `Users` (`UserName`, `LastName`, `FirstName`, `Password`, `Salt`, `UserRole`) VALUES (?, ?, ?, UNHEX(?), ?, 'Admin')");
-                $query->bind_param("sssss", $checked['username'], $checked['lastname'], $checked['firstname'], $checked['password'], $checked['salt']);
+                $query->bind_param("sssss", $checked['UserName'], $checked['LastName'], $checked['FirstName'], $checked['Password'], $checked['Salt']);
                 $query->execute();
             } catch (mysqli_sql_exception $e) {
                 echo "<html><head><title>Error</title></head><body>";
@@ -105,7 +105,7 @@ if (isset($_REQUEST['formtype'])) {
                 //A return of false means that there was an error
                 try {
                     $query = $db->prepare("INSERT INTO `Users` (`UserName`, `LastName`, `FirstName`, `Password`, `Salt`, `UserRole`) VALUES (?, ?, ?, UNHEX(?), ?, ?)");
-                    $query->bind_param("sssss", $checked['username'], $checked['lastname'], $checked['firstname'], $checked['password'], $checked['salt'], $role);
+                    $query->bind_param("sssss", $checked['UserName'], $checked['LastName'], $checked['FirstName'], $checked['Password'], $checked['Salt'], $role);
                     $query->execute();
                 } catch (mysqli_sql_exception $e) {
                     echo "<html><head><title>Error</title></head><body>";
@@ -342,7 +342,7 @@ function userchecks($username, $firstname, $lastname, $pwhash, $pwalgo, $salt, $
         if ($matches[0]) {
             $checked_un = strtolower($username);
             if ($status == "old") {
-                $changed['username'] = $checked_un;
+                $changed['UserName'] = $checked_un;
             }
         } else {
             $error = true;
@@ -358,7 +358,7 @@ function userchecks($username, $firstname, $lastname, $pwhash, $pwalgo, $salt, $
         if ($matches[0]) {
             $checked_fn = $firstname;
             if ($status == "old") {
-                $changed['firstname'] = $checked_fn;
+                $changed['FirstName'] = $checked_fn;
             }
         } else {
             $error = true;
@@ -374,7 +374,7 @@ function userchecks($username, $firstname, $lastname, $pwhash, $pwalgo, $salt, $
         if ($matches[0]) {
             $checked_ln = $_REQUEST['lastname'];
             if ($status == "old") {
-                $changed['lastname'] = $checked_ln;
+                $changed['LastName'] = $checked_ln;
             }
         } else {
             $error = true;
@@ -396,17 +396,16 @@ function userchecks($username, $firstname, $lastname, $pwhash, $pwalgo, $salt, $
         //In an http context getting a hash in javascript isn't possible
         //so it will be hashed twice here: once on its own and then with salt
         if ($algorithm == "none") {
-            $password = hash('sha256', $pwhash);
-        } else {
-            $password = $pwhash;
+            $pwhash = hash('sha256', $pwhash);
         }
+
         if (!isset($salt)) {
             $salt = saltmachine();
         }
-        $password .= $salt;
-        $pwhash = hash('sha256', $password);
+        $pwhash .= $salt;
+        $password = hash('sha256', $pwhash);
         if ($status == "old") {
-            $changed['pwhash'] = $pwhash;
+            $changed['Password'] = $password;
         }
     } else {
         if ($status == "new") {
@@ -418,7 +417,7 @@ function userchecks($username, $firstname, $lastname, $pwhash, $pwalgo, $salt, $
         return false;
     } else {
         if ($status == "new") {
-            $values = array("username" => $checked_un, "firstname" => $checked_fn, "lastname" => $checked_ln, "password" => $password, "salt" => $salt);
+            $values = array("UserName" => $checked_un, "FirstName" => $checked_fn, "LastName" => $checked_ln, "Password" => $password, "Salt" => $salt);
             return $values;
         } else {
             return $changed;

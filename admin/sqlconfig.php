@@ -4,20 +4,20 @@
 #######################
 
 #Users Table
-$users_table = "CREATE TABLE `Users` (`UserID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `UserName` varchar(25) UNIQUE NOT NULL, `LastName` varchar(50), `FirstName` varchar(50), `Password` binary(32), `Salt` char(100), `UserRole` enum('Admin','Edit','View'))";
+$users_table = "CREATE TABLE `Users` (`UserID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `UserName` varchar(25) UNIQUE NOT NULL, `LastName` varchar(50), `FirstName` varchar(50), `Password` binary(32) NOT NULL, `Salt` char(100) NOT NULL, `UserRole` enum('Admin','Edit','View')) NOT NULL";
 
 #Library Information Table
-$libraries_table = "CREATE TABLE `LibraryInfo` (`LibraryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryName` varchar(100), `LibraryAddress` varchar(150), `LibraryCity` varchar(75), `Branch` tinyint(1) DEFAULT 1, `FYMonth` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'))";
+$libraries_table = "CREATE TABLE `LibraryInfo` (`LibraryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryName` varchar(100) NOT NULL, `LibraryAddress` varchar(150), `LibraryCity` varchar(75), `Branch` tinyint(1) DEFAULT 1, `FYMonth` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')) NOT NULL";
 
 ##State Report Support Tables
 #Library Spaces (Meeting rooms & study Rooms)
-$spaces_table = "CREATE TABLE `SRSpaces` (`SpaceID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SpaceDescription` varchar(75), `LibraryID` tinyint UNSIGNED, `SpaceType` enum('Meeting Room', 'Study Room'), INDEX libraryspace_fk (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+$spaces_table = "CREATE TABLE `SRSpaces` (`SpaceID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SpaceDescription` varchar(75), `LibraryID` tinyint UNSIGNED NOT NULL, `SpaceType` enum('Meeting Room', 'Study Room'), INDEX libraryspace_fk (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Space Use
-$spaceuse_table = "CREATE TABLE `SRSpaceUse` (`SpaceUseID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SpaceID` tinyint UNSIGNED, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `Total` smallint UNSIGNED, INDEX spaceid_fk (`SpaceID`), FOREIGN KEY (`SpaceID`) REFERENCES `SRSpaces`(`SpaceID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+$spaceuse_table = "CREATE TABLE `SRSpaceUse` (`SpaceUseID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SpaceID` tinyint UNSIGNED NOT NULL, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `Total` smallint UNSIGNED NOT NULL, INDEX spaceid_fk (`SpaceID`), FOREIGN KEY (`SpaceID`) REFERENCES `SRSpaces`(`SpaceID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Budget Categories
-$budgetcategories_table = "CREATE TABLE `SRBudgetCategories` (`CategoryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CategoryDescription` varchar(100), `CategoryType` enum('Income', 'Expense'))";
+$budgetcategories_table = "CREATE TABLE `SRBudgetCategories` (`CategoryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CategoryDescription` varchar(100) NOT NULL, `CategoryType` enum('Income', 'Expense')) NOT NULL";
 
 #Budget Categories - Data
 $budgetcategories_stmt = "INSERT INTO `SRBudgetCategories` (`CategoryDescription`, `CategoryType`) VALUES (?, ?)";
@@ -37,44 +37,44 @@ array_push($budgetcategories_data, array('Other Operating Expenditures', 'Expens
 array_push($budgetcategories_data, array('Capital Expenditures', 'Expense'));
 
 #Budget Expenses/Income
-$budgetadjustments_table = "CREATE TABLE `SRBudgetAdjustments` (`AdjustmentID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CategoryID` tinyint UNSIGNED, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `Total` decimal(8,2), INDEX budgetcategory_fk (`CategoryID`), FOREIGN KEY (`CategoryID`) REFERENCES `SRBudgetCategories`(`CategoryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+$budgetadjustments_table = "CREATE TABLE `SRBudgetAdjustments` (`AdjustmentID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CategoryID` tinyint UNSIGNED NOT NULL, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `Total` decimal(8,2) NOT NULL, INDEX budgetcategory_fk (`CategoryID`), FOREIGN KEY (`CategoryID`) REFERENCES `SRBudgetCategories`(`CategoryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Library Visits
-$visits_table = "CREATE TABLE `SRVisits` (`VisitID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryID` tinyint UNSIGNED, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `Total` int UNSIGNED, INDEX libraryvisits_fk (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+$visits_table = "CREATE TABLE `SRVisits` (`VisitID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryID` tinyint UNSIGNED NOT NULL, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `Total` int UNSIGNED NOT NULL, INDEX libraryvisits_fk (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Registered Library Cards
-$cards_table = "CREATE TABLE `SRCards` (`CardCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, CountType = enum('Resident', 'Non-Resident'), `TotalCards` int UNSIGNED)";
+$cards_table = "CREATE TABLE `SRCards` (`CardCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, CountType = enum('Resident', 'Non-Resident') NOT NULL, `TotalCards` int UNSIGNED NOT NULL)";
 
 #Registered Library Cards
-$cards_table = "CREATE TABLE `SRCards` (`CardCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `TotalCards` int UNSIGNED)";
+$cards_table = "CREATE TABLE `SRCards` (`CardCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `TotalCards` int UNSIGNED NOT NULL)";
 
 #Library Programs
-$programs_table = "CREATE TABLE `SRPrograms` (`ProgramCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `CountType` enum('Event','Attendance'), `Age` enum('0-5', '6-11', '12-18', '19+', 'All Ages'), `Synchronous` enum('Yes', 'No'), `ProgramLocation` enum('Onsite', 'Offsite', 'Virtual'), `Total` smallint UNSIGNED)";
+$programs_table = "CREATE TABLE `SRPrograms` (`ProgramCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `CountType` enum('Event','Attendance') NOT NULL, `Age` enum('0-5', '6-11', '12-18', '19+', 'All Ages') NOT NULL, `Synchronous` enum('Yes', 'No') NOT NULL, `ProgramLocation` enum('Onsite', 'Offsite', 'Virtual') NOT NULL, `Total` smallint UNSIGNED NOT NULL)";
 
 #Library Collection Size
-$physicalcollection_table = "CREATE TABLE`SRPhysicalCollection` (`CollectionCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `Material` enum('Book', 'Serial Subscription', 'Audio', 'Video', 'Other'), `MaterialType` enum('Physical', 'Digital'), `Audience` enum('Adult', 'Young Adult', 'Child'), `Total` int UNSIGNED)";
+$physicalcollection_table = "CREATE TABLE`SRPhysicalCollection` (`CollectionCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `Material` enum('Book', 'Serial Subscription', 'Audio', 'Video', 'Other') NOT NULL, `MaterialType` enum('Physical', 'Digital') NOT NULL, `Audience` enum('Adult', 'Young Adult', 'Child') NOT NULL, `Total` int UNSIGNED NOT NULL)";
 
 #Library Circulation
-$circulation_table = "CREATE TABLE SRCirculation (`CirculationCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR,  `Material` enum('Book', 'Audio', 'Magazine', 'Video', 'Other'), `MaterialType` enum('Physical', 'Digital'), `Audience` enum('Adult', 'Young Adult', 'Children'), `Total` int UNSIGNED)";
+$circulation_table = "CREATE TABLE SRCirculation (`CirculationCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL,  `Material` enum('Book', 'Audio', 'Magazine', 'Video', 'Other') NOT NULL, `MaterialType` enum('Physical', 'Digital') NOT NULL, `Audience` enum('Adult', 'Young Adult', 'Children') NOT NULL, `Total` int UNSIGNED NOT NULL)";
 
 #Interlibrary Loan
-$ill_table = "CREATE TABLE `SRILL` (`ILLID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `ILLRole` enum('Lender', 'Borrower'), `Total` int UNSIGNED)";
+$ill_table = "CREATE TABLE `SRILL` (`ILLID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `ILLRole` enum('Lender', 'Borrower') NOT NULL, `Total` int UNSIGNED NOT NULL)";
 
 #Computer Inventory
-$computers_table = "CREATE TABLE `SRComputers` (`ComputerID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `FormFactor` enum('Desktop', 'Laptop', 'Server'), `User` enum('Staff', 'Public'), `InternetAccess` enum('Yes', 'No'))";
+$computers_table = "CREATE TABLE `SRComputers` (`ComputerID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `FormFactor` enum('Desktop', 'Laptop', 'Server') NOT NULL, `User` enum('Staff', 'Public') NOT NULL, `InternetAccess` enum('Yes', 'No') NOT NULL)";
 
 #Technology Use
-$technologies_table = "CREATE TABLE `SRTechnologyCounts` (`TechnologyCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `TechnologyType` enum('Public Internet', 'Wireless Access', 'Website Sessions'), `Total` int UNSIGNED)";
+$technologies_table = "CREATE TABLE `SRTechnologyCounts` (`TechnologyCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `TechnologyType` enum('Public Internet', 'Wireless Access', 'Website Sessions') NOT NULL, `Total` int UNSIGNED NOT NULL)";
 
 #Reference Questions & Assistance
-$patronassistance_table = "CREATE TABLE `SRPatronAssistance` (`AssistanceCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'), `Year` YEAR, `AssistanceType` enum('Reference', 'Tutorial'), `Total` smallint UNSIGNED)";
+$patronassistance_table = "CREATE TABLE `SRPatronAssistance` (`AssistanceCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `AssistanceType` enum('Reference', 'Tutorial') NOT NULL, `Total` smallint UNSIGNED NOT NULL)";
 
 ##State Report Tables
 #Sections Table
-$report_sections = "CREATE TABLE `SRSections` (`SectionID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SectionDescription` varchar(75))";
+$report_sections = "CREATE TABLE `SRSections` (`SectionID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SectionDescription` varchar(75) NOT NULL)";
 
 #Questions Table
-$report_questions = "CREATE TABLE `SRQuestions` (`QuestionID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SectionID` tinyint UNSIGNED, `Number` varchar(10), `Question` varchar(550), `Source` enum('Direct', 'Query', 'Multiple', 'Calculation'), `Query` text DEFAULT NULL, `Format` enum('Integer', 'Currency', 'Text'), UNIQUE (`SectionID`, `Number`), INDEX section_fk (`SectionID`), FOREIGN KEY (`SectionID`) REFERENCES `SRSections`(`SectionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+$report_questions = "CREATE TABLE `SRQuestions` (`QuestionID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SectionID` tinyint UNSIGNED NOT NULL, `Number` varchar(10) NOT NULL, `Question` varchar(550) NOT NULL, `Source` enum('Direct', 'Query', 'Multiple', 'Calculation') NOT NULL, `Query` text DEFAULT NULL, `Format` enum('Integer', 'Currency', 'Text') NOT NULL, UNIQUE (`SectionID`, `Number`), INDEX section_fk (`SectionID`), FOREIGN KEY (`SectionID`) REFERENCES `SRSections`(`SectionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Sections Data
 $report_sections_prepared_statement = "INSERT INTO SRSections (`SectionID`, `SectionDescription`) VALUES (?, ?)";
@@ -443,5 +443,5 @@ array_push($report_questions_data, array(331, 99, '05', 'External Wi-Fi access a
 array_push($report_questions_data, array(332, 99, '06', 'Staff re-assigned during COVID-19', 'Direct', NULL, 'Text'));
 
 #State Reporting Collected Data
-$report_data = "CREATE TABLE `SRData` (`ReportYear` YEAR, `QuestionID` smallint UNSIGNED, `IntegerData` int UNSIGNED NULL, `CurrencyData` decimal(8,2) NULL, `TextData` text NULL, PRIMARY KEY(`ReportYear`, `QuestionID`), INDEX, srquestion_fk (`QuestionID`) FOREIGN KEY (`QuestionID`) REFERENCES `SRQuestions`(`QuestionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+$report_data = "CREATE TABLE `SRData` (`ReportYear` YEAR NOT NULL, `QuestionID` smallint UNSIGNED NOT NULL, `IntegerData` int UNSIGNED NULL, `CurrencyData` decimal(8,2) NULL, `TextData` text NULL, PRIMARY KEY(`ReportYear`, `QuestionID`), INDEX, srquestion_fk (`QuestionID`) FOREIGN KEY (`QuestionID`) REFERENCES `SRQuestions`(`QuestionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 ?>
