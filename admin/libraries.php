@@ -123,7 +123,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             </form>
             <?php } else if (($_REQUEST['action'] == "modifybranch") && (isset($_REQUEST['branchid']))) { 
                 //Get branch information
-                $query = $db->prepare("SELECT `LibraryName`, `Address`, `City`, `Branch`, `FYStart`+0 AS FYStart FROM `LibraryInfo` WHERE `LibraryID` = ?");
+                $query = $db->prepare("SELECT `LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYStart`+0 AS FYStart FROM `LibraryInfo` WHERE `LibraryID` = ?");
                 $query->bind_param("i", $_REQUEST['branchid']);
                 $query->execute();
                 $query->store_result();
@@ -219,8 +219,8 @@ function showList($db) {
             <?php while ($library = $result->fetch_assoc()) { ?>
                 <tr>
                     <td><?php echo $library['LibraryName']; ?></td>
-                    <td><?php echo $library['Address']; ?></td>
-                    <td><?php echo $library['City']; ?></td>
+                    <td><?php echo $library['LibraryAddress']; ?></td>
+                    <td><?php echo $library['LibraryCity']; ?></td>
                     <td><?php if ($library['Branch'] == 0) {
                         echo "Main";
                     } else {
@@ -249,7 +249,7 @@ function showList($db) {
     <?php } catch (mysqli_sql_exception $e) {
             
         echo "<div class=\"alert alert-danger\" type=\"alert\">Error</div>";
-        echo "<p>Error retrieving list of users: " . $e->getMessage();
+        echo "<p>Error retrieving list of libraries: " . $e->getMessage();
         echo "</p></body></html>";
         $db->close();
         exit();  
