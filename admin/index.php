@@ -59,7 +59,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     <div class="card-body">
                         <h5 class="card-title">Users</h5>
                         <p class="card-text">Add, remove, and manage users.</p>
-                        <a class="card-link" href="users.php?add=1">Add a New User</a>
+                        <a class="card-link" href="users.php?action=add">Add a New User</a>
                         <a class="card-link" href="users.php">Manage Users</a>
                     </div>
                 </div>
@@ -69,6 +69,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     <div class="card-body">
                         <h5 class="card-title">Library Branches</h5>
                         <p class="card-text">Add or remove library branches.</p>
+                        <a class="card-link" href="libraries.php?action=add">Add a Branch</a>
                         <a class="card-link" href="libraries.php">Manage Branches</a>
                     </div>
                 </div>

@@ -121,10 +121,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <input type="hidden" name="formtype" value="newbranch">
                 <button class="btn btn-primary" type="submit">Submit Library Branch Information</button>
             </form>
-            <?php } else if (($_REQUEST['action'] == "modify") && (isset($_REQUEST['branchid']))) { 
+            <?php } else if (($_REQUEST['action'] == "modify") && (isset($_REQUEST['libraryid']))) { 
                 //Get branch information
                 $query = $db->prepare("SELECT `LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`+0 AS FYMonth FROM `LibraryInfo` WHERE `LibraryID` = ?");
-                $query->bind_param("i", $_REQUEST['branchid']);
+                $query->bind_param("i", $_REQUEST['libraryid']);
                 $query->execute();
                 $result = $query->get_result();
                 $libraryinfo = $result->fetch_assoc();
@@ -142,22 +142,22 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <div id="badcity" class="alert alert-danger" type="alert" style="display:none;">No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.</div>
                 <label for="city" class="form-label">City</label>
                 <input type="text" id="city" name="city" class="form-control" value="<?php echo $libraryinfo['LibraryCity']; ?>">
-                <?php if ($branch == 0) { 
+                <?php if ($libraryinfo['Branch'] == 0) { 
                     //Only main library has fiscal year adjustable ?>
                 <label for="fymonth" class="form-label">Fiscal Year Start</label>
                 <select class="custom-select" id="fymonth" name="fymonth" aria-describedby="fymonthtips">
-                    <option value="1" <?php if ($fymonth == 1) { echo " selected"; } ?>>January</option>
-                    <option value="2" <?php if ($fymonth == 2) { echo " selected"; } ?>>February</option>
-                    <option value="3" <?php if ($fymonth == 3) { echo " selected"; } ?>>March</option>
-                    <option value="4" <?php if ($fymonth == 4) { echo " selected"; } ?>>April</option>
-                    <option value="5" <?php if ($fymonth == 5) { echo " selected"; } ?>>May</option>
-                    <option value="6" <?php if ($fymonth == 6) { echo " selected"; } ?>>June</option>
-                    <option value="7" <?php if ($fymonth == 7) { echo " selected"; } ?>>July</option>
-                    <option value="8" <?php if ($fymonth == 8) { echo " selected"; } ?>>August</option>
-                    <option value="9" <?php if ($fymonth == 9) { echo " selected"; } ?>>September</option>
-                    <option value="10" <?php if ($fymonth == 10) { echo " selected"; } ?>>October</option>
-                    <option value="11" <?php if ($fymonth == 11) { echo " selected"; } ?>>November</option>
-                    <option value="12" <?php if ($fymonth == 12) { echo " selected"; } ?>>December</option>
+                    <option value="1" <?php if ($libraryinfo['FYMonth'] == 1) { echo " selected"; } ?>>January</option>
+                    <option value="2" <?php if ($libraryinfo['FYMonth'] == 2) { echo " selected"; } ?>>February</option>
+                    <option value="3" <?php if ($libraryinfo['FYMonth'] == 3) { echo " selected"; } ?>>March</option>
+                    <option value="4" <?php if ($libraryinfo['FYMonth'] == 4) { echo " selected"; } ?>>April</option>
+                    <option value="5" <?php if ($libraryinfo['FYMonth'] == 5) { echo " selected"; } ?>>May</option>
+                    <option value="6" <?php if ($libraryinfo['FYMonth'] == 6) { echo " selected"; } ?>>June</option>
+                    <option value="7" <?php if ($libraryinfo['FYMonth'] == 7) { echo " selected"; } ?>>July</option>
+                    <option value="8" <?php if ($libraryinfo['FYMonth'] == 8) { echo " selected"; } ?>>August</option>
+                    <option value="9" <?php if ($libraryinfo['FYMonth'] == 9) { echo " selected"; } ?>>September</option>
+                    <option value="10" <?php if ($libraryinfo['FYMonth'] == 10) { echo " selected"; } ?>>October</option>
+                    <option value="11" <?php if ($libraryinfo['FYMonth'] == 11) { echo " selected"; } ?>>November</option>
+                    <option value="12" <?php if ($libraryinfo['FYMonth'] == 12) { echo " selected"; } ?>>December</option>
                 </select>
                 <div id="fymonthtips" class="form-text">
                     Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
@@ -244,6 +244,7 @@ function showList($db) {
             <?php }  ?>
             </tbody>
         </table>
+        <p><a class="btn btn-primary" href="libraries.php?action=add">Add a Library Branch</a></p>
 
     <?php } catch (mysqli_sql_exception $e) {
             

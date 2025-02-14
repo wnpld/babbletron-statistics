@@ -398,7 +398,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     <?php }  ?>
                     </tbody>
                 </table>
-
+                <p><a class="btn btn-primary" href="users.php?action=add">Add a New User</a></p>
 
             <?php } catch (mysqli_sql_exception $e) {
                 
