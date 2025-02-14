@@ -52,13 +52,13 @@ if (isset($_REQUEST['formtype'])) {
         }
     } else if ($_REQUEST['formtype'] == "mainlibrary") {
         #New main library
-        $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['fystart'], "new");
+        $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['fymonth'], "new");
 
-        if ($checked == false) {
+        if ($checked != false) {
             //If checked returns an array everything's fine.  If it's false there's an error
             try{
                 $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`) VALUES (?, ?, ?, 0, ?)');
-                $query->bind_param('sssi', $checked['libraryname'], $checked['address'], $checked['city'], $checked['fystart']);
+                $query->bind_param('sssi', $checked['libraryname'], $checked['address'], $checked['city'], $checked['fymonth']);
                 $query->execute();
             } catch (mysqli_sql_exception $e) {
                 echo "<html><head><title>Error</title></head><body>";
@@ -105,7 +105,7 @@ if (isset($_REQUEST['formtype'])) {
                 //A return of false means that there was an error
                 try {
                     $query = $db->prepare("INSERT INTO `Users` (`UserName`, `LastName`, `FirstName`, `Password`, `Salt`, `UserRole`) VALUES (?, ?, ?, UNHEX(?), ?, ?)");
-                    $query->bind_param("sssss", $checked['UserName'], $checked['LastName'], $checked['FirstName'], $checked['Password'], $checked['Salt'], $role);
+                    $query->bind_param("ssssss", $checked['UserName'], $checked['LastName'], $checked['FirstName'], $checked['Password'], $checked['Salt'], $role);
                     $query->execute();
                 } catch (mysqli_sql_exception $e) {
                     echo "<html><head><title>Error</title></head><body>";
@@ -208,7 +208,7 @@ if (isset($_REQUEST['formtype'])) {
                 }
             }
 
-        } else if ($_REQUEST['formtype'] == "newbrach") {
+        } else if ($_REQUEST['formtype'] == "newbranch") {
             #New branch library
             $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], null, "new");
 
@@ -236,27 +236,25 @@ if (isset($_REQUEST['formtype'])) {
             }
         } else if ($_REQUEST['formtype'] == "modifybranch") {
             #Modify branch/main library
-            $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['fystart'], "old");
+            $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['fymonth'], "old");
 
             if ($checked != false) {
                 //If checked returns false something failed
                 if (isset($_REQUEST['libraryid'])) {
                     $params = array();
                     $paramtypes = "";
-                    $count = 0;
                     $update_sql = "UPDATE LibraryInfo SET ";
                     foreach ($checked as $field => $value) {
-                        if ($count > 0) {
+                        if (strlen($paramtypes) > 0) {
                             $update_sql .= ", ";
                         }
                         $update_sql .= "`$field` = ?";
                         array_push($params, $value);
-                        if ($field == "fystart") {
+                        if ($field == "fymonth") {
                             $paramtypes .= "i";
                         } else {
                             $paramtypes .= "s";
                         }
-                        $count++;
                     }
                     try{
                         $query = $db->prepare($update_sql);
@@ -350,7 +348,7 @@ function userchecks($username, $firstname, $lastname, $pwhash, $hashalgo, $salt,
     }
 
     if (isset($firstname)) {
-        preg_match('/^[A-Za-z][A-Za-z \-\'.]{1,48}[A-Za-z.]$/', $firstname, $matches);
+        preg_match('/^[A-Za-z][A-Za-z \-\'.]{0,48}[A-Za-z.]$/', $firstname, $matches);
         if ($matches[0]) {
             $checked_fn = $firstname;
             if ($status == "old") {
@@ -366,7 +364,7 @@ function userchecks($username, $firstname, $lastname, $pwhash, $hashalgo, $salt,
     }
 
     if (isset($lastname)) {
-        preg_match('/^[A-Za-z][A-Za-z \-\'.]{1,48}[A-Za-z.]$/', $lastname, $matches);
+        preg_match('/^[A-Za-z][A-Za-z \-\'.]{0,48}[A-Za-z.]$/', $lastname, $matches);
         if ($matches[0]) {
             $checked_ln = $_REQUEST['lastname'];
             if ($status == "old") {
@@ -421,7 +419,7 @@ function userchecks($username, $firstname, $lastname, $pwhash, $hashalgo, $salt,
     }
 }
 
-function branchchecks($libraryname, $address, $city, $fystart, $status) {
+function branchchecks($libraryname, $address, $city, $fymonth, $status) {
     $error = false;
     $changed = array();
     if (isset($libraryname)) {
@@ -429,7 +427,7 @@ function branchchecks($libraryname, $address, $city, $fystart, $status) {
         if ($matches[0]) {
             $checked_ln = $libraryname;
             if ($status == "old") {
-                $changed['libraryname'] = $checked_ln;
+                $changed['LibraryName'] = $checked_ln;
             }
         } else {
             $error = true;
@@ -445,7 +443,7 @@ function branchchecks($libraryname, $address, $city, $fystart, $status) {
         if ($matches[0]) {
             $checked_ad = $address;
             if ($status == "old") {
-                $changed['address'] = $checked_ad;
+                $changed['LibraryAddress'] = $checked_ad;
             }
         } else {
             $error = true;
@@ -461,7 +459,7 @@ function branchchecks($libraryname, $address, $city, $fystart, $status) {
         if ($matches[0]) {
             $checked_cy = $city;
             if ($status == "old") {
-                $changed['city'] = $checked_cy;
+                $changed['LibraryCity'] = $checked_cy;
             }
         } else {
             $error = true;
@@ -472,12 +470,12 @@ function branchchecks($libraryname, $address, $city, $fystart, $status) {
         }
     }
 
-    if (isset($fystart)) {
-        preg_match('/^([1-9]|1[0-2])$/', $fystart, $matches);
+    if (isset($fymonth)) {
+        preg_match('/^([1-9]|1[0-2])$/', $fymonth, $matches);
         if ($matches[0]) {
-            $checked_fys = $fystart;
+            $checked_fym = $fymonth;
             if ($status == "old") {
-                $changed['fystart'] = $checked_fys;
+                $changed['FYMonth'] = $checked_fym;
             }
         } else {
             $error = true;
@@ -488,10 +486,10 @@ function branchchecks($libraryname, $address, $city, $fystart, $status) {
         return false;
     } else {
         if ($status == "new") {
-            if (isset($checked_fys)) {
-                $values = array("libraryname" => $checked_ln, "address" => $checked_ad, "city" => $checked_cy, "fystart" => $checked_fys);
+            if (isset($checked_fym)) {
+                $values = array("LibraryName" => $checked_ln, "LibraryAddress" => $checked_ad, "LibraryCity" => $checked_cy, "FYMonth" => $checked_fym);
             } else {
-                $values = array("libraryname" => $checked_ln, "address" => $checked_ad, "city" => $checked_cy);
+                $values = array("LibraryName" => $checked_ln, "LibraryAddress" => $checked_ad, "LibraryCity" => $checked_cy);
             }
             return $values;
         } else {

@@ -104,7 +104,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     <main>
         <div class="container-fluid">
             <?php if (isset($_REQUEST['action'])) {
-                if ($_REQUEST['action'] == "newbranch") { ?>
+                if ($_REQUEST['action'] == "add") { ?>
         <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
                 <div alert="alert alert-danger" type="alert" id="badln" style="display:none;">The provided library name was too long, too short, or contained unusual characters.</div>
                 <label for="libraryname" class="form-label">Library Name</label>

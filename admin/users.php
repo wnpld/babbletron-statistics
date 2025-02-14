@@ -45,14 +45,14 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 document.getElementById('badun').style.display = "none";
             }
 
-            if (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(firstname) === null) {
+            if (/^[A-Za-z][A-Za-z \-'.]{0,48}[A-Za-z.]$/.exec(firstname) === null) {
                 success = false;
                 document.getElementById('badfn').style.display = "block";
             } else {
                 document.getElementById('badfn').style.display = "none";
             }
 
-            if (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(lastname) === null) {
+            if (/^[A-Za-z][A-Za-z \-'.]{0,48}[A-Za-z.]$/.exec(lastname) === null) {
                 success = false;
                 document.getElementById('badln').style.display = "block";
             } else {
@@ -123,14 +123,14 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 document.getElementById('badun').style.display = "none";
             }
 
-            if ((firstname) && (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(firstname)) === null) {
+            if ((firstname) && (/^[A-Za-z][A-Za-z \-'.]{0,48}[A-Za-z.]$/.exec(firstname)) === null) {
                 success = false;
                 document.getElementById('badfn').style.display = "block";
             } else {
                 document.getElementById('badfn').style.display = "none";
             }
 
-            if ((lastname) && (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(lastname)) === null) {
+            if ((lastname) && (/^[A-Za-z][A-Za-z \-'.]{0,48}[A-Za-z.]$/.exec(lastname)) === null) {
                 success = false;
                 document.getElementById('badln').style.display = "block";
             } else {
@@ -365,7 +365,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             } else if (isset($_REQUEST['userdeleted'])) { ?>
                     <div class="alert alert-success" type="alert">User successfully deleted</div>
             <?php } 
-             } 
+
             //Get a list of current users
             
             try {
@@ -407,14 +407,15 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 echo "</p></body></html>";
                 $db->close();
                 exit();  
-            } ?>
-            
+            }
+         } ?>
         </div>
     </main>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
 <?php 
+            
 } else {
     #Redirect the user to the login page
     header("Location: $protocol://$server$webdir/login.php?destination=admin_index");

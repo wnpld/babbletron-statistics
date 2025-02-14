@@ -349,14 +349,14 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     document.getElementById('badun').style.display = "none";
                 }
 
-                if (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(firstname) === null) {
+                if (/^[A-Za-z][A-Za-z \-'.]{0,48}[A-Za-z.]$/.exec(firstname) === null) {
                     success = false;
                     document.getElementById('badfn').style.display = "block";
                 } else {
                     document.getElementById('badfn').style.display = "none";
                 }
 
-                if (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(lastname) === null) {
+                if (/^[A-Za-z][A-Za-z \-'.]{0,48}[A-Za-z.]$/.exec(lastname) === null) {
                     success = false;
                     document.getElementById('badln').style.display = "block";
                 } else {
