@@ -61,7 +61,7 @@ if ($view == 1) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Statistics Server Administration</title>
+    <title>Statistics Server</title>
     <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
   </head>
   <body>

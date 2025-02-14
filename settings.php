@@ -12,57 +12,202 @@ try {
     exit();
 }
 
-# Do a quick test to make sure that the site's been configured since this is the main page
-try {
-    $result = $db->query("SHOW TABLES LIKE 'LibraryInfo'");
-    if ($result->num_rows == 0) {
-        #Site's not configured.  Redirect to configuration page.
-        $db->close();
-        header("Location: $protocol://$server$webdir/admin/configure.php");
-        exit();
-    }
-} catch (mysqli_sql_exception $e) {
-    echo "<html><head><title>Error</title></head><body>";
-    echo "<p>Error checking for LibraryInfo table: ". $e->getMessage();
-    echo "</p></body></html>";
-    $db->close();
-    exit();
-}
+if (isset($_REQUEST['action']) && ($_REQUEST['action'] == "updatesettings")) {
+    if (isset($_REQUEST['UserID']) && isset($_SESSION['UserID']) && ($_REQUEST['UserID'] == $_SESSION['UserID'])) {
+        $fieldlist = array();
+        if (isset($_REQUEST['username'])) {
+            preg_match('/^[A-Za-z0-9]{2,25}$/', $_REQUEST['username'], $matches);
+            if ($matches[0]) {
+                $fieldlist['UserName'] = $matches[0];
+            }
+        }
 
-if ($entryrestriction > 0) {
-    if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
-        if (( $_SESSION['UserRole'] == "Edit") || ($_SESSION['UserRole'] == "Admin")) {
-            $edit = 1;
-            $view = 1;
-        } else if ( $_SESSION['UserRole'] == "View") {
-            $edit = 0;
-            $view = 1;
+        if (isset($_REQUEST['firstname'])) {
+            preg_match('/^[A-Za-z][A-Za-z \-\'.]{2,48}[A-Za-z.]$/', $_REQUEST['firstname'], $matches);
+            if ($matches[0]) {
+                $fieldlist['Firstname'] = $matches[0];
+            }
+        }
+
+        if (isset($_REQUEST['lastname'])) {
+            preg_match('/^[A-Za-z][A-Za-z \-\'.]{2,48}[A-Za-z.]$/', $_REQUEST['lastname'], $matches);
+            if ($matches[0]) {
+                $fieldlist['LastName'] = $matches[0];
+            }
+        }
+
+        if (isset($_REQUEST['pwhash'])) {
+            //Password change
+            if (isset($_REQUEST['hashalgo'])) {
+                if ($_REQUEST['hashalgo'] == 'sha256') {
+                    $hashed = true;
+                    $pwhash = $_REQUEST['pwhash'];
+                } else {
+                    $hashed = false;
+                }
+            } else {
+                $hashed = false;
+            }
+            if ($hashed == false) {
+                //Password hasn't had first round of hashing
+                $pwhash = hash('sha256', $_REQUEST['pwhash']);
+            }
+            //Now we need the salt
+            try {
+                $query = $db->prepare("SELECT Salt FROM Users WHERE UserID = ?");
+                $query->bind_param('i', $_SESSION['UserID']);
+                $query->execute();
+                $query->store_result();
+                $query->bind_result($salt);
+                //Add the salt to the hash
+                $pwhash .= $salt;
+                $fieldlist['Password'] = hash('sha256', $pwhash);
+            } catch (mysqli_sql_exception $e) {
+                echo "<html><head><title>Error</title></head><body>";
+                echo "<p>Error getting password salt for existing user: " . $e->getMessage();
+                echo "</p></body></html>";
+                $db->close();
+                exit(); 
+            }
+        }
+
+        $update_sql = "UPDATE `Users` SET ";
+        $fieldtypes = "";
+        $values = array();
+        foreach ($fieldlist AS $field => $value) {
+            if (strlen($fieldtypes) > 0) {
+                $update_sql .= ", ";
+            }
+            $update_sql .= "`$field` = ";
+            array_push($values, $value);
+            $fieldtypes .= "s";
+            if ($field == "Password") {
+                $update_sql .= "UNHEX(?)";
+            } else {
+                $update_sql .= "?";
+            }
+        }
+        $update_sql .= " WHERE `UserID` = ?";
+        $fieldtypes .= "i";
+        array_push($values, $_SESSION['UserID']);
+        try {
+            $query = $db->prepare($update_sql);
+            $query->bind_param($fieldtypes, ...$values);
+            $query->execute();
+            $query->close();
+            $db->close();
+            header("Location: $protocol://$server$webdir/settings.php?updated=true");
+            exit();
+        } catch (mysqli_sql_exception $e) {
+            echo "<html><head><title>Error</title></head><body>";
+            echo "<p>Error updating user settings: " . $e->getMessage();
+            echo "</p></body></html>";
+            $db->close();
+            exit(); 
+        }
+    } else {
+        //Something weird has happened (either a needed variable isn't set
+        //or the user is trying to edit a different user's profile)
+        $db->close();
+        if (isset($_REQUEST['UserID'])) {
+            //Redirect back to this page for the user
+            header("Location: $protocol://$server$webdir/settings.php");
+            exit();
         } else {
-            # This shouldn't happen, but I want to catch anything anomalous
-            header("Location: $protocol://$server$webdir/login.php?nomatch=privilege");
+            //Redirect to the login page
+            header("Location: $protocol://$server$webdir/login.php");
             exit();
         }
-    } else if ($entryrestriction == 1) {
-        $edit = 0;
-        $view = 1;
-    } else {
-        #Activity is completely restricted so there's no reason to stay here
-        header("Location: $protocol://$server$webdir/login.php");
     }
-} else {
-    $edit = 1;
-    $view = 1;
-} 
-if ($view == 1) {
-    #We'll check for edit later   
+} else if (isset($_SESSION['UserID'])) {
+
 ?>
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Statistics Server Administration</title>
+    <title>Statistics Server - User Settings</title>
     <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" language="javascript">
+        async function validateForm(event) {
+            //For modifying only check fields with values
+            //Fields left empty will be unchanged
+            var success = true;
+            var username = document.getElementById('username').value;
+            var firstname = document.getElementById('firstname').value;
+            var lastname = document.getElementById('lastname').value;
+            var password = document.getElementById('password').value;
+            var passwordcheck = document.getElementById('passwordcheck').value;
+            if ((username) && (/^[A-Za-z0-9]{2,25}$/.exec(username) === null)) {
+                success = false;
+                document.getElementById('badun').style.display = "block";
+            } else {
+                document.getElementById('badun').style.display = "none";
+            }
+
+            if ((firstname) && (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(firstname)) === null) {
+                success = false;
+                document.getElementById('badfn').style.display = "block";
+            } else {
+                document.getElementById('badfn').style.display = "none";
+            }
+
+            if ((lastname) && (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(lastname)) === null) {
+                success = false;
+                document.getElementById('badln').style.display = "block";
+            } else {
+                document.getElementById('badln').style.display = "none";
+            }
+
+            if ((password) && (password.length < 5)) {
+                success = false;
+                document.getElementById('badpw').style.display = "block";
+            } else {
+                document.getElementById('badpw').style.display = "none";
+            }
+                
+            if (passwordcheck != password) {
+                success = false;
+                document.getElementById('badpc').style.display = "block";
+            } else {
+                document.getElementById('badpw').style.display = "none";
+            }
+
+            if (!success) {
+                event.preventDefault();
+                return false;
+            } else {
+                if (password) {
+                    if (window.location.protocol === "https:") {
+                        //The hash gets hashed again with salt on the server side
+                        //but this obscures the password more
+
+                        //Encode password
+                        const encodedpw = new TextEncoder().encode(password);
+
+                      //Hash the password
+                        const hashBuffer = await crypto.subtle.digest('SHA-256', encodedpw);
+
+                        //Convert ArrayBuffer into an Array
+                        const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+                        //Convert bytes into hex
+                        const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+
+                        //Write hashed password to field in form
+                        document.getElementById('pwhash').value = hashHex;
+                    } else {
+                        document.getElementById('pwhash').value = password;
+                        document.getElementById('hashalgo').value = "none";
+                    }
+                }
+
+                //submit form with hashed password
+                return true;
+            }
+        }
+     </script>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
@@ -114,7 +259,48 @@ if ($view == 1) {
         </div>
     </nav>
     <main>
-
+        <h1>User Settings</h1>
+        <?php
+            if (isset($_REQUEST['updated'])) {
+                if ($_REQUEST['updated'] == "true") { ?>
+                    <div class="alert alert-success" type="alert">User settings successfully updated.</div>
+                <?php }
+            }
+            //Get user's information to display here
+            $query = $db->prepare("SELECT `UserName`, `FirstName`, `LastName` FROM `Users` WHERE `UserID` = ?");
+            $query->bind_param("i", $_SESSION['UserID']);
+            $query->execute();
+            $query->store_result();
+            $query->bind_result($username, $firstname, $lastname); 
+        ?>
+        <form action="<?php echo "$protocol://$server$webdir/settings.php" ?>" method="POST" onsubmit="validateForm(event)">
+            <div class="alert alert-danger" type="alert" id="badun" style="display:none;">The provided username contains non-alphanumeric characters, is shorter than 2 characters or is more than 25 characters.</div>
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips" value="<?php echo $username; ?>">
+            <div id="usernametips" class="form-text">
+                Username is not case sensitive.  Please use only alpha-numeric characters and no spaces.
+            </div>
+            <div id="badfn" class="alert alert-danger" type="alert" style="display:none;">The provided first name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
+            <label for="firstname" class="form-label">First Name</label>
+            <input type="text" id="firstname" name="firstname" class="form-control" value="<?php echo $firstname; ?>">
+            <div id="badln" class="alert alert-danger" type="alert" style="display:none;">The provided last name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
+            <label for="lastname" class="form-label">Last Name</label>
+            <input type="text" id="lastname" name="lastname" class="form-control" value="<?php echo $lastname; ?>">
+            <div id="badpw" class="alert alert-danger" type="alert" style="display:none;">The password cannot be extremely short or blank.</div>
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" class="form-control" aria-describedby="passwordtips">
+            <div id="passwordtips" class="form-text">
+                All characters are accepted.  Bare minimum is five characters although you should make this a good password (10+ characters) if this site is going to be publicly accessible, though.
+            </div>
+            <div id="badpc" class="alert alert-danger" type="alert" style="display:none;">The second copy of the password did not match the first.</div>
+            <label for="passwordcheck" class="form-label">Password (again)</label>
+            <input type="password" id="passwordcheck" class="form-control">
+            <input type="hidden" id="pwhash" name="pwhash" value="">
+            <input type="hidden" id="hashalgo" name="hashalgo" value="sha256">
+            <input type="hidden" name="action" value="updatesettings">
+            <input type="hidden" name="userid" value="<?php echo $_SESSION['UserID']; ?>">
+            <button class="btn btn-primary" type="submit">Submit Changes</button>
+        </form>
     </main>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
   </body>

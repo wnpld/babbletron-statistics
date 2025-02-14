@@ -17,6 +17,44 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Statistics Server Administration</title>
     <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
+    <?php if (isset($_REQUEST['action'])) { ?>
+    <script type="text/javascript" language="javascript">
+            function validateForm(event) {
+                var success = true;
+                var libraryname = document.getElementById('libraryname').value;
+                var address = document.getElementById('address').value;
+                var city = document.getElementById('city').value;
+
+                if (/^[A-Za-z][A-Za-z0-9\- '().,]{3,98}[A-Za-z.]$/.exec(libraryname) === null) {
+                    success = false;
+                    document.getElementById('badln').style.display = "block";
+                } else {
+                    document.getElementById('badln').style.display = "none";
+                }
+
+                if (/^[A-Za-z0-9][A-Za-z0-9 #\'\-.]{4,148}[A-Za-z0-9.]$/.exec(address) === null) {
+                    success = false;
+                    document.getElementById('badad').style.display = "block";
+                } else {
+                    document.getElementById('badad').style.display = "none";
+                }
+
+                if (/^[A-Za-z][A-Za-z \-'.]{1,73}[A-Za-z.]$/.exec(city) === null) {
+                    success = false;
+                    document.getElementById('badcity').style.display = "block";
+                } else {
+                    document.getElementById('badcity').style.display = "none";
+                }
+
+                if (!success) {
+                    event.preventDefault();
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        </script>
+        <?php } ?>
   </head>
   <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
@@ -55,7 +93,76 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     </nav>
     <main>
         <div class="container-fluid">
+            <?php if (isset($_REQUEST['action'])) {
+                if ($_REQUEST['action'] == "newbranch") { ?>
+        <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
+                <div alert="alert alert-danger" type="alert" id="badln" style="display:none;">The provided library name was too long, too short, or contained unusual characters.</div>
+                <label for="libraryname" class="form-label">Library Name</label>
+                <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips">
+                <div id="librarynametips" class="form-text">
+                    This should represent the common way you refer to the branch.  It can be as simple as "Branch Library" or it can be more descriptive.
+                </div>
+                <div id="badad" class="alert alert-danger" type="alert" style="display:none;">No address was provided, it was extremely long or extremely short, or it contained invalid characters.</div>
+                <label for="address" class="form-label">Address</label>
+                <input type="text" id="address" name="address" class="form-control">
+                <div id="badcity" class="alert alert-danger" type="alert" style="display:none;">No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.</div>
+                <label for="city" class="form-label">City</label>
+                <input type="text" id="city" name="city" class="form-control">
+                <input type="hidden" name="formtype" value="newbranch">
+                <button class="btn btn-primary" type="submit">Submit Library Branch Information</button>
+            </form>
+            <?php } else if (($_REQUEST['action'] == "modifybranch") && (isset($_REQUEST['branchid']))) { 
+                //Get branch information
+                $query = $db->prepare("SELECT `LibraryName`, `Address`, `City`, `Branch`, `FYStart`+0 AS FYStart FROM `LibraryInfo` WHERE `LibraryID` = ?");
+                $query->bind_param("i", $_REQUEST['branchid']);
+                $query->execute();
+                $query->store_result();
+                $query->bind_result($libraryname, $address, $city, $branch, $fystart); 
+                ?>
+                <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
+                <div alert="alert alert-danger" type="alert" id="badln" style="display:none;">The provided library name was too long, too short, or contained unusual characters.</div>
+                <label for="libraryname" class="form-label">Library Name</label>
+                <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips" value="<?php echo $libraryname; ?>">
+                <div id="librarynametips" class="form-text">
+                    This should represent the common way you refer to the main library.  It can be as simple as "Main Library" or it can be more descriptive ("Harold Washington Library Center of the Chicago Public Library").
+                </div>
+                <div id="badad" class="alert alert-danger" type="alert" style="display:none;">No address was provided, it was extremely long or extremely short, or it contained invalid characters.</div>
+                <label for="address" class="form-label">Address</label>
+                <input type="text" id="address" name="address" class="form-control" value="<?php echo $address; ?>">
+                <div id="badcity" class="alert alert-danger" type="alert" style="display:none;">No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.</div>
+                <label for="city" class="form-label">City</label>
+                <input type="text" id="city" name="city" class="form-control" value="<?php echo $city; ?>">
+                <?php if ($branch == 0) { 
+                    //Only main library has fiscal year adjustable ?>
+                <label for="fystart" class="form-label">Fiscal Year Start</label>
+                <select class="custom-select" id="fystart" name="fystart" aria-describedby="fystarttips">
+                    <option value="1" <?php if ($fystart == 1) { echo " selected"; } ?>>January</option>
+                    <option value="2" <?php if ($fystart == 2) { echo " selected"; } ?>>February</option>
+                    <option value="3" <?php if ($fystart == 3) { echo " selected"; } ?>>March</option>
+                    <option value="4" <?php if ($fystart == 4) { echo " selected"; } ?>>April</option>
+                    <option value="5" <?php if ($fystart == 5) { echo " selected"; } ?>>May</option>
+                    <option value="6" <?php if ($fystart == 6) { echo " selected"; } ?>>June</option>
+                    <option value="7" <?php if ($fystart == 7) { echo " selected"; } ?>>July</option>
+                    <option value="8" <?php if ($fystart == 8) { echo " selected"; } ?>>August</option>
+                    <option value="9" <?php if ($fystart == 9) { echo " selected"; } ?>>September</option>
+                    <option value="10" <?php if ($fystart == 10) { echo " selected"; } ?>>October</option>
+                    <option value="11" <?php if ($fystart == 11) { echo " selected"; } ?>>November</option>
+                    <option value="12" <?php if ($fystart == 12) { echo " selected"; } ?>>December</option>
+                </select>
+                <div id="fystarttips" class="form-text">
+                    Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
+                </div>
+                <?php } ?>
 
+                <input type="hidden" name="formtype" value="modifybranch">
+                <button class="btn btn-primary" type="submit">Submit Library Branch Changes</button>
+            </form>        
+            <?php } else { 
+                showList($db);
+             } ?>
+        <?php } else { 
+            showList($db);   
+         } ?>
         </div>
     </main>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
@@ -66,5 +173,76 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     #Redirect the user to the login page
     header("Location: $protocol://$server$webdir/login.php?destination=admin_index");
     exit();
+}
+
+function showList($db) {
+    //There are a couple conditions where this could come up
+    //so I'm making it a function
+    //Check for success or error conditions
+    if (isset($_REQUEST['branchmodified'])) {
+        if ($_REQUEST['branchmodified'] == "true") { ?>
+            <div class="alert alert-success" type="alert">Library branch successfully modified</div>
+        <?php } else { ?>
+            <div class="alert alert-danger" type="alert">Library branch modification failed</div>
+        <?php }
+    } else if (isset($_REQUEST['branchadded'])) {
+        if ($_REQUEST['branchadded'] == "true") { ?>
+            <div class="alert alert-success" type="alert">Library branch successfully added</div>
+        <?php } else { ?>
+            <div class="alert alert-danger" type="alert">Unable to add library branch</div>
+       <?php }
+    } else if (isset($_REQUEST['branchdeleted'])) { ?>
+            <div class="alert alert-success" type="alert">Library branch successfully deleted</div>
+    <?php } 
+     
+    //Get a list of library branches
+        
+    try {
+        $result = $db->query("SELECT `LibraryID`, `LibraryName`, `Address`, `City`, `Branch`, `FYStart` FROM `LibraryInfo` ORDER BY `Branch` ASC, LibraryName ASC"); ?>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Library Name</th><th>Address</th><th>City</th><th>Branch</th><th>Fiscal Year Start</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php while ($library = $result->fetch_assoc()) { ?>
+                <tr>
+                    <td><?php echo $library['LibraryName']; ?></td>
+                    <td><?php echo $library['Address']; ?></td>
+                    <td><?php echo $library['City']; ?></td>
+                    <td><?php if ($library['Branch'] == 0) {
+                        echo "Main";
+                    } else {
+                        echo "Branch";
+                    } ?></td>
+                    <td>
+                    <td>
+                        <?php if ($library['Branch'] == 0) {
+                            echo $library['FYStart'];
+                        } else {
+                            echo "-";
+                        } ?>
+                    </td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="libraries.php?action=modify&libraryid=<?php echo $library['LibraryID']; ?>">Modify Branch</a>
+                    <?php if ($library['Branch'] == 1) {
+                        //Cannot delete main library ?>
+                        <a class="btn btn-danger btn-sm" href="process.php?formtype=deletelibrary&libraryid=<?php echo $library['LibraryID']; ?>" onclick="return confirm('Are you sure you wish to delete the <?php echo $library['LibraryName']; ?> branch?')">Delete User</a>
+                    <?php } ?>
+                    </td>
+                </tr>
+            <?php }  ?>
+            </tbody>
+        </table>
+
+    <?php } catch (mysqli_sql_exception $e) {
+            
+        echo "<div class=\"alert alert-danger\" type=\"alert\">Error</div>";
+        echo "<p>Error retrieving list of users: " . $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();  
+    } 
 }
 ?>

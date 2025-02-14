@@ -1,4 +1,5 @@
 <?php
+//This script processes user and library changes
 session_start();
 require "../config.php";
 
@@ -15,160 +16,313 @@ try {
 //Any error will send the user to the login page.
 //Since the inputs are validated in the form, it's assumed that
 //any invalid inputs are the result of foul play.
-if (isset($_REQUEST['administrator'])) {
-    #New administrator login
-    $error = false;
-    if (isset($_REQUEST['username'])) {
-        preg_match('/^[A-Za-z0-9]{2,25}$/', $_REQUEST['username'], $matches);
-        if ($matches[0]) {
-            $username = strtolower($_REQUEST['username']);
-        } else {
-            $error = true;
-        }
-    } else {
-        $error = true;
-    }
+if (isset($_REQUEST['formtype'])) {
+    if ($_REQUEST['formtype'] == "administrator") {
+        #New administrator login
+        $checked = userchecks($_REQUEST['username'], $_REQUEST['firstname'], $_REQUEST['lastname'], $_REQUEST['pwhash'], $_REQUEST['pwalgo'], null, "new"); 
 
-    if (isset($_REQUEST['firstname'])) {
-        preg_match('/^[A-Za-z \-\'.]{2,50}$/', $_REQUEST['firstname'], $matches);
-        if ($matches[0]) {
-            $firstname = $_REQUEST['firstname'];
-        } else {
-            $error = true;
-        }
-    } else {
-        $error = true;
-    }
-
-    if (isset($_REQUEST['lastname'])) {
-        preg_match('/^[A-Za-z \-\'.]{2,50}$/', $_REQUEST['lastname'], $matches);
-        if ($matches[0]) {
-            $lastname = $_REQUEST['lastname'];
-        } else {
-            $error = true;
-        }
-    } else {
-        $error = true;
-    }
-
-    if (isset($_REQUEST['pwhash'])) {
-        if (isset($_REQUEST['hashalgo'])) {
-            $algorithm = $_REQUEST['hashalgo'];
-        } else {
-            //Should have something in it, but 
-            //if there's nothing assume none
-            $algorithm = "none";
-        }
-        //In an http context getting a hash in javascript isn't possible
-        //so it will be hashed twice here: once on its own and then with salt
-        if ($algorithm == "none") {
-            $password = hash('sha256', $_REQUEST['pwhash']);
-        } else {
-            $password = $_REQUEST['pwhash'];
-        }
-        $salt = saltmachine();
-        $password .= $salt;
-        $pwhash = hash('sha256', $password);
-    } else {
-        $error = true;
-    }
-
-    if ($error == false) {
-        //Error being false means everything looks good.  Add the user.
-        try {
-            $query = $db->prepare("INSERT INTO `Users` (`UserName`, `LastName`, `FirstName`, `Password`, `Salt`, `UserRole`) VALUES (?, ?, ?, UNHEX(?), ?, 'Admin')");
-            $query->bind_param("sssss", $username, $lastname, $firstname, $pwhash, $salt);
-            $query->execute();
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error adding user: " . $e->getMessage();
-            echo "</p></body></html>";
+        if ($checked != false) {
+            //Error being false means everything looks good.  Add the user.
+            try {
+                $query = $db->prepare("INSERT INTO `Users` (`UserName`, `LastName`, `FirstName`, `Password`, `Salt`, `UserRole`) VALUES (?, ?, ?, UNHEX(?), ?, 'Admin')");
+                $query->bind_param("sssss", $checked['username'], $checked['lastname'], $checked['firstname'], $checked['password'], $checked['salt']);
+                $query->execute();
+            } catch (mysqli_sql_exception $e) {
+                echo "<html><head><title>Error</title></head><body>";
+                echo "<p>Error adding user: " . $e->getMessage();
+                echo "</p></body></html>";
+                $db->close();
+                exit();
+            }
+            $query->close();
             $db->close();
+            if (isset($_REQUEST["mainlibset"])) {
+                //The "mainlibrary" variable being set means that a library already exists
+                //Somehow the admin(s) had been deleted and needed to be reestablished.
+                header("Location: $protocol://$server$webdir/login.php");
+                exit();
+            } else {
+                header("Location: $protocol://$server$webdir/login.php?destination=nomain");
+                exit();
+            }
+        } else {
+            $db->close();
+            header("Location: $protocol://$server$webdir/index.php");
             exit();
         }
-        $query->close();
-        $db->close();
-        if (isset($_REQUEST["mainlibset"])) {
-            //The "mainlibrary" variable being set means that a library already exists
-            //Somehow the admin(s) had been deleted and needed to be reestablished.
+    } else if ($_REQUEST['formtype'] == "mainlibrary") {
+        #New main library
+        $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['fystart'], "new");
+
+        if ($error == false) {
+            //False error means everything's fine
+            try{
+                $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`) VALUES (?, ?, ?, 0, ?)');
+                $query->bind_param('sssi', $checked['libraryname'], $checked['address'], $checked['city'], $checked['fystart']);
+                $query->execute();
+            } catch (mysqli_sql_exception $e) {
+                echo "<html><head><title>Error</title></head><body>";
+                echo "<p>Error adding library info: " . $e->getMessage();
+                echo "</p></body></html>";
+                $db->close();
+                exit();
+            }
+            $query->close();
+            $db->close();
+            header("Location: $protocol://$server$webdir/admin/index.php");
+            exit();
+        } else {
+            $db->close();
+            header("Location: $protocol://$server$webdir/admin/configure.php?liberror=1");
+            exit();
+        }
+    } else {
+        #This script is also used for creating new users and new library branches
+        #Those operations are handled here after doing a user authentication check
+        if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
+            if (!$_SESSION['UserRole'] == "Admin") {
+                #Send to the main site page
+                header("Location: $protocol://$server$webdir/login.php?nomatch=privilege");
+                exit();
+            }
+        if ($_REQUEST['formtype'] == "newuser") {
+            $checked = userchecks($_REQUEST['username'], $_REQUEST['firstname'], $_REQUEST['lastname'], $_REQUEST['pwhash'], $_REQUEST['pwalgo'], null, "new");
+
+            if (isset($_REQUEST['userrole'])) {
+                preg_match('/^(Admin|Edit|View)$/', $_REQUEST['userrole'], $matches);
+                if ($matches[0]) {
+                    $role = $matches[0];
+                } else {
+                    $role = "View";
+                }
+            } else {
+                #Don't know why this wouldn't be set, but
+                #configure at the least priviledged level
+                $role = "View";
+            }
+
+            if ($checked != false) {
+                //A return of false means that there was an error
+                try {
+                    $query = $db->prepare("INSERT INTO `Users` (`UserName`, `LastName`, `FirstName`, `Password`, `Salt`, `UserRole`) VALUES (?, ?, ?, UNHEX(?), ?, ?)");
+                    $query->bind_param("sssss", $checked['username'], $checked['lastname'], $checked['firstname'], $checked['password'], $checked['salt'], $role);
+                    $query->execute();
+                } catch (mysqli_sql_exception $e) {
+                    echo "<html><head><title>Error</title></head><body>";
+                    echo "<p>Error adding user: " . $e->getMessage();
+                    echo "</p></body></html>";
+                    $db->close();
+                    exit();
+                }
+                $query->close();
+                $db->close();
+                header("Location: $protocol://$server$webdir/admin/users.php?useradded=true");
+                exit();
+            } else {
+                //Bad data submitted.  Send back to index
+                header("Location: $protocol://$server$webdir/admin/users.php?useradded=false");
+                exit();
+            }
+        } else if ($_REQUEST['formtype'] == "modifyuser") {
+            if (isset($_REQUEST['userid'])) {
+                # Get salt from existing user
+                try {
+                    $query = $db->prepare("SELECT `Salt` FROM `Users` WHERE `UserID` = ?");
+                    $query->bind_param('i', $_REQUEST['userid']);
+                    $query->execute();
+                    $query->store_result();
+                    $query->bind_result($result);
+                    if ($query->num_rows == 1) {
+                        $stmt->fetch();
+                        $salt = $result;
+                        $query->free_result();
+                        $query->close();
+
+                        $checked = userchecks($_REQUEST['username'], $_REQUEST['firstname'], $_REQUEST['lastname'], $_REQUEST['pwhash'], $_REQUEST['pwalgo'], $salt, "old");
+
+                        if ($checked != false) {
+                            $update_sql = "UPDATE Users SET ";
+                            $params = array();
+                            $paramtypes = "";
+                            $count = 0;
+                            if (isset($_REQUEST['userrole'])) {
+                                preg_match('/^(Admin|Edit|View)$/', $_REQUEST['userrole'], $matches);
+                                if ($matches[0]) {
+                                    $count++;
+                                    $update_sql .= "`UserRole` = ?";
+                                    array_push($params, $matches[0]);
+                                    $paramtypes .= "s";
+                                }
+                            }
+                            foreach ($checked as $field => $value) {
+                                if ($count > 0) {
+                                    $update_sql .= ", ";
+                                }
+                                $update_sql .= "`$field` = ?";
+                                array_push($params, $value);
+                                $paramtypes .= "s";
+                                $count++;
+                            }
+                            $update_sql .= " WHERE `UserID` = ?";
+                            array_push($params, $_REQUEST['userid']);
+                            $paramtypes .= "i";
+
+                            $query = $db->prepare($update_sql);
+                            $query->bind_param($paramtypes, ...$params);
+                            $query->execute();
+                            $query->close();
+                            $db->close();
+                            header("Location: $protocol://$server$webdir/admin/users.php?usermodified=true");
+                            exit();
+                        } else {
+                            header("Location: $protocol://$server$webdir/admin/users.php?usermodified=false");
+                        }
+
+                    } else {
+                        header("Location: $protocol://$server$webdir/admin/users.php?usermodified=false");
+                    }
+                } catch (mysqli_sql_exception $e) {
+                    echo "<html><head><title>Error</title></head><body>";
+                    echo "<p>Error modifying user: " . $e->getMessage();
+                    echo "</p></body></html>";
+                    $db->close();
+                    exit();                
+                }
+            } else {
+                #Can't do an update without a user id
+                header("Location: $protocol://$server$webdir/admin/users.php?usermodified=false");
+                exit();
+            }
+
+        } else if ($_REQUEST['formtype'] == "deleteuser") {
+            if (isset($_REQUEST['userid'])) {
+                try {
+                    $query = $db->prepare("DELETE FROM `Users` WHERE `UserID` = ?");
+                    $query->bind_param("i", $_REQUEST['userid']);
+                    $query->execute();
+                    $query->close();
+                    $db->close();
+                    header("Location: $protocol://$server$webdir/admin/users.php?userdeleted=true");
+                } catch (mysqli_sql_exception $e) {
+                    echo "<html><head><title>Error</title></head><body>";
+                    echo "<p>Error deleting user: " . $e->getMessage();
+                    echo "</p></body></html>";
+                    $db->close();
+                    exit();      
+                }
+            }
+
+        } else if ($_REQUEST['formtype'] == "newbrach") {
+            #New branch library
+            $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], null, "new");
+
+            if ($checked != false) {
+                //If checked returns false something failed
+                try{
+                    $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`) VALUES (?, ?, ?, 1)');
+                    $query->bind_param('sss', $checked['libraryname'], $checked['address'], $checked['city']);
+                    $query->execute();
+                } catch (mysqli_sql_exception $e) {
+                    echo "<html><head><title>Error</title></head><body>";
+                    echo "<p>Error adding branch info: " . $e->getMessage();
+                    echo "</p></body></html>";
+                    $db->close();
+                    exit();
+                }
+                $query->close();
+                $db->close();
+                header("Location: $protocol://$server$webdir/admin/libraries.php?branchadded=true");
+                exit();
+            } else {
+                $db->close();
+                header("Location: $protocol://$server$webdir/admin/libraries.php?branchadded=false");
+                exit();
+            }
+        } else if ($_REQUEST['formtype'] == "modifybranch") {
+            #Modify branch/main library
+            $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['fystart'], "old");
+
+            if ($checked != false) {
+                //If checked returns false something failed
+                if (isset($_REQUEST['libraryid'])) {
+                    $params = array();
+                    $paramtypes = "";
+                    $count = 0;
+                    $update_sql = "UPDATE LibraryInfo SET ";
+                    foreach ($checked as $field => $value) {
+                        if ($count > 0) {
+                            $update_sql .= ", ";
+                        }
+                        $update_sql .= "`$field` = ?";
+                        array_push($params, $value);
+                        if ($field == "fystart") {
+                            $paramtypes .= "i";
+                        } else {
+                            $paramtypes .= "s";
+                        }
+                        $count++;
+                    }
+                    try{
+                        $query = $db->prepare($update_sql);
+                        $query->bind_param($paramtypes, ...$params);
+                        $query->execute();
+                        $query->close();
+                        $db->close();
+                        header("Location: $protocol://$server$webdir/admin/libraries.php?modify=true");
+                        exit();
+                    } catch (mysqli_sql_exception $e) {
+                        echo "<html><head><title>Error</title></head><body>";
+                        echo "<p>Error adding branch info: " . $e->getMessage();
+                        echo "</p></body></html>";
+                        $db->close();
+                        exit();
+                    }
+                } else {
+                    //Can't do anything without a library id
+                    $db->close();
+                    header("Location: $protocol://$server/$webdir/admin/libraries.php?modify=false");
+                    exit();
+                }
+            } else {
+                $db->close();
+                header("Location: $protocol://$server$webdir/admin/libraries.php?branchadded=false");
+                exit();
+            }
+        } else if ($_REQUEST['formtype'] == "deletebranch") {
+            if (isset($_REQUEST['libraryid'])) {
+                try {
+                    //Want to avoid any situation where the main library were to be deleted
+                    $query = $db->prepare("DELETE FROM LibraryInfo WHERE LibraryID = ? AND Branch != 0");
+                    $query->bind_param("i", $_REQUEST['libraryid']);
+                    $query->execute();
+                    $query->close();
+                    $db->close();
+                    header("Location: $protocol://$server$webdir/admin/libraries.php?delete=true");
+                } catch (mysqli_sql_exception $e) {
+                    echo "<html><head><title>Error</title></head><body>";
+                    echo "<p>Error deleting library branch: " . $e->getMessage();
+                    echo "</p></body></html>";
+                    $db->close();
+                    exit();      
+                }
+            }
+        } else {
+            #Don't know what the user wants to do but
+            #They aren't going to be able to do it
+            header("Location: $protocol://$server$webdir/admin/index.php");
+            exit();
+        }
+
+        } else {
+            #User isn't logged in and shouldn't be here.  Forward to login page
             header("Location: $protocol://$server$webdir/login.php");
             exit();
-        } else {
-            header("Location: $protocol://$server$webdir/login.php?destination=nomain");
-            exit();
-        }
-    } else {
-        $db->close();
-        header("Location: $protocol://$server$webdir/index.php");
-        exit();
-    }
-} else if (isset($_REQUEST['mainlibrary'])) {
-    #New main library
-    $error = false;
-    if (isset($_REQUEST['libraryname'])) {
-        preg_match('/^[A-Za-z0-9\-\'().,]{4,100}$/', $_REQUEST['libraryname'], $matches);
-        if ($matches[0]) {
-            $libraryname = $_REQUEST['libraryname'];
-        } else {
-            $error = true;
-        }
-    } else {
-        $error = true;
-    }
-
-    if (isset($_REQUEST['address'])) {
-        preg_match('/^[A-Za-z0-9 #\'\-.]{5,150}$/', $_REQUEST['address'], $matches);
-        if ($matches[0]) {
-            $address = $_REQUEST['address'];
-        } else {
-            $error = true;
-        }
-    } else {
-        $error = true;
-    }
-
-    if (isset($_REQUEST['city'])) {
-        preg_match('/^[A-Za-z.\' \-]{2,75}$/', $_REQUEST['city'], $matches);
-        if ($matches[0]) {
-            $city = $_REQUEST['city'];
-        } else {
-            $error = true;
-        }
-    } else {
-        $error = true;
-    }
-
-    if (isset($_REQUEST['fystart'])) {
-        preg_match('/^([1-9]|1[0-2])$/', $_REQUEST['fystart'], $matches);
-        if ($matches[0]) {
-            $fystart = $_REQUEST['fystart'];
-        } else {
-            $error = true;
         }
     }
-
-    if ($error == false) {
-        //False error means everything's fine
-        try{
-            $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`) VALUES (?, ?, ?, 0, ?)');
-            $query->bind_param('ssss', $libraryname, $address, $city, $fystart);
-            $query->execute();
-         } catch (mysqli_sql_exception $e) {
-            echo "<html><head><title>Error</title></head><body>";
-            echo "<p>Error adding library info: " . $e->getMessage();
-            echo "</p></body></html>";
-            $db->close();
-            exit();
-        }
-        $query->close();
-        $db->close();
-        header("Location: $protocol://$server$webdir/admin/index.php");
-        exit();
-    } else {
-        $db->close();
-        header("Location: $protocol://$server$webdir/configure.php?liberror=1");
-        exit();
-    }
+} else {
+    #No formtype variable declared
+    header("Location: $protocol://$server$webdir/index.php");
+    exit();    
 }
 
 function saltmachine() {
@@ -178,5 +332,178 @@ function saltmachine() {
         $randomstring .= $characters[random_int(0, strlen($characters) -1)];
     }
     return $randomstring;
+}
+
+function userchecks($username, $firstname, $lastname, $pwhash, $pwalgo, $salt, $status) {
+    $error = false;
+    $changed = array();
+    if (isset($username)) {
+        preg_match('/^[A-Za-z0-9]{2,25}$/', $username, $matches);
+        if ($matches[0]) {
+            $checked_un = strtolower($username);
+            if ($status == "old") {
+                $changed['username'] = $checked_un;
+            }
+        } else {
+            $error = true;
+        }
+    } else {
+        if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if (isset($firstname)) {
+        preg_match('/^[A-Za-z][A-Za-z \-\'.]{1,48}[A-Za-z.]$/', $firstname, $matches);
+        if ($matches[0]) {
+            $checked_fn = $firstname;
+            if ($status == "old") {
+                $changed['firstname'] = $checked_fn;
+            }
+        } else {
+            $error = true;
+        }
+    } else {
+        if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if (isset($lastname)) {
+        preg_match('/^[A-Za-z][A-Za-z \-\'.]{1,48}[A-Za-z.]$/', $lastname, $matches);
+        if ($matches[0]) {
+            $checked_ln = $_REQUEST['lastname'];
+            if ($status == "old") {
+                $changed['lastname'] = $checked_ln;
+            }
+        } else {
+            $error = true;
+        }
+    } else {
+        if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if (isset($pwhash)) {
+        if (isset($pwalgo)) {
+            $algorithm = $pwalgo;
+        } else {
+            //Should have something in it, but 
+            //if there's nothing assume none
+            $algorithm = "none";
+        }
+        //In an http context getting a hash in javascript isn't possible
+        //so it will be hashed twice here: once on its own and then with salt
+        if ($algorithm == "none") {
+            $password = hash('sha256', $pwhash);
+        } else {
+            $password = $pwhash;
+        }
+        if (!isset($salt)) {
+            $salt = saltmachine();
+        }
+        $password .= $salt;
+        $pwhash = hash('sha256', $password);
+        if ($status == "old") {
+            $changed['pwhash'] = $pwhash;
+        }
+    } else {
+        if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if ($error == true) {
+        return false;
+    } else {
+        if ($status == "new") {
+            $values = array("username" => $checked_un, "firstname" => $checked_fn, "lastname" => $checked_ln, "password" => $password, "salt" => $salt);
+            return $values;
+        } else {
+            return $changed;
+        }
+    }
+}
+
+function branchchecks($libraryname, $address, $city, $fystart, $status) {
+    $error = false;
+    $changed = array();
+    if (isset($libraryname)) {
+        preg_match('/^[A-Za-z][A-Za-z0-9 \-\'().,]{3,98}[A-Za-z().]$/', $libraryname, $matches);
+        if ($matches[0]) {
+            $checked_ln = $libraryname;
+            if ($status == "old") {
+                $changed['libraryname'] = $checked_ln;
+            }
+        } else {
+            $error = true;
+        }
+    } else {
+        if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if (isset($address)) {
+        preg_match('/^[A-Za-z0-9][A-Za-z0-9 #\'\-.]{4,148}[A-Za-z0-9#.]$/', $address, $matches);
+        if ($matches[0]) {
+            $checked_ad = $address;
+            if ($status == "old") {
+                $changed['address'] = $checked_ad;
+            }
+        } else {
+            $error = true;
+        }
+    } else {
+        if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if (isset($city)) {
+        preg_match('/^[A-Za-z][A-Za-z.\' \-]{1,73}[A-Za-z.]$/', $city, $matches);
+        if ($matches[0]) {
+            $checked_cy = $city;
+            if ($status == "old") {
+                $changed['city'] = $checked_cy;
+            }
+        } else {
+            $error = true;
+        }
+    } else {
+        if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if (isset($fystart)) {
+        preg_match('/^([1-9]|1[0-2])$/', $fystart, $matches);
+        if ($matches[0]) {
+            $checked_fys = $fystart;
+            if ($status == "old") {
+                $changed['fystart'] = $checked_fys;
+            }
+        } else {
+            $error = true;
+        }
+    }
+
+    if ($error == true) {
+        return false;
+    } else {
+        if ($status == "new") {
+            if (isset($checked_fys)) {
+                $values = array("libraryname" => $checked_ln, "address" => $checked_ad, "city" => $checked_cy, "fystart" => $checked_fys);
+            } else {
+                $values = array("libraryname" => $checked_ln, "address" => $checked_ad, "city" => $checked_cy);
+            }
+            return $values;
+        } else {
+            return $changed;
+        }
+
+    }
+
 }
 ?>

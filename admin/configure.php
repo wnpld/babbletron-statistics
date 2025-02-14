@@ -349,14 +349,14 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     document.getElementById('badun').style.display = "none";
                 }
 
-                if (/^[A-Za-z \-'.]{3,50}$/.exec(firstname) === null) {
+                if (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(firstname) === null) {
                     success = false;
                     document.getElementById('badfn').style.display = "block";
                 } else {
                     document.getElementById('badfn').style.display = "none";
                 }
 
-                if (/^[A-Za-z \-'.]{3,50}$/.exec(lastname) === null) {
+                if (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(lastname) === null) {
                     success = false;
                     document.getElementById('badln').style.display = "block";
                 } else {
@@ -439,7 +439,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <input type="password" id="passwordcheck" class="form-control">
                 <input type="hidden" id="pwhash" name="pwhash" value="">
                 <input type="hidden" id="hashalgo" name="hashalgo" value="sha256">
-                <input type="hidden" name="administrator" value="1">
+                <input type="hidden" name="formtype" value="administrator">
                 <?php if ($mainlibset) { ?>
                     <input type="hidden" name="mainlibset" value="1">
                 <?php } ?>
@@ -461,21 +461,21 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 var address = document.getElementById('address').value;
                 var city = document.getElementById('city').value;
 
-                if (/^[A-Za-z0-9\- '().,]{4,100}$/.exec(libraryname) === null) {
+                if (/^[A-Za-z][A-Za-z0-9\- '().,]{3,98}[A-Za-z.]$/.exec(libraryname) === null) {
                     success = false;
                     document.getElementById('badln').style.display = "block";
                 } else {
                     document.getElementById('badln').style.display = "none";
                 }
 
-                if (/^[A-Za-z0-9 #\'\-.]{5,150}$/.exec(address) === null) {
+                if (/^[A-Za-z0-9][A-Za-z0-9 #\'\-.]{4,148}[A-Za-z0-9.]$/.exec(address) === null) {
                     success = false;
                     document.getElementById('badad').style.display = "block";
                 } else {
                     document.getElementById('badad').style.display = "none";
                 }
 
-                if (/^[A-Za-z \-'.]{2,75}$/.exec(city) === null) {
+                if (/^[A-Za-z][A-Za-z \-'.]{1,73}[A-Za-z.]$/.exec(city) === null) {
                     success = false;
                     document.getElementById('badcity').style.display = "block";
                 } else {
@@ -531,7 +531,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
                 </div>
 
-                <input type="hidden" name="mainlibrary" value="1">
+                <input type="hidden" name="formtype" value="mainlibrary">
                 <button class="btn btn-primary" type="submit">Submit Library Information</button>
             </form>
         <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
