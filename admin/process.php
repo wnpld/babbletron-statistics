@@ -256,6 +256,9 @@ if (isset($_REQUEST['formtype'])) {
                             $paramtypes .= "s";
                         }
                     }
+                    $update_sql .= " WHERE LibraryID = ?";
+                    array_push($params, $_REQUEST['libraryid']);
+                    $paramtypes .= "i";
                     try{
                         $query = $db->prepare($update_sql);
                         $query->bind_param($paramtypes, ...$params);
