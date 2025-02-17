@@ -162,11 +162,8 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <div id="fymonthtips" class="form-text">
                     Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
                 </div>
-                <?php } else {
-                    ?>
-                    <input type="hidden" name="fymonth" value="">
-                <? } ?>
-
+                <?php } ?>
+                <input type="hidden" name="libraryid" value="<?php echo $_REQUEST['libraryid']; ?>">
                 <input type="hidden" name="formtype" value="modifybranch">
                 <button class="btn btn-primary" type="submit">Submit Library Branch Changes</button>
             </form>        

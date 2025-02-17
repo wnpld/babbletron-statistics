@@ -279,7 +279,7 @@ if (isset($_REQUEST['formtype'])) {
                 }
             } else {
                 $db->close();
-                header("Location: $protocol://$server$webdir/admin/libraries.php?branchadded=false");
+                header("Location: $protocol://$server$webdir/admin/libraries.php?branchmodified=false");
                 exit();
             }
         } else if ($_REQUEST['formtype'] == "deletebranch") {
@@ -471,14 +471,17 @@ function branchchecks($libraryname, $address, $city, $fymonth, $status) {
     }
 
     if (isset($fymonth)) {
-        preg_match('/^([1-9]|1[0-2])$/', $fymonth, $matches);
-        if ($matches[0]) {
-            $checked_fym = $fymonth;
-            if ($status == "old") {
-                $changed['FYMonth'] = $checked_fym;
+        if ($fymonth != "null") { //Non-main branches don't use this and I'm using "null" in the form to
+                                  //avoid pointless error messages about the field being not used.
+            preg_match('/^([1-9]|1[0-2])$/', $fymonth, $matches);
+            if ($matches[0]) {
+                $checked_fym = $fymonth;
+                if ($status == "old") {
+                    $changed['FYMonth'] = $checked_fym;
+                }
+            } else {
+                $error = true;
             }
-        } else {
-            $error = true;
         }
     }
 
