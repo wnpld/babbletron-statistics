@@ -85,6 +85,21 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
+    #Check for the State Reports Data table.  If there is none, create it.
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'SRData'");
+        if ($result->num_rows == 0) {
+            $db->query($report_data);
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating state report data table: " . $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
+    }
+
+
     #Check to see if there's a defined administrative user
     $result = $db->query("SELECT `Userid` FROM `Users` WHERE `UserRole` = 'Admin'");
     if ($result->num_rows > 0) {
@@ -201,15 +216,15 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Library Physical Collection Table
+    #Library Collection Table
     try {
-        $result = $db->query("SHOW TABLES LIKE 'SRPhysicalCollection'");
+        $result = $db->query("SHOW TABLES LIKE 'SRCollection'");
         if ($result->num_rows == 0) {
-            $db->query($physicalcollection_table);
+            $db->query($collection_table);
         }
     } catch (mysqli_sql_exception $e) {
         echo "<html><head><title>Error</title></head><body>";
-        echo "<p>Error creating SRPhysicalCollection table: ". $e->getMessage();
+        echo "<p>Error creating SRCollection table: ". $e->getMessage();
         echo "</p></body></html>";
         $db->close();
         exit();
@@ -344,37 +359,47 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 var passwordcheck = document.getElementById('passwordcheck').value;
                 if (/^[A-Za-z0-9]{2,25}$/.exec(username) === null) {
                     success = false;
-                    document.getElementById('badun').style.display = "block";
+                    document.getElementById('username').classList.remove('is-valid');
+                    document.getElementById('username').classList.add('is-invalid');
                 } else {
-                    document.getElementById('badun').style.display = "none";
+                    document.getElementById('username').classList.remove('is-invalid');
+                    document.getElementById('username').classList.add('is-valid');
                 }
 
                 if (/^[A-Za-z][A-Za-z \-'.]{0,48}[A-Za-z.]$/.exec(firstname) === null) {
                     success = false;
-                    document.getElementById('badfn').style.display = "block";
+                    document.getElementById('firstname').classList.remove('is-valid');
+                    document.getElementById('firstname').classList.add('is-invalid');
                 } else {
-                    document.getElementById('badfn').style.display = "none";
+                    document.getElementById('firstname').classList.remove('is-invalid');
+                    document.getElementById('firstname').classList.add('is-valid');
                 }
 
                 if (/^[A-Za-z][A-Za-z \-'.]{0,48}[A-Za-z.]$/.exec(lastname) === null) {
                     success = false;
-                    document.getElementById('badln').style.display = "block";
+                    document.getElementById('lastname').classList.remove('is-valid');
+                    document.getElementById('lastname').classList.add('is-invalid');
                 } else {
-                    document.getElementById('badln').style.display = "none";
+                    document.getElementById('lastname').classList.remove('is-invalid');
+                    document.getElementById('lastname').classList.add('is-valid');
                 }
 
                 if (password.length < 5) {
                     success = false;
-                    document.getElementById('badpw').style.display = "block";
+                    document.getElementById('password').classList.remove('is-valid');
+                    document.getElementById('password').classList.add('is-invalid');
                 } else {
-                    document.getElementById('badpw').style.display = "none";
+                    document.getElementById('password').classList.remove('is-invalid');
+                    document.getElementById('password').classList.add('is-valid');
                 }
                 
                 if (passwordcheck != password) {
                     success = false;
-                    document.getElementById('badpc').style.display = "block";
+                    document.getElementById('passwordcheck').classList.remove('is-valid');
+                    document.getElementById('passwordcheck').classList.add('is-invalid');
                 } else {
-                    document.getElementById('badpw').style.display = "none";
+                    document.getElementById('passwordcheck').classList.remove('is-invalid');
+                    document.getElementById('passwordcheck').classList.add('is-valid');
                 }
 
                 if (!success) {
@@ -416,27 +441,47 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <h2>Step 1: Configure an Administor Account</h2>
             <p>You need to create one initial administrative account.  After that you can create new accounts from the administrative interface.</p>
             <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
-                <div class="alert alert-danger" type="alert" id="badun" style="display:none;">The provided username contains non-alphanumeric characters, is shorter than 2 characters or is more than 25 characters.</div>
-                <label for="username" class="form-label">Username</label>
-                <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips">
-                <div id="usernametips" class="form-text">
-                    Username is not case sensitive.  Please use only alpha-numeric characters and no spaces.
+                <div class="alert alert-danger" type="alert" id="badun" style="display:none;"></div>
+                <div class="mb-4">
+                    <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips" required>
+                    <div class="invalid-feedback">
+                        The provided username contains non-alphanumeric characters, is shorter than 2 characters or is more than 25 characters.
+                    </div>
+                    <div id="usernametips" class="form-text">
+                        Username is not case sensitive.  Please use only alpha-numeric characters and no spaces.
+                    </div>
                 </div>
-                <div id="badfn" class="alert alert-danger" type="alert" style="display:none;">The provided first name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
-                <label for="firstname" class="form-label">First Name</label>
-                <input type="text" id="firstname" name="firstname" class="form-control">
-                <div id="badln" class="alert alert-danger" type="alert" style="display:none;">The provided last name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
-                <label for="lastname" class="form-label">Last Name</label>
-                <input type="text" id="lastname" name="lastname" class="form-control">
-                <div id="badpw" class="alert alert-danger" type="alert" style="display:none;">The password cannot be extremely short or blank.</div>
-                <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" class="form-control" aria-describedby="passwordtips">
-                <div id="passwordtips" class="form-text">
-                    All characters are accepted.  Bare minimum is five characters although you should make this a good password (10+ characters) if this site is going to be publicly accessible, though.
+                <div class="mb-4">
+                    <label for="firstname" class="form-label">First Name</label>
+                    <input type="text" id="firstname" name="firstname" class="form-control" required>
+                    <div class="invalid-feedback">
+                        The provided first name includes invalid characters, is less than 2 characters, or is over 50 characters.
+                    </div>
                 </div>
-                <div id="badpc" class="alert alert-danger" type="alert" style="display:none;">The second copy of the password did not match the first.</div>
-                <label for="passwordcheck" class="form-label">Password (again)</label>
-                <input type="password" id="passwordcheck" class="form-control">
+                <div class="mb-4">
+                    <label for="lastname" class="form-label">Last Name</label>
+                    <input type="text" id="lastname" name="lastname" class="form-control" required>
+                    <div class="invalid-feedback">
+                        The provided last name includes invalid characters, is less than 2 characters, or is over 50 characters.
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" class="form-control" aria-describedby="passwordtips" required>
+                    <div class="invalid-feedback">
+                        The password cannot be extremely short or blank.
+                    </div>
+                    <div id="passwordtips" class="form-text">
+                        All characters are accepted.  Bare minimum is five characters although you should make this a good password (10+ characters) if this site is going to be publicly accessible, though.
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="passwordcheck" class="form-label">Password (again)</label>
+                    <input type="password" id="passwordcheck" class="form-control" required>
+                    <div class="invalid-feedback">
+                        The second copy of the password did not match the first.
+                    </div>
+                </div>             
                 <input type="hidden" id="pwhash" name="pwhash" value="">
                 <input type="hidden" id="hashalgo" name="hashalgo" value="sha256">
                 <input type="hidden" name="formtype" value="administrator">
@@ -463,23 +508,29 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 
                 if (/^[A-Za-z][A-Za-z0-9\- '().,]{3,98}[A-Za-z.]$/.exec(libraryname) === null) {
                     success = false;
-                    document.getElementById('badln').style.display = "block";
+                    document.getElementById('libraryname').classList.remove('is-valid');
+                    document.getElementById('libraryname').classList.add('is-invalid')
                 } else {
-                    document.getElementById('badln').style.display = "none";
+                    document.getElementById('libraryname').classList.remove('is-invalid');
+                    document.getElementById('libraryname').classList.add('is-valid');
                 }
 
                 if (/^[A-Za-z0-9][A-Za-z0-9 #\'\-.]{4,148}[A-Za-z0-9.]$/.exec(address) === null) {
                     success = false;
-                    document.getElementById('badad').style.display = "block";
+                    document.getElementById('address').classList.remove('is-valid');
+                    document.getElementById('address').classList.add('is-invalid');
                 } else {
-                    document.getElementById('badad').style.display = "none";
+                    document.getElementById('address').classList.remove('is-invalid');
+                    document.getElementById('address').classList.add('is-valid');
                 }
 
                 if (/^[A-Za-z][A-Za-z \-'.]{1,73}[A-Za-z.]$/.exec(city) === null) {
                     success = false;
-                    document.getElementById('badcity').style.display = "block";
+                    document.getElementById('city').classList.remove('is-valid');
+                    document.getElementById('city').classList.add('is-invalid');
                 } else {
-                    document.getElementById('badcity').style.display = "none";
+                    document.getElementById('city').classList.remove('is-invalid');
+                    document.getElementById('city').classList.add('is-valid');
                 }
 
                 if (!success) {
@@ -500,37 +551,50 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <div class="alert alert-danger" type="alert">There was some kind of problem processing the main library's information.</div>
             <?php } ?>
             <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
-                <div alert="alert alert-danger" type="alert" id="badln" style="display:none;">The provided library name was too long, too short, or contained unusual characters.</div>
-                <label for="libraryname" class="form-label">Library Name</label>
-                <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips">
-                <div id="librarynametips" class="form-text">
-                    This should represent the common way you refer to the main library.  It can be as simple as "Main Library" or it can be more descriptive ("Harold Washington Library Center of the Chicago Public Library").
+                <div class="mb-4">
+                    <label for="libraryname" class="form-label">Library Name</label>
+                    <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips" required>
+                    <div class="invalid-feedback">
+                        The provided library name was too long, too short, or contained unusual characters.
+                    </div>
+                    <div id="librarynametips" class="form-text">
+                        This should represent the common way you refer to the main library.  It can be as simple as "Main Library" or it can be more descriptive ("Harold Washington Library Center of the Chicago Public Library").
+                    </div>
                 </div>
-                <div id="badad" class="alert alert-danger" type="alert" style="display:none;">No address was provided, it was extremely long or extremely short, or it contained invalid characters.</div>
-                <label for="address" class="form-label">Address</label>
-                <input type="text" id="address" name="address" class="form-control">
-                <div id="badcity" class="alert alert-danger" type="alert" style="display:none;">No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.</div>
-                <label for="city" class="form-label">City</label>
-                <input type="text" id="city" name="city" class="form-control">
-                <label for="fymonth" class="form-label">Fiscal Year Start</label>
-                <select class="custom-select" id="fymonth" name="fymonth" aria-describedby="fymonthtips">
-                    <option value="1" selected>January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May</option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
-                </select>
-                <div id="fymonthtips" class="form-text">
-                    Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
+                <div class="mb-4">
+                    <label for="address" class="form-label">Address</label>
+                    <input type="text" id="address" name="address" class="form-control" required>
+                    <div class="invalid-feedback">
+                        No address was provided, it was extremely long or extremely short, or it contained invalid characters.
+                    </div>
                 </div>
-
+                <div>
+                    <label for="city" class="form-label">City</label>
+                    <input type="text" id="city" name="city" class="form-control" required>
+                    <div class="invalid-feedback">
+                        No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="fymonth" class="form-label">Fiscal Year Start</label>
+                    <select class="custom-select" id="fymonth" name="fymonth" aria-describedby="fymonthtips">
+                        <option value="1" selected>January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                    <div id="fymonthtips" class="form-text">
+                        Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
+                    </div>
+                </div>
                 <input type="hidden" name="formtype" value="mainlibrary">
                 <button class="btn btn-primary" type="submit">Submit Library Information</button>
             </form>

@@ -142,37 +142,47 @@ if (isset($_REQUEST['action']) && ($_REQUEST['action'] == "updatesettings")) {
             var passwordcheck = document.getElementById('passwordcheck').value;
             if ((username) && (/^[A-Za-z0-9]{2,25}$/.exec(username) === null)) {
                 success = false;
-                document.getElementById('badun').style.display = "block";
+                document.getElementById('password').classList.remove('is-valid');
+                document.getElementById('password').classList.add('is-invalid');
             } else {
-                document.getElementById('badun').style.display = "none";
+                document.getElementById('password').classList.remove('is-invalid');
+                document.getElementById('password').classList.add('is-valid');
             }
 
             if ((firstname) && (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(firstname)) === null) {
                 success = false;
-                document.getElementById('badfn').style.display = "block";
+                document.getElementById('firstname').classList.remove('is-valid');
+                document.getElementById('firstname').classList.add('is-invalid');
             } else {
-                document.getElementById('badfn').style.display = "none";
+                document.getElementById('firstname').classList.remove('is-invalid');
+                document.getElementById('firstname').classList.add('is-valid');
             }
 
             if ((lastname) && (/^[A-Za-z][A-Za-z \-'.]{2,48}[A-Za-z.]$/.exec(lastname)) === null) {
                 success = false;
-                document.getElementById('badln').style.display = "block";
+                document.getElementById('lastname').classList.remove('is-valid');
+                document.getElementById('lastname').classList.add('is-invalid');
             } else {
-                document.getElementById('badln').style.display = "none";
+                document.getElementById('lastname').classList.remove('is-invalid');
+                document.getElementById('lastname').classList.add('is-valid');
             }
 
             if ((password) && (password.length < 5)) {
                 success = false;
-                document.getElementById('badpw').style.display = "block";
+                document.getElementById('password').classList.remove('is-valid');
+                document.getElementById('password').classList.add('is-invalid');
             } else {
-                document.getElementById('badpw').style.display = "none";
+                document.getElementById('password').classList.remove('is-invalid');
+                document.getElementById('password').classList.add('is-valid');
             }
                 
             if (passwordcheck != password) {
                 success = false;
-                document.getElementById('badpc').style.display = "block";
+                document.getElementById('passwordcheck').classList.remove('is-valid');
+                document.getElementById('passwordcheck').classList.add('is-invalid');
             } else {
-                document.getElementById('badpw').style.display = "none";
+                document.getElementById('passwordcheck').classList.remove('is-invalid');
+                document.getElementById('passwordcheck').classList.add('is-valid');
             }
 
             if (!success) {
@@ -276,27 +286,48 @@ if (isset($_REQUEST['action']) && ($_REQUEST['action'] == "updatesettings")) {
             $userinfo = $result->fetch_assoc();
         ?>
         <form action="<?php echo "$protocol://$server$webdir/settings.php" ?>" method="POST" onsubmit="validateForm(event)">
-            <div class="alert alert-danger" type="alert" id="badun" style="display:none;">The provided username contains non-alphanumeric characters, is shorter than 2 characters or is more than 25 characters.</div>
-            <label for="username" class="form-label">Username</label>
-            <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips" value="<?php echo $userinfo['UserName']; ?>">
-            <div id="usernametips" class="form-text">
-                Username is not case sensitive.  Please use only alpha-numeric characters and no spaces.
+            <div class="mb-4">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" aria-describedby="usernametips" value="<?php echo $userinfo['UserName']; ?>" required>
+                <div class="invalid-feedback">
+                    The provided username contains non-alphanumeric characters, is shorter than 2 characters or is more than 25 characters.
+                </div>
+                <div id="usernametips" class="form-text">
+                    Username is not case sensitive.  Please use only alpha-numeric characters and no spaces.
+                </div>
             </div>
-            <div id="badfn" class="alert alert-danger" type="alert" style="display:none;">The provided first name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
-            <label for="firstname" class="form-label">First Name</label>
-            <input type="text" id="firstname" name="firstname" class="form-control" value="<?php echo $userinfo['FirstName']; ?>">
-            <div id="badln" class="alert alert-danger" type="alert" style="display:none;">The provided last name includes invalid characters, is less than 2 characters, or is over 50 characters.</div>
-            <label for="lastname" class="form-label">Last Name</label>
-            <input type="text" id="lastname" name="lastname" class="form-control" value="<?php echo $userinfo['LastName']; ?>">
-            <div id="badpw" class="alert alert-danger" type="alert" style="display:none;">The password cannot be extremely short or blank.</div>
-            <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" class="form-control" aria-describedby="passwordtips">
-            <div id="passwordtips" class="form-text">
-                All characters are accepted.  Bare minimum is five characters although you should make this a good password (10+ characters) if this site is going to be publicly accessible, though.
+            <div class="mb-4">
+                <label for="firstname" class="form-label">First Name</label>
+                <input type="text" id="firstname" name="firstname" class="form-control" value="<?php echo $userinfo['FirstName']; ?>" required>
+                <div class="invalid-feedback">
+                    The provided first name includes invalid characters, is less than 2 characters, or is over 50 characters.
+                </div>
             </div>
-            <div id="badpc" class="alert alert-danger" type="alert" style="display:none;">The second copy of the password did not match the first.</div>
-            <label for="passwordcheck" class="form-label">Password (again)</label>
-            <input type="password" id="passwordcheck" class="form-control">
+            <div class="mb-4">
+                <label for="lastname" class="form-label">Last Name</label>
+                <input type="text" id="lastname" name="lastname" class="form-control" value="<?php echo $userinfo['LastName']; ?>" required>
+                <div class="invalid-feedback">
+                    The provided last name includes invalid characters, is less than 2 characters, or is over 50 characters.
+                </div>
+            </div>
+            <div class="mb-4">
+                <label for="password" class="form-label">Password</labe>
+                <input type="password" id="password" class="form-control" aria-describedby="passwordtips">
+                <div class="invalid-feedback">
+                    The password cannot be extremely short or blank.
+                </div>
+                <div id="passwordtips" class="form-text">
+                    All characters are accepted.  Bare minimum is five characters although you should make this a good password (10+ characters) if this site is going to be publicly accessible, though.
+                </div>
+            </div>
+            <div class="mb-4">
+                <label for="passwordcheck" class="form-label">Password (again)</label>
+                <input type="password" id="passwordcheck" class="form-control">
+                <div class="invalid-feedback">
+                    The second copy of the password did not match the first.
+                </div>
+            </div>
+
             <input type="hidden" id="pwhash" name="pwhash" value="">
             <input type="hidden" id="hashalgo" name="hashalgo" value="sha256">
             <input type="hidden" name="action" value="updatesettings">
