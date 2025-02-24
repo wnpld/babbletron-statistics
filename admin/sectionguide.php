@@ -57,7 +57,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         </div>
     </nav>
     <main>
-        < class="container-fluid">
+        <div class="container-fluid">
         <h1>State Report Questions Section Guide</h1>
         <p>The state report is divided into multiple sections and each section has many numbered questions.  Questions can be identified by combining the section number and the question number joined by a period (e.g. question 18a in section 8 can be uniquely identified as 8.18a).</p>
         <p>The full list of available sections with numbers is as follows:</p>
@@ -138,8 +138,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                                 $query = "DESCRIBE `" . $table . "`";
                                 $result = $db->query($query);
                                 while ($tableinfo = $result->fetch_assoc()) { ?>
+                                <tr>
                                     <td><?php echo $tableinfo['Field']; ?></td>
                                     <td><?php echo $tableinfo['Type']; ?></td>
+                                </tr>
                                 <?php }
                             } catch (mysqli_sql_exception $e) {
                                 echo "<html><head><title>Error</title></head><body>";
@@ -170,7 +172,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                             }
                             ?>
                         </ul>
-                    <? }
+                    <?php }
                 }
             ?>
 

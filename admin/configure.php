@@ -568,7 +568,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                         No address was provided, it was extremely long or extremely short, or it contained invalid characters.
                     </div>
                 </div>
-                <div>
+                <div class="mb-4">
                     <label for="city" class="form-label">City</label>
                     <input type="text" id="city" name="city" class="form-control" required>
                     <div class="invalid-feedback">

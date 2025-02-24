@@ -266,12 +266,12 @@ array_push($report_questions_data, array(154, 10, '03b', 'Please provide an expl
 array_push($report_questions_data, array(155, 10, '04', 'TOTAL Collection Expenditures (10.1 + 10.2 + 10.3)', 'Calculation', '10.01,10.02,10.03', 'Currency'));
 array_push($report_questions_data, array(156, 11, '01', 'All other operating expenditures not included above (supplies, utilities, legal fees, etc.)', 'Query', 'SELECT SUM(ba.`Total` AS Total FROM `SRBudgetAdjustments` ba INNER JOIN `SRBudgetCategories` bc ON ba.`CategoryID` = bc.`CategoryID` WHERE ((bc.`CategoryDescription` = \'Other Operating Expenditures\') OR (bc.`CategoryDescription` = \'Staff Development\')) AND DATE(CONCAT(bc.`Year`, IF(bc.`Month`+0 < 10, \'-0\', \'-\'), bc.`Month`+0, \'-01\')) BETWEEN DATE(\'|startyear|-|startmonth|-01\') AND DATE(\'|endyear|-|startmonth|-01\')', 'Currency'));
 array_push($report_questions_data, array(157, 11, '02', 'TOTAL operating expenditures (9.3 + 10.4 + 11.1)', 'Calculation', '9.03,10.04,11.01', 'Currency'));
-array_push($report_questions_data, array(158, 12, '01a', 'Local Government: Capital income from Bond Sales', 'Query', NULL, 'Currency'));
-array_push($report_questions_data, array(159, 12, '01b', 'Local Government: Other', 'Query', NULL, 'Currency'));
+array_push($report_questions_data, array(158, 12, '01a', 'Local Government: Capital income from Bond Sales', 'Direct', NULL, 'Currency'));
+array_push($report_questions_data, array(159, 12, '01b', 'Local Government: Other', 'Direct', NULL, 'Currency'));
 array_push($report_questions_data, array(160, 12, '01c', 'Total Local Government (12.1a + 12.1b)', 'Calculation', '12.01a,12.01b', 'Currency'));
-array_push($report_questions_data, array(161, 12, '02', 'State Government', 'Query', NULL, 'Currency'));
-array_push($report_questions_data, array(162, 12, '03', 'Federal Government', 'Query', NULL, 'Currency'));
-array_push($report_questions_data, array(163, 12, '04', 'Other Capital Revenue', 'Query', NULL, 'Currency'));
+array_push($report_questions_data, array(161, 12, '02', 'State Government', 'Direct', NULL, 'Currency'));
+array_push($report_questions_data, array(162, 12, '03', 'Federal Government', 'Direct', NULL, 'Currency'));
+array_push($report_questions_data, array(163, 12, '04', 'Other Capital Revenue', 'Direct', NULL, 'Currency'));
 array_push($report_questions_data, array(164, 12, '05', 'If Other, please specify', 'Direct', NULL, 'Text'));
 array_push($report_questions_data, array(165, 12, '06', 'Total Capital Revenue (12.1c + 12.2 + 12.3 + 12.4)', 'Calculation', '12.01c,12.02,12.03,12.04', 'Currency'));
 array_push($report_questions_data, array(166, 12, '07', 'Total Capital Expenditures', 'Query', 'SELECT SUM(ba.`Total` AS Total FROM `SRBudgetAdjustments` ba INNER JOIN `SRBudgetCategories` bc ON ba.`CategoryID` = bc.`CategoryID` WHERE (bc.`CategoryDescription` = \'Capital Expenditures\') AND DATE(CONCAT(bc.`Year`, IF(bc.`Month`+0 < 10, \'-0\', \'-\'), bc.`Month`+0, \'-01\')) BETWEEN DATE(\'|startyear|-|startmonth|-01\') AND DATE(\'|endyear|-|startmonth|-01\')', 'Currency'));
@@ -427,7 +427,7 @@ array_push($report_questions_data, array(315, 22, '02b', 'If YES, what is the do
 array_push($report_questions_data, array(316, 22, '03', 'If NO, why did your library NOT participate in the E-rate program?', 'Direct', NULL, 'Text'));
 array_push($report_questions_data, array(317, 23, '01', 'How much money did your library spend on staff development and training this fiscal year (Round answer to the nearest whole dollar.)', 'Query', 'SELECT SUM(ba.`Total` AS Total FROM `SRBudgetAdjustments` ba INNER JOIN `SRBudgetCategories` bc ON ba.`CategoryID` = bc.`CategoryID` WHERE (bc.`CategoryDescription` = \'Staff Development\') AND DATE(CONCAT(bc.`Year`, IF(bc.`Month`+0 < 10, \'-0\', \'-\'), bc.`Month`+0, \'-01\')) BETWEEN DATE(\'|startyear|-|startmonth|-01\') AND DATE(\'|endyear|-|startmonth|-01\')', 'Currency'));
 array_push($report_questions_data, array(318, 23, '02', 'Does the above amount include travel expenses?', 'Direct', NULL, 'Text'));
-array_push($report_questions_data, array(319, 23, '03', 'How many hours of training did employees receive this year?', 'Query', NULL, 'Integer'));
+array_push($report_questions_data, array(319, 23, '03', 'How many hours of training did employees receive this year?', 'Direct', NULL, 'Integer'));
 array_push($report_questions_data, array(320, 23, '04', 'Does your library provide training to enable staff to better serve their patrons on the autism spectrum?', 'Direct', NULL, 'Text'));
 array_push($report_questions_data, array(321, 23, '05', 'Would you like to receive autism training at your library?', 'Direct', NULL, 'Text'));
 array_push($report_questions_data, array(322, 24, '01', 'Are there any other factors that may have affected your library\'s annual report data of which you would like to make us aware?', 'Direct', NULL, 'Text'));
@@ -443,5 +443,5 @@ array_push($report_questions_data, array(331, 99, '05', 'External Wi-Fi access a
 array_push($report_questions_data, array(332, 99, '06', 'Staff re-assigned during COVID-19', 'Direct', NULL, 'Text'));
 
 #State Reporting Collected Data
-$report_data = "CREATE TABLE `SRData` (`ReportYear` YEAR NOT NULL, `QuestionID` smallint UNSIGNED NOT NULL, `IntegerData` int UNSIGNED NULL, `CurrencyData` decimal(10,2) NULL, `TextData` text NULL, PRIMARY KEY(`ReportYear`, `QuestionID`), INDEX, srquestion_fk (`QuestionID`) FOREIGN KEY (`QuestionID`) REFERENCES `SRQuestions`(`QuestionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+$report_data = "CREATE TABLE `SRData` (`ReportYear` YEAR NOT NULL, `QuestionID` smallint UNSIGNED NOT NULL, `IntegerData` int UNSIGNED NULL, `CurrencyData` decimal(10,2) NULL, `TextData` text NULL, PRIMARY KEY(`ReportYear`, `QuestionID`), INDEX srquestion_fk (`QuestionID`), FOREIGN KEY (`QuestionID`) REFERENCES `SRQuestions`(`QuestionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 ?>

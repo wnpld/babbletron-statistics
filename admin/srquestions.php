@@ -25,7 +25,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         $deletes = array();
         $updates = array();
         $inserts = array();
-        for ($x = 0; $x <= $_REQUEST['totalcount']; $x++) {
+        for ($x = 0; $x < $_REQUEST['totalcount']; $x++) {
             $qnumber = $_REQUEST['qnumber' . $x];
             $question = $_REQUEST['question' . $x];
             $qsource = $_REQUEST['qsource' . $x];
@@ -35,9 +35,9 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 $qformat = $_REQUEST['qformat' . $x];
             }
             if (($qsource == "Query") || ($qsource == "Calculation")) {
-                $query = $_REQUEST['qformat' . $x];
+                $querydata = $_REQUEST['qformat' . $x];
             } else {
-                $query = false;
+                $querydata = false;
             }
             $modify =  $_REQUEST['qmodify' . $x];
             $delete = $_REQUEST['qdelete' . $x];
@@ -55,11 +55,11 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             } else if ($new == "1") {
                 //New will be executed after modified, but new records will have both new and modify set
                 //Modified will only have modify, so check for new to identify modified separately from new
-                $newvalues = array("SectionID" => $section, "Number" => $qnumber, "Question" => $question, "Source" => $source, "Format" => $format, "Query" => $query);
+                $newvalues = array("SectionID" => $section, "Number" => $qnumber, "Question" => $question, "Source" => $source, "Format" => $format, "Query" => $querydata);
                 array_push($inserts, $newvalues);
             } else if (($modify == "1") && ($qid != false)) {
                 //No reason to include section id on updates.  It can't be changed on this page
-                $newvalues = array("QuestionID" => $qid, "Number" => $qnumber, "Question" => $question, "Source" => $source, "Format" => $format, "Query" => $query);
+                $newvalues = array("QuestionID" => $qid, "Number" => $qnumber, "Question" => $question, "Source" => $source, "Format" => $format, "Query" => $querydata);
                 array_push($updates, $newvalues);
             }
 
@@ -91,17 +91,17 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                             $format = NULL;
                         }
                         if ($updateitem['Query']) {
-                            $query = $updateitem['Query'];
+                            $querydata = $updateitem['Query'];
                         } else {
-                            $query = NULL;
+                            $querydata = NULL;
                         }
-                        $query->bind_param('sssssi', $updateitem['Number'], $updateitem['Question'], $updateitem['Source'], $format, $query, $updateitem['QuestionID']);
+                        $query->bind_param('sssssi', $updateitem['Number'], $updateitem['Question'], $updateitem['Source'], $format, $querydata, $updateitem['QuestionID']);
                         $query->execute();
                     }
                     $query->close();
                 } catch (mysqli_sql_exception $e) {
                     echo "<html><head><title>Error</title></head><body>";
-                    echo "<p>Error updating data in SRQUestions table: ". $e->getMessage();
+                    echo "<p>Error updating data in SRQuestions table: ". $e->getMessage();
                     echo "</p></body></html>";
                     $db->close();
                     exit();
@@ -119,11 +119,11 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                             $format = NULL;
                         }
                         if ($insertitem['Query']) {
-                            $query = $insertitem['Query'];
+                            $querydata = $insertitem['Query'];
                         } else {
-                            $query = NULL;
+                            $querydata = NULL;
                         }
-                        $query->bind_param('isssss', $insertitem['SectionID'], $insertitem['Number'], $insertitem['Question'], $insertitem['Source'], $format, $query);
+                        $query->bind_param('isssss', $insertitem['SectionID'], $insertitem['Number'], $insertitem['Question'], $insertitem['Source'], $format, $querydata);
                         $query->execute();
                     }
                     $query->close();
@@ -148,14 +148,14 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
     <script type="text/javascript" language="javascript">
         function setModified(counterid) {
-            var modfield = "qmodify" + counterid;
+            var modfield = "qmodify" + counterid.toString();
             document.getElementById(modfield).value = "1";
             //Check if changes should be made to query textarea
-            var queryfield = "query" + counterid;
+            var queryfield = "query" + counterid.toString();
             const query = document.getElementById(queryfield);
-            var sourcefield = "qsource" + counterid;
+            var sourcefield = "qsource" + counterid.toString();
             const qsource = document.getElementById(sourcefield);
-            var formatfield = "qformat" + counterid;
+            var formatfield = "qformat" + counterid.toString();
             const qformat = document.getElementById(formatfield);
             //Any time something is changed, make sure the change
             //has an appropriate effect on other fields
@@ -286,7 +286,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             var numberfield = "qnumber" + counterid;
             var rowcount = document.getElementById('totalcount').value;
             const qnumber = document.getElementById(numberfield);
-            const re = /^\d+{2}[a-z]{0,1}$/;
+            const re = /^\d{2}[a-z]{0,1}$/;
             if (re.test(qnumber.value)) {
                 let match = false;
                 for (x = 0; x <= rowcount; x++) {
@@ -366,7 +366,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             //Reset visability on alert in case it's been set to visible
             problemalert.setAttribute("style", "display: none;");
             problems = false;
-            for (x = 0; x <= rowcount; x++) {
+            for (x = 0; x < rowcount; x++) {
                 let modifiedState = document.getElementById('qmodify' + x.toString()).value;
                 let deletedState = document.getElementById('qdelete' + x.toString()).value;
                 //There's no need to validate rows being deleted or rows not being modified
@@ -503,10 +503,9 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 
             } else {
 
-
                 $existingdata = false;
                 try {
-                    $result = $db->query("SELECT * FROM 'SRData'");
+                    $result = $db->query("SELECT * FROM `SRData`");
                     if ($result->num_rows > 0) {
                         $existingdata == true;
                     }
@@ -517,7 +516,6 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     $db->close();
                     exit();
                 }
-                $db->close();
             }
             if ($existingdata == true) {
                 //Provide tools for saving and deleting data ?>
@@ -551,19 +549,21 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <h1>Select Report Section</h1>
                 <p>Select the report section you wish to work on:</p>
                 <form action="srquestions.php" method="POST">
-                    <select name="section" class="custom-select custom-select-lg mb-3">
-                        <option selected>Select a Category</option>
-                    <?php 
-                    while ($section = $result->fetch_assoc()) { ?>
-                        <option value="<?php echo $section['SectionID']; ?>"><?php echo $section['SectionDescription']; ?> (<?php echo $section['SectionID']; ?>)</option>
-                    <?php }
-                    ?>
-                    </select>
+                    <div class="mb-4">
+                        <select name="section" class="custom-select custom-select-lg mb-3">
+                            <option selected>Select a Category</option>
+                        <?php 
+                        while ($section = $result->fetch_assoc()) { ?>
+                            <option value="<?php echo $section['SectionID']; ?>"><?php echo $section['SectionDescription']; ?> (<?php echo $section['SectionID']; ?>)</option>
+                        <?php }
+                        ?>
+                        </select>
+                    </div>
                     <button type="submit" class="btn btn-success btn-lg">Load Questions</button>
                 </form>
             <?php } else { 
                 try {
-                    $query = $db->prepare("SELECT `SectionDescription`, `SectionID` FROM `Sections` WHERE `SectionID` = ?");
+                    $query = $db->prepare("SELECT `SectionDescription`, `SectionID` FROM `SRSections` WHERE `SectionID` = ?");
                     $query->bind_param("i", $_REQUEST['section']);
                     $query->execute();
                     $result = $query->get_result();
@@ -608,8 +608,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                         <input class="form-control" type="text" id="qnumber<?php echo $counter; ?>" name="qnumber<?php echo $counter; ?>" value="<?php echo $question['Number']; ?>" maxlength="3" size="3" onchange="numChange(<?php echo $counter; ?>" required>
                     </th>
                     <td>
-                        <textarea class="form-control" id="question<?php echo $counter; ?>" name="question<?php echo $counter; ?>" rows="3" onchange="setModified(<?php echo $counter; ?>)" required>
-                            <?php echo $question['Question']; ?>
+                        <textarea class="form-control" id="question<?php echo $counter; ?>" name="question<?php echo $counter; ?>" rows="3" onchange="setModified(<?php echo $counter; ?>)" required><?php echo $question['Question']; ?>
                         </textarea>
                     </td>
                     <td>
@@ -628,17 +627,18 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                         </select>
                     </td>
                     <td>
-                        <textarea <?php if (($question['Source'] == "Direct") || ($question['Source'] == "Multiple")) { echo "disabled"; } ?> class="form-control" id="query<?php echo $counter; ?>" name="query<?php echo $counter; ?>" rows="3" onchange="setModified(<?php echo $counter; ?>"
-                            <?php if (($question['Source'] == "Query") || ($question['Source'] == "Calculation")) { ?> required><?php echo $question['Query']; } 
-                            else { ?> > <?php } ?>
-                        </textarea>
+                    <?php if (($question['Source'] == "Direct") || ($question['Source'] == "Multiple")) { ?>
+                        <textarea class="form-control" id="query<?php echo $counter; ?>" name="query<?php echo $counter; ?>" rows="3" onchange="setModified(<?php echo $counter; ?>)" disabled></textarea>
+                    <?php } else { ?>
+                        <textarea class="form-control" id="query<?php echo $counter; ?>" name="query<?php echo $counter; ?>" rows="3" onchange="setModified(<?php echo $counter; ?>)" required><?php echo $question['Query']; ?></textarea>
+                    <?php } ?>
                     </td>
                     <td>
-                        <input class="form-check-input" type="checkbox" id="qdelete<?php echo $counter; ?>" name="qdelete<?php echo $counter; ?>" value="1" onchange="qdeleteToggle(<?php echo $counter; ?>">
+                        <input class="form-check-input" type="checkbox" id="qdelete<?php echo $counter; ?>" name="qdelete<?php echo $counter; ?>" value="1" onchange="qdeleteToggle(<?php echo $counter; ?>)">
+                        <input type="hidden" id="qid<?php echo $counter; ?>" name="qid<?php echo $counter; ?>" value="<?php echo $question['QuestionID']; ?>">
+                        <input type="hidden" id="qmodify<?php echo $counter; ?>" name="qmodify<?php echo $counter; ?>" value="0" >
+                        <input type="hidden" id="qnew<?php echo $counter; ?>" name="qnew<?php echo $counter; ?>" value="0">
                     </td>
-                    <input type="hidden" name="qid<?php echo $counter; ?>" value="<?php echo $question['QuestionID']; ?>">
-                    <input type="hidden" name="qmodify<?php echo $counter; ?>" value="0" >
-                    <input type="hidden" name="qnew<?php echo $counter; ?>" value="0">
                 </tr>
                <?php
                     $counter++; 

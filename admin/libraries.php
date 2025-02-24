@@ -37,23 +37,29 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 
                 if (/^[A-Za-z][A-Za-z0-9\- '().,]{3,98}[A-Za-z.]$/.exec(libraryname) === null) {
                     success = false;
-                    document.getElementById('badln').style.display = "block";
+                    document.getElementById('libraryname').classList.remove('is-valid');
+                    document.getElementById('libraryname').classList.add('is-invalid');
                 } else {
-                    document.getElementById('badln').style.display = "none";
+                    document.getElementById('libraryname').classList.remove('is-invalid');
+                    document.getElementById('libraryname').classList.add('is-valid');
                 }
 
                 if (/^[A-Za-z0-9][A-Za-z0-9 #\'\-.]{4,148}[A-Za-z0-9.]$/.exec(address) === null) {
                     success = false;
-                    document.getElementById('badad').style.display = "block";
+                    document.getElementById('address').classList.remove('is-valid');
+                    document.getElementById('address').classList.add('is-invalid');
                 } else {
-                    document.getElementById('badad').style.display = "none";
+                    document.getElementById('address').classList.remove('is-invalid');
+                    document.getElementById('address').classList.add('is-valid');
                 }
 
                 if (/^[A-Za-z][A-Za-z \-'.]{1,73}[A-Za-z.]$/.exec(city) === null) {
                     success = false;
-                    document.getElementById('badcity').style.display = "block";
+                    document.getElementById('city').classList.remove('is-valid');
+                    document.getElementById('city').classList.add('is-invalid');
                 } else {
-                    document.getElementById('badcity').style.display = "none";
+                    document.getElementById('city').classList.remove('is-invalid');
+                    document.getElementById('city').classList.add('is-valid');
                 }
 
                 if (!success) {
@@ -105,19 +111,31 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         <div class="container-fluid">
             <?php if (isset($_REQUEST['action'])) {
                 if ($_REQUEST['action'] == "add") { ?>
-        <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
-                <div alert="alert alert-danger" type="alert" id="badln" style="display:none;">The provided library name was too long, too short, or contained unusual characters.</div>
+            <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
+                <div class="mb-4">
                 <label for="libraryname" class="form-label">Library Name</label>
-                <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips">
-                <div id="librarynametips" class="form-text">
-                    This should represent the common way you refer to the branch.  It can be as simple as "Branch Library" or it can be more descriptive.
+                    <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips" required>
+                    <div class="invalid-feedback">
+                    The provided library name was too long, too short, or contained unusual characters.
+                    </div>
+                    <div id="librarynametips" class="form-text">
+                        This should represent the common way you refer to the branch.  It can be as simple as "Branch Library" or it can be more descriptive.
+                    </div>
                 </div>
-                <div id="badad" class="alert alert-danger" type="alert" style="display:none;">No address was provided, it was extremely long or extremely short, or it contained invalid characters.</div>
-                <label for="address" class="form-label">Address</label>
-                <input type="text" id="address" name="address" class="form-control">
-                <div id="badcity" class="alert alert-danger" type="alert" style="display:none;">No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.</div>
-                <label for="city" class="form-label">City</label>
-                <input type="text" id="city" name="city" class="form-control">
+                <div class="mb-4">
+                    <label for="address" class="form-label">Address</label>
+                    <input type="text" id="address" name="address" class="form-control" required>
+                    <div class="invalid-feedback">
+                        No address was provided, it was extremely long or extremely short, or it contained invalid characters.
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="city" class="form-label">City</label>
+                    <input type="text" id="city" name="city" class="form-control">
+                    <div class="invalid-feedback">
+                        No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.
+                    </div>
+                </div>
                 <input type="hidden" name="formtype" value="newbranch">
                 <button class="btn btn-primary" type="submit">Submit Library Branch Information</button>
             </form>
@@ -129,38 +147,52 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 $result = $query->get_result();
                 $libraryinfo = $result->fetch_assoc();
                 ?>
-                <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
-                <div alert="alert alert-danger" type="alert" id="badln" style="display:none;">The provided library name was too long, too short, or contained unusual characters.</div>
-                <label for="libraryname" class="form-label">Library Name</label>
-                <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips" value="<?php echo $libraryinfo['LibraryName']; ?>">
-                <div id="librarynametips" class="form-text">
-                    This should represent the common way you refer to the main library.  It can be as simple as "Main Library" or it can be more descriptive ("Harold Washington Library Center of the Chicago Public Library").
+            <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
+                <div class="mb-4">
+                    <label for="libraryname" class="form-label">Library Name</label>
+                    <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips" value="<?php echo $libraryinfo['LibraryName']; ?>" required>
+                    <div class="invalid-feedback">
+                        The provided library name was too long, too short, or contained unusual characters.
+                    </div>
+                    <div id="librarynametips" class="form-text">
+                        This should represent the common way you refer to the main library.  It can be as simple as "Main Library" or it can be more descriptive ("Harold Washington Library Center of the Chicago Public Library").
+                    </div>
                 </div>
-                <div id="badad" class="alert alert-danger" type="alert" style="display:none;">No address was provided, it was extremely long or extremely short, or it contained invalid characters.</div>
-                <label for="address" class="form-label">Address</label>
-                <input type="text" id="address" name="address" class="form-control" value="<?php echo $libraryinfo['LibraryAddress']; ?>">
-                <div id="badcity" class="alert alert-danger" type="alert" style="display:none;">No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.</div>
-                <label for="city" class="form-label">City</label>
-                <input type="text" id="city" name="city" class="form-control" value="<?php echo $libraryinfo['LibraryCity']; ?>">
+                <div class="mb-4">
+                    <label for="address" class="form-label">Address</label>
+                    <input type="text" id="address" name="address" class="form-control" value="<?php echo $libraryinfo['LibraryAddress']; ?>" required>
+                    <div class="invalid-feedback">
+                        No address was provided, it was extremely long or extremely short, or it contained invalid characters.
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="city" class="form-label">City</label>
+                    <input type="text" id="city" name="city" class="form-control" value="<?php echo $libraryinfo['LibraryCity']; ?>" required>
+                    <div class="invalid-feedback">
+                        No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.
+                    </div>
+                </div>
                 <?php if ($libraryinfo['Branch'] == 0) { 
                     //Only main library has fiscal year adjustable ?>
-                <label for="fymonth" class="form-label">Fiscal Year Start</label>
-                <select class="custom-select" id="fymonth" name="fymonth" aria-describedby="fymonthtips">
-                    <option value="1" <?php if ($libraryinfo['FYMonth'] == 1) { echo " selected"; } ?>>January</option>
-                    <option value="2" <?php if ($libraryinfo['FYMonth'] == 2) { echo " selected"; } ?>>February</option>
-                    <option value="3" <?php if ($libraryinfo['FYMonth'] == 3) { echo " selected"; } ?>>March</option>
-                    <option value="4" <?php if ($libraryinfo['FYMonth'] == 4) { echo " selected"; } ?>>April</option>
-                    <option value="5" <?php if ($libraryinfo['FYMonth'] == 5) { echo " selected"; } ?>>May</option>
-                    <option value="6" <?php if ($libraryinfo['FYMonth'] == 6) { echo " selected"; } ?>>June</option>
-                    <option value="7" <?php if ($libraryinfo['FYMonth'] == 7) { echo " selected"; } ?>>July</option>
-                    <option value="8" <?php if ($libraryinfo['FYMonth'] == 8) { echo " selected"; } ?>>August</option>
-                    <option value="9" <?php if ($libraryinfo['FYMonth'] == 9) { echo " selected"; } ?>>September</option>
-                    <option value="10" <?php if ($libraryinfo['FYMonth'] == 10) { echo " selected"; } ?>>October</option>
-                    <option value="11" <?php if ($libraryinfo['FYMonth'] == 11) { echo " selected"; } ?>>November</option>
-                    <option value="12" <?php if ($libraryinfo['FYMonth'] == 12) { echo " selected"; } ?>>December</option>
-                </select>
-                <div id="fymonthtips" class="form-text">
-                    Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
+                <div class="mb-4">
+                    <label for="fymonth" class="form-label">Fiscal Year Start</label>
+                    <select class="custom-select" id="fymonth" name="fymonth" aria-describedby="fymonthtips">
+                        <option value="1" <?php if ($libraryinfo['FYMonth'] == 1) { echo " selected"; } ?>>January</option>
+                        <option value="2" <?php if ($libraryinfo['FYMonth'] == 2) { echo " selected"; } ?>>February</option>
+                        <option value="3" <?php if ($libraryinfo['FYMonth'] == 3) { echo " selected"; } ?>>March</option>
+                        <option value="4" <?php if ($libraryinfo['FYMonth'] == 4) { echo " selected"; } ?>>April</option>
+                        <option value="5" <?php if ($libraryinfo['FYMonth'] == 5) { echo " selected"; } ?>>May</option>
+                        <option value="6" <?php if ($libraryinfo['FYMonth'] == 6) { echo " selected"; } ?>>June</option>
+                        <option value="7" <?php if ($libraryinfo['FYMonth'] == 7) { echo " selected"; } ?>>July</option>
+                        <option value="8" <?php if ($libraryinfo['FYMonth'] == 8) { echo " selected"; } ?>>August</option>
+                        <option value="9" <?php if ($libraryinfo['FYMonth'] == 9) { echo " selected"; } ?>>September</option>
+                        <option value="10" <?php if ($libraryinfo['FYMonth'] == 10) { echo " selected"; } ?>>October</option>
+                        <option value="11" <?php if ($libraryinfo['FYMonth'] == 11) { echo " selected"; } ?>>November</option>
+                        <option value="12" <?php if ($libraryinfo['FYMonth'] == 12) { echo " selected"; } ?>>December</option>
+                    </select>
+                    <div id="fymonthtips" class="form-text">
+                        Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
+                    </div>
                 </div>
                 <?php } ?>
                 <input type="hidden" name="libraryid" value="<?php echo $_REQUEST['libraryid']; ?>">
