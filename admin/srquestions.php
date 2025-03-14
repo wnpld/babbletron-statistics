@@ -29,11 +29,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             $qnumber = $_REQUEST['qnumber' . $x];
             $question = $_REQUEST['question' . $x];
             $qsource = $_REQUEST['qsource' . $x];
-            if ($qsource == "Multiple") {
-                $qformat = false;
-            } else {
-                $qformat = $_REQUEST['qformat' . $x];
-            }
+            $qformat = $_REQUEST['qformat' . $x];
             if (($qsource == "Query") || ($qsource == "Calculation")) {
                 $querydata = $_REQUEST['qformat' . $x];
             } else {
@@ -159,10 +155,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             const qformat = document.getElementById(formatfield);
             //Any time something is changed, make sure the change
             //has an appropriate effect on other fields
-            if (qsource.value == "Multiple") {
-                qformat.disabled = true;
-                query.disabled = true;
-            } else if (qsource.value == "Direct") {
+            if (qsource.value == "Direct") {
                 qformat.disabled = false;
                 query.disabled = true;
             } else {
@@ -345,16 +338,14 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 question.disabled = false;
                 question.setAttribute('required', '');
                 qsource.disabled = false;
-                if (source.value != "Multiple") {
-                    qformat.disabled = false;
-                    if (qsource.value != "Direct") {
-                        query.disabled = false;
-                        query.setAttribute('required', '');
-                    }
+                qformat.disabled = false;
+                if (qsource.value != "Direct") {
+                    query.disabled = false;
+                    query.setAttribute('required', '');
                 }
             }
         }
-
+        
         function validateFields(event) {
             var rowcount = document.getElementById('totalcount').value;
             const problemalert = document.getElementById('problemalert');

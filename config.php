@@ -11,6 +11,23 @@ $dbadminpw = "";  //The password for a user with all rights
 $dbuser = "";  //A user with insert, select, delete, update access only
 $dbuserpw = "";  //Password for the restricted user
 
+#Use this variable for collecting data from other databases (example in comments)
+# $dblist = array( 
+# "Suma" => array(
+#    "host" => "localhost",
+#    "dbname" => "suma_db",
+#    "user" => "suma_user",
+#    "password" => "092j3jkalsfd",));
+$dblist = array(
+    "Suma" => array(
+        "host" => "localhost",
+        "dbname" => "",
+        "user" => "",
+        "password" => "",
+    )
+    );
+
+
 ##################
 # Site information
 ##################
@@ -38,4 +55,9 @@ $cgiwebdir = ""; //The path from the server root to the CGI directory
                  //(e.g. "/cgi-bin" if it's found at http://mysite.local/cgi-bin)
 $cgidir = ""; //The full system path to the cgi directory
               //(e.g. "/usr/lib/cgi-bin/")
+
+$datepickerdir = ""; //The directory the bootstrap-datepicker javascript library
+                  //is installed in.  Docs and information can be found at
+                  //https://bootstrap-datepicker.readthedocs.io/
+
 ?>

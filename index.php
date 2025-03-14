@@ -29,6 +29,35 @@ try {
     exit();
 }
 
+#Also check that date lookup table goes out at least to the end of a
+#calendar year a few years from now
+try {
+    $testyear = date('Y') + 3;
+    $testdate = date_create("$testyear-12-31");
+    $result = $db->query("SELECT `Date` FROM `DateLookup` ORDER BY `Date` DESC LIMIT 1");
+    $tableinfo = $result->fetch_row();
+    $tabledate = date_create($tableinfo[0]);
+    if ($tabledate < $testdate) {
+        #add another year
+        $date_query = $db->prepare("INSERT INTO `DateLookup` (`Date`, `Weekday`, `Month`, `Year`) VALUES (?, ?, ?, ?)");
+        while ($tabledate < $testdate) {
+            date_add($tabledate, date_interval_create_from_date_string("1 day"));
+            $datestring = date_format($tabledate, "Y-m-d");
+            $weekday = date_format($tabledate, "l");
+            $month = date_format($tabledate, 'F');
+            $year = date_format($tabledate, 'Y');
+            $date_query->bind_param('sssi', $datestring, $weekday, $month, $year);
+            $date_query->execute();
+        }
+    }
+} catch (mysqli_sql_exception $e) {
+    echo "<html><head><title>Error</title></head><body>";
+    echo "<p>Error adding dates to date lookup table: ". $e->getMessage();
+    echo "</p></body></html>";
+    $db->close();
+    exit();
+}
+
 if ($entryrestriction > 0) {
     if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         if (( $_SESSION['UserRole'] == "Edit") || ($_SESSION['UserRole'] == "Admin")) {

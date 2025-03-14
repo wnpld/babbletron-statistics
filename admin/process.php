@@ -52,14 +52,27 @@ if (isset($_REQUEST['formtype'])) {
         }
     } else if ($_REQUEST['formtype'] == "mainlibrary") {
         #New main library
-        $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['fymonth'], "new");
+        $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['legallibraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['zip'], $_REQUEST['county'], $_REQUEST['telephone'], $_REQUEST['squarefootage'], $_REQUEST['ISLControlNo'], $_REQUEST['ISLBranchNo'], $_REQUEST['fymonth'], $_REQUEST['sundayopen'], $_REQUEST['mondayopen'], $_REQUEST['tuesdayopen'], $_REQUEST['wednesdayopen'], $_REQUEST['thursdayopen'], $_REQUEST['fridayopen'], $_REQUEST['saturdayopen'], "new");
 
         if ($checked != false) {
             //If checked returns an array everything's fine.  If it's false there's an error
             try{
-                $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`, `FYMonth`) VALUES (?, ?, ?, 0, ?)');
-                $query->bind_param('sssi', $checked['LibraryName'], $checked['LibraryAddress'], $checked['LibraryCity'], $checked['FYMonth']);
+                $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LegalName`, `LibraryAddress`, `LibraryCity`, `LibraryZIP`, `LibraryCounty`, `SquareFootage`, `ISLControlNo`, `ISLBranchNo`, `Branch`, `FYMonth`) VALUES (?, ?, ?, 0, ?)');
+                $query->bind_param('sssssssssii', $checked['LibraryName'], $checked['LegalName'], $checked['LibraryAddress'], $checked['LibraryCity'], $checked['LibraryZIP'], $checked['LibraryCounty'], $checked['SquareFootage'], $checked['ISLControlNo'], $checked['ISLBranchNo'], $checked['FYMonth']);
                 $query->execute();
+                $lastid = $db->insert_id;
+                $query->close();
+                $days = array("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
+                #For date implemented we'll just January 1 from 5 years ago.
+                $year = date('Y');
+                $year = $year - 5;
+                $impdate = $year . "-01-01";
+                $query = $db->prepare('INSERT INTO `LibraryHours` (`LibraryID`, `DateImplemented`, `DayOfWeek`, `HoursOpen`) VALUES (?, ?, ?, ?)');
+                foreach ($days as $day) {
+                    $query->bind_param("issi", $lastid, $impdate, $day, $checked[$day]);
+                    $query->execute();
+                }
+                $query->close();
             } catch (mysqli_sql_exception $e) {
                 echo "<html><head><title>Error</title></head><body>";
                 echo "<p>Error adding library info: " . $e->getMessage();
@@ -210,14 +223,27 @@ if (isset($_REQUEST['formtype'])) {
 
         } else if ($_REQUEST['formtype'] == "newbranch") {
             #New branch library
-            $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], null, "new");
+            $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['legallibraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['zip'], $_REQUEST['county'], $_REQUEST['telephone'], $_REQUEST['squarefootage'], $_REQUEST['ISLControlNo'], $_REQUEST['ISLBranchNo'], null, $_REQUEST['sundayopen'], $_REQUEST['mondayopen'], $_REQUEST['tuesdayopen'], $_REQUEST['wednesdayopen'], $_REQUEST['thursdayopen'], $_REQUEST['fridayopen'], $_REQUEST['saturdayopen'], "new");
 
             if ($checked != false) {
                 //If checked returns false something failed
                 try{
-                    $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LibraryAddress`, `LibraryCity`, `Branch`) VALUES (?, ?, ?, 1)');
-                    $query->bind_param('sss', $checked['libraryname'], $checked['address'], $checked['city']);
+                    $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LegalName`, `LibraryAddress`, `LibraryCity`, `LibraryZIP`, `LibraryCounty`, `LibraryTelephone`, `SquareFootage`, `ISLControlNo`, `ISLBranchNo`, `Branch`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)');
+                    $query->bind_param('ssssssssss', $checked['LibraryName'], $checked['LegalName'], $checked['LibraryAddress'], $checked['LibraryCity'], $checked['LibraryZIP'], $checked['LibraryCounty'], $checked['LibraryTelephone'], $checked['SquareFootage'], $checked['ISLControlNo'], $checked['ISLBranchNo']);
                     $query->execute();
+                    $lastid = $db->insert_id;
+                    $query->close();
+                    $days = array("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
+                    #For date implemented we'll just January 1 from 5 years ago.
+                    $year = date('Y');
+                    $year = $year - 5;
+                    $impdate = $year . "-01-01";
+                    $query = $db->prepare('INSERT INTO `LibraryHours` (`LibraryID`, `DateImplemented`, `DayOfWeek`, `HoursOpen`) VALUES (?, ?, ?, ?)');
+                    foreach ($days as $day) {
+                        $query->bind_param("issi", $lastid, $impdate, $day, $checked[$day]);
+                        $query->execute();
+                    }
+                    $query->close();                    
                 } catch (mysqli_sql_exception $e) {
                     echo "<html><head><title>Error</title></head><body>";
                     echo "<p>Error adding branch info: " . $e->getMessage();
@@ -235,45 +261,147 @@ if (isset($_REQUEST['formtype'])) {
                 exit();
             }
         } else if ($_REQUEST['formtype'] == "modifybranch") {
+            #Get fiscal month -- needed for official changes
+            $fymonth_info = $db->query("SELECT `FYMonth`+0 AS `Month` FROM `LibraryInfo` WHERE `Branch` = 0");
+            $fymonth = $fymonth_info->fetch_column(0);
+
             #Modify branch/main library
-            $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['fymonth'], "old");
+            $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['legallibraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['zip'], $_REQUEST['county'], $_REQUEST['telephone'], $_REQUEST['squarefootage'], $_REQUEST['islcontrolno'], $_REQUEST['islbranchno'], $_REQUEST['fymonth'], $_REQUEST['sundayopen'], $_REQUEST['mondayopen'], $_REQUEST['tuesdayopen'], $_REQUEST['wednesdayopen'], $_REQUEST['thursdayopen'], $_REQUEST['fridayopen'], $_REQUEST['saturdayopen'], "old");
+
+            #ChangeFields
+            $changefields = array('LegalName' => array('legallibraryname-radio', 'legallibraryname-calendar', 'LegalNameOfficial', 'legallibraryname-checkbox'), 'LibraryAddress' => array('address-radio', 'address-calendar', 'LibraryAddressPhysical', 'address-checkbox'), 'LibraryCity' => array('city-radio', 'city-calendar'), 'LibraryZIP' => array('zip-radio', 'zip-calendar'), 'LibraryCounty' => array('county-radio', 'county-calendar'), 'LibraryTelephone' => array('telephone-radio', 'telephone-calendar'), 'SquareFootage' => array('squarefootage-radio', 'SquareFootageReason', 'squarefootage-change-reason'), 'ISLControlNo' => 0, 'ISLBranchNo' => 0, 'FYmonth' => 0);
 
             if ($checked != false) {
                 //If checked returns false something failed
-                if (isset($_REQUEST['libraryid'])) {
+                preg_match('/^\d+$/', $_REQUEST['libraryid'], $matches);
+                $libraryid = $matches[0];
+                if ($libraryid) {
                     $params = array();
                     $paramtypes = "";
-                    $update_sql = "UPDATE LibraryInfo SET ";
-                    foreach ($checked as $field => $value) {
-                        if (strlen($paramtypes) > 0) {
-                            $update_sql .= ", ";
-                        }
-                        $update_sql .= "`$field` = ?";
-                        array_push($params, $value);
-                        if ($field == "fymonth") {
-                            $paramtypes .= "i";
+                    foreach ($changefields as $field => $value) {
+                        #Go through the change fields and use those to determine what
+                        #fields should be being paid attention to.
+                        if (gettype($value) == "array") {
+                            if (isset($_REQUEST[$value[0]])) {
+                                #Legal name, Library Address, or Square Footage
+                                if ($_REQUEST[$value[0]] == "correction") {
+                                    #no need to update the changes table
+                                    try {
+                                        $sql = $db->prepare("UPDATE `LibraryInfo` SET `$field` = ? WHERE `LibraryID` = $libraryid");
+                                        $sql->bind_param('s', $checked[$field]);
+                                        $sql->execute();
+                                        $sql->close();
+                                    } catch (mysqli_sql_exception $e) {
+                                        echo "<html><head><title>Error</title></head><body>";
+                                        echo "<p>Error updating library: " . $e->getMessage();
+                                        echo "</p></body></html>";
+                                        $db->close();
+                                        exit();      
+                                    }
+                                } else {
+                                    #If it's not a correction, it's a change. A lot more steps.
+                                    #Get the old value
+                                    try {
+                                        $sql = $db->prepare("SELECT `$field` FROM LibraryInfo WHERE `LibraryID` = ?");
+                                        $sql->bind_param('i', $_REQUEST['libraryid']);
+                                        $sql->execute();
+                                        $result = $sql->get_result();
+                                        $oldvalue = $result->fetch_column(0);
+                                        $sql->close();
+
+                                        #Using the submitted date, figure out the fiscal year for the change
+                                        preg_match('/(\d\d\d\d)-(\d\d)-\d\d/', $_REQUEST[$value[1]], $matches);
+                                        if ($matches[0]) {
+                                            $year = $matches[1];
+                                            $month = $matches[2];
+                                            if ($fymonth == 1) {
+                                                $fyear = $year;
+                                            } else {
+                                                if ($month <= $fymonth) {
+                                                    $fyear = $year;
+                                                } else {
+                                                    $fyear = $year-1;
+                                                }
+                                            }
+                                            $change_info = $db->query("SELECT `LibraryID` FROM `LibraryChanges` WHERE `LibraryID` = '$libraryid' AND `FYChanged` = '$fyear'");
+                                            if ($change_info->num_rows == 0) {
+                                                #Add a row
+                                                $db->query("INSERT INTO `LibraryChanges` (`LibraryID`, `FYChanged`) VALUES ('$libraryid', '$fyear')");
+                                            }
+                                            #Three data types have specific forms, so do those first
+                                            #The old information goes into the changes table,
+                                            #not the new.  This is so we have a record of what the old
+                                            #information was, but the current information is in the primary
+                                            #record
+                                            if (count($value) == 4) {
+                                                #This is a category with two values to update
+                                                $sql = $db->prepare("UPDATE `LibraryChanges` SET `$field` = ?, `$value[2]` =? WHERE `LibraryID` = '$libraryid' AND `FYChanged` = '$fyear'");
+                                                $sql->bind_param('ss', $oldvalue, $_REQUEST[$value[3]]);
+                                                $sql->execute();
+                                                $sql->close();
+                                            } else {
+                                                #Everything else
+                                                $sql = $db->prepare("UPDATE `LibraryChanges` SET `$field` = ? WHERE `LibraryID` = '$libraryid' AND `FYChanged` = '$fyear'");
+                                                $sql->bind_param('s', $oldvalue);
+                                                $sql->execute();
+                                                $sql->close();
+                                            }
+                                            #Finally, update the library info table with the new information
+                                            $sql = $db->prepare("UPDATE `LibraryInfo` SET `$field` = ? WHERE `LibraryID` = '$libraryid'");
+                                            $sql->bind_param('s', $checked[$field]);
+                                            $sql->execute();
+                                            $sql->close();
+                                        } else {
+                                            #Invalid or blank calendar submission
+                                            #error out
+                                        }
+                                    } catch (mysqli_sql_exception $e) {
+                                        echo "<html><head><title>Error</title></head><body>";
+                                        echo "<p>Error adding branch info: " . $e->getMessage();
+                                        echo "</p></body></html>";
+                                        $db->close();
+                                        exit();
+                                    }
+                                }
+                            }
                         } else {
-                            $paramtypes .= "s";
+                            #One of the three integers, which don't induce
+                            #changes in the changes table
+                            try {
+                                $sql = $db->prepare("UPDATE `LibraryInfo` SET `$field` = ? WHERE `LibraryID` = '$libraryid'");
+                                $sql->bind_param('s', $checked[$field]);
+                                $sql->execute();
+                                $sql->close();
+                            } catch (mysqli_sql_exception $e) {
+                                echo "<html><head><title>Error</title></head><body>";
+                                echo "<p>Error adding branch info (fiscal year month, control no, or branch no): " . $e->getMessage();
+                                echo "</p></body></html>";
+                                $db->close();
+                                exit();
+                            }
                         }
                     }
-                    $update_sql .= " WHERE LibraryID = ?";
-                    array_push($params, $_REQUEST['libraryid']);
-                    $paramtypes .= "i";
-                    try{
-                        $query = $db->prepare($update_sql);
-                        $query->bind_param($paramtypes, ...$params);
-                        $query->execute();
-                        $query->close();
-                        $db->close();
-                        header("Location: $protocol://$server$webdir/admin/libraries.php?modify=true");
-                        exit();
-                    } catch (mysqli_sql_exception $e) {
-                        echo "<html><head><title>Error</title></head><body>";
-                        echo "<p>Error adding branch info: " . $e->getMessage();
-                        echo "</p></body></html>";
-                        $db->close();
-                        exit();
+                    
+                    foreach ($checked as $field => $value) {
+                        #First do everything except hours.
+                        #Hours changes go in a different database table
+
+                        if ($field != 'hours') {
+
+                            if (strlen($paramtypes) > 0) {
+                                $update_sql .= ", ";
+                            }
+                            $update_sql .= "`$field` = ?";
+                            array_push($params, $value);
+                            if ($field == "fymonth") {
+                                $paramtypes .= "i";
+                            } else {
+                                $paramtypes .= "s";
+                            }
+                        }
                     }
+                    header("Location: $protocol://$server$webdir/admin/libraries.php?modify=true");
+                    exit();
                 } else {
                     //Can't do anything without a library id
                     $db->close();
@@ -422,21 +550,40 @@ function userchecks($username, $firstname, $lastname, $pwhash, $hashalgo, $salt,
     }
 }
 
-function branchchecks($libraryname, $address, $city, $fymonth, $status) {
+function branchchecks($libraryname, $legallibraryname, $address, $city, $zip, $county, $telephone, $footage, $islcontrolno, $islbranchno, $fymonth, $sundayhours, $mondayhours, $tuesdayhours, $wednesdayhours, $thursdayhours, $fridayhours, $saturdayhours, $status) {
     $error = false;
     $changed = array();
     if (isset($libraryname)) {
         preg_match('/^[A-Za-z][A-Za-z0-9 \-\'().,]{3,98}[A-Za-z().]$/', $libraryname, $matches);
         if ($matches[0]) {
-            $checked_ln = $libraryname;
+            $checked_libn = $libraryname;
             if ($status == "old") {
-                $changed['LibraryName'] = $checked_ln;
+                $changed['LibraryName'] = $checked_libn;
             }
         } else {
             $error = true;
         }
     } else {
         if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if (isset($legallibraryname)) {
+        preg_match('/^[A-Za-z][A-Za-z0-9 \-\'().,]{3,98}[A-Za-z().]$/', $legallibraryname, $matches);
+        if ($matches[0]) {
+            $checked_legn = $legallibraryname;
+            if ($status == "old") {
+                $changed['LegalName'] = $checked_legn;
+            }
+        } else {
+            $error = true;
+        }        
+    } else {
+        if (isset($checked_libn)) {
+           $checked_legn = $checked_libn;
+        } else {
+            #No valid name at all
             $error = true;
         }
     }
@@ -460,9 +607,9 @@ function branchchecks($libraryname, $address, $city, $fymonth, $status) {
     if (isset($city)) {
         preg_match('/^[A-Za-z][A-Za-z.\' \-]{1,73}[A-Za-z.]$/', $city, $matches);
         if ($matches[0]) {
-            $checked_cy = $city;
+            $checked_city = $city;
             if ($status == "old") {
-                $changed['LibraryCity'] = $checked_cy;
+                $changed['LibraryCity'] = $checked_city;
             }
         } else {
             $error = true;
@@ -471,6 +618,99 @@ function branchchecks($libraryname, $address, $city, $fymonth, $status) {
         if ($status == "new") {
             $error = true;
         }
+    }
+
+    if (isset($zip)) {
+        preg_match('/^\d{5}(-\d{4}){0,1}$/', $city, $matches);
+        if ($matches[0]) {
+            $checked_zip = $zip;
+            if ($status == "old") {
+                $changed['ZIP'] = $checked_zip;
+            }
+        } else {
+            $error = true;
+        }
+    } else {
+        if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if (isset($county)) {
+        preg_match('/^[A-Za-z][A-Za-z.\' \-]{1,73}[A-Za-z.]$/', $county, $matches);
+        if ($matches[0]) {
+            $checked_cnty = $county;
+            if ($status == "old") {
+                $changed['LibraryCounty'] = $checked_cnty;
+            }
+        } else {
+            $error = true;
+        }
+    } else {
+        if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if (isset($telephone)) {
+        $telephone = preg_replace('/[\-() ]/', '', $telephone);
+        preg_match('/^\d{10}$/', $telephone, $matches);
+        if ($matches[0]) {
+            $checked_tel = $telephone;
+            if ($status == "old") {
+                $changed['LibraryTelephone'] = $checked_tel;
+            }
+        } else {
+            $error = true;
+        }
+    } else {
+        if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if (isset($footage)) {
+        preg_match('/^\d+$/', $footage, $matches);
+        if ($matches[0]) {
+            $checked_footage = $footage;
+            if ($status == "old") {
+                $changed['SquareFootage'] = $checked_footage;
+            }
+        } else {
+            $error = true;
+        }
+    } else {
+        if ($status == "new") {
+            $error = true;
+        }
+    }
+
+    if (isset($islcontrolno)) {
+        preg_match('/^\d+$/', $islcontrolno, $matches);
+        if ($matches[0]) {
+            $checked_ctrlno = $islcontrolno;
+            if ($status == "old") {
+                $changed['ISLControlNo'] = $checked_ctrlno;
+            }
+        } else {
+            $checked_ctrlno = null;
+        }
+    } else {
+        $checked_ctrlno = null;
+    }
+
+    if (isset($islbranchno)) {
+        preg_match('/^\d+$/', $islbranchno, $matches);
+        if ($matches[0]) {
+            $checked_brchno = $islbranchno;
+            if ($status == "old") {
+                $changed['ISLBranchNo'] = $checked_brchno;
+            }
+        } else {
+            $checked_brchno = null;
+        }
+    } else {
+        $checked_brchno = null;
     }
 
     if (isset($fymonth)) {
@@ -488,14 +728,39 @@ function branchchecks($libraryname, $address, $city, $fymonth, $status) {
         }
     }
 
+    $hours = array("Sunday" => $sundayhours, "Monday" => $mondayhours, "Tuesday" => $tuesdayhours, "Wednesday" => $wednesdayhours, "Thursday" => $thursdayhours, "Friday" => $fridayhours, "Saturday" => $saturdayhours);
+    foreach ($hours as $day => $openhours) {
+        if ($status == "new") {
+            #This check won't trigger an error, but if the value is
+            #weird it will just make it 0
+            if (is_numeric($openhours)) {
+                if (($hours < 0) or ($hours > 24)) {
+                    $hours[$day] = 0;
+                }
+            } else {
+                $hours[$day] = 0;
+            }
+        } else {
+            #If it's not new, we'll be more picky
+            #and only take valid numbers
+            if (is_numeric($openhours)) {
+                if (($hours >= 0) or ($hours <= 24)) {
+                    #Put all of the hours in an additional layer for changed
+                    #so they can be easily identified
+                    $changed['hours'][$day] = $hours;
+                }
+            }
+        }
+    }
+
     if ($error == true) {
         return false;
     } else {
         if ($status == "new") {
             if (isset($checked_fym)) {
-                $values = array("LibraryName" => $checked_ln, "LibraryAddress" => $checked_ad, "LibraryCity" => $checked_cy, "FYMonth" => $checked_fym);
+                $values = array("LibraryName" => $checked_libn, "LegalName" => $checked_legn, "LibraryAddress" => $checked_ad, "LibraryCity" => $checked_city, "LibraryZIP" => $checked_zip, "LibraryCounty" => $checked_cnty, "LibraryTelephone" => $checked_tel, "SquareFootage" => $checked_footage, "ISLControlNo" => $checked_ctrlno, "ISLBranchNo" => $checked_brchno, "FYMonth" => $checked_fym, "Sunday" => $hours['Sunday'], "Monday" => $hours['Monday'], "Tuesday" => $hours['Tuesday'], "Wednesday" => $hours['Wednesday'], "Thursday" => $hours['Thursday'], "Friday" => $hours['Friday'], "Saturday" => $hours['Saturday']);
             } else {
-                $values = array("LibraryName" => $checked_ln, "LibraryAddress" => $checked_ad, "LibraryCity" => $checked_cy);
+                $values = array("LibraryName" => $checked_libn, "LegalName" => $checked_legn, "LibraryAddress" => $checked_ad, "LibraryCity" => $checked_city, "LibraryZIP" => $checked_zip, "LibraryCounty" => $checked_cnty, "LibraryTelephone" => $checked_tel, "SquareFootage" => $checked_footage, "ISLControlNo" => $checked_ctrlno, "ISLBranchNo" => $checked_brchno, "Sunday" => $hours['Sunday'], "Monday" => $hours['Monday'], "Tuesday" => $hours['Tuesday'], "Wednesday" => $hours['Wednesday'], "Thursday" => $hours['Thursday'], "Friday" => $hours['Friday'], "Saturday" => $hours['Saturday']);
             }
             return $values;
         } else {

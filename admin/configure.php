@@ -33,7 +33,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 } else {
     #Check for a user table.  If there is none, create it.
     try {
-        $result = $db->query("SHOW TABLES LIKE 'Users'");
+        $result = $db->query("SHOW TABLES LIKE `Users`");
         if ($result->num_rows == 0) {
             $db->query($users_table);
         }
@@ -45,9 +45,47 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
+    #Check for a date lookup table.  If there isn't one, create it
+    try {
+        $result = $db->query("SHOW TABLES LIKE `DateLookup`");
+        if ($result->num_rows == 0) {
+            $db->query($date_lookup_table);
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating date lookup table: " . $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();    
+    }
+
+    #Add several years to the date lookup table, starting over a year ago
+    try {
+        $insert_query = $db->prepare("INSERT INTO `DateLookup` (`Date`, `Weekday`, `Month`, `Year`) VALUES (?, ?, ?, ?)");
+        $startyear = date("Y") - 2;
+        $date = date_create("$startyear-12-31");
+        $endyear = date("Y") + 5;
+        $enddate = date_create("$endyear-12-31");
+        while ($date < $enddate) {
+            date_add($date, date_interval_create_from_date_string("1 day"));
+            $datestring = date_format($date, 'Y-m-d');
+            $weekday = date_format($date, 'l');
+            $month = date_format($date, 'F');
+            $year = date_format($date, 'Y');
+            $query->bind_param('sssi', $datestring, $weekday, $month, $year);
+            $query->execute();
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error adding dates to date lookup table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
+    }
+
     #Check for the State Reports Sections table.  If there is none, create it.
     try {
-        $result = $db->query("SHOW TABLES LIKE 'SRSections'");
+        $result = $db->query("SHOW TABLES LIKE `SRSections`");
         if ($result->num_rows == 0) {
             $db->query( $report_sections);
             #After creating the table, add data

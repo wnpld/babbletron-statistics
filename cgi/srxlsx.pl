@@ -15,25 +15,27 @@ if ($action eq "dump") {
     my $dsn = "DBI:mysql:database=$Common::$mysqldb";
     my $dbh = DBI->connect($dsn, $Common::$dbuser, $Common::$dbuserpw, { RaiseError => 1});
 
-    my $sth = $dbh->prepare(q{SELECT `d.ReportYear`, CONCAT(`q.SectionID`, '.', `q.Number`) AS QNumber, `q.Question`, `q.Format`, `q.Source`, `d.IntegerData`, `d.CurrencyData`, `d.TextData` FROM `SRData` d INNER JOIN `SRQuestions` q ON `d.QuestionID` = q.`QuestionID` ORDER BY `d.ReportYear` ASC, `q.SectionID` ASC, `q.Number` ASC}) or return_error("SQL Error", "Could not prepare report query: " . $DBI::errstr);
+    #These sort results aren't completely in order.  They need to be subgrouped by question sequence under group and then by iteration if there's a group,
+    #but that's nearly impossible to stuff into a SQL query.
+    my $sth = $dbh->prepare(q{SELECT `d.ReportYear`, CONCAT(`q.SectionID`, '.', `q.Number`) AS QNumber, IF(`q.Source` == 'Multiple', SUBSTRING_INDEX(`q.Query`, '|', 1), 0) AS `Group`, `d.Iteration`, `q.Question`, `q.Format`, `q.Source`, `d.IntegerData`, `d.CurrencyData`, `d.TextData` FROM `SRData` d INNER JOIN `SRQuestions` q ON `d.QuestionID` = q.`QuestionID` ORDER BY `d.ReportYear` ASC, `q.SectionID` ASC, `q.Number` ASC, IF(`q.Source` == 'Multiple', SUBSTRING_INDEX(`q.Query`, '|', 1), 0) ASC, `d.Iteration` ASC}) or return_error("SQL Error", "Could not prepare report query: " . $DBI::errstr);
     $sth->execute() or return_error("SQL Error", "Could not execute report query: " . $DBI::errstr);
 
     my %questions;
     while (my @row = $sth->fetchrow_array()) {
-        $questions{$row[0]}{$row[1]}{'Question'} = $row[2];
-        $questions{$row[0]}{$row[1]}{'AnswerType'} = $row[4];
-        $questions{$row[0]}{$row[1]}{'DataType'} = $row[3];
-        if (($row[4] ne "Multiple") && ($row[3] eq "Integer")) {
+        $questions{$row[0]}{$row[1]}{$row[2]}{$row[3]}{'Question'} = $row[4];
+        $questions{$row[0]}{$row[1]}{$row[2]}{$row[3]}{'AnswerType'} = $row[6];
+        $questions{$row[0]}{$row[1]}{$row[2]}{$row[3]}{'DataType'} = $row[5];
+        if ($row[3] eq "Integer") {
             if (defined($row[5])) {
-                $questions{$row[0]}{$row[1]}{'Answer'} = $row[5];
+                $questions{$row[0]}{$row[1]}{$row[2]}{$row[3]}{'Answer'} = $row[7];
             }
-        } elsif (($row[4] ne "Multiple") && ($row[3] eq "Currency")) {
+        } elsif ($row[3] eq "Currency") {
             if (defined($row[6])) {
-                $questions{$row[0]}{$row[1]}{'Answer'} = $row[6];
+                $questions{$row[0]}{$row[1]}{$row[2]}{$row[3]}{'Answer'} = $row[8];
             }
-        } elsif (($row[4] ne "Multiple") && ($row[3] eq "Text")) {
+        } elsif ($row[3] eq "Text") {
             if (defined($row[7])) {
-                $questions{$row[0]}{$row[1]}{'Answer'} = $row[7];
+                $questions{$row[0]}{$row[1]}{$row[2]}{$row[3]}{'Answer'} = $row[9];
             }
         }
     }
@@ -45,15 +47,16 @@ if ($action eq "dump") {
 
     my $workbook = Excel::Writer::XLSX->new( $excelfh );
     my @sheets;
+    my %formats;
 
-    my $force_text_format = $workbook->add_format();
-    $force_text_format->set_num_format( 0x31 ); #Text
-    my $number_format = $workbook->add_format();
-    $number_format->set_num_format( 0x25 ); #Whole numbers with commas
-    my $currency_format = $workbook->add_format(); 
-    $currency_format = set_num_format( 0x2c ); #Accounting format
-    my $text_format = $workbook->add_format();
-    $text_format->set_text_wrap();
+    $formats{'force_text'} = $workbook->add_format();
+    $formats{'force_text'}->set_num_format( 0x31 ); #Text
+    $formats{'number'} = $workbook->add_format();
+    $formats{'number'}->set_num_format( 0x25 ); #Whole numbers with commas
+    $formats{'currency'} = $workbook->add_format(); 
+    $formats{'currency'}->set_num_format( 0x2c ); #Accounting format
+    $formats{'text'} = $workbook->add_format();
+    $formats{'text'}->set_text_wrap();
 
     foreach my $year (keys %questions) {
         push(@sheets, $workbook->add_worksheet($year));
@@ -61,21 +64,47 @@ if ($action eq "dump") {
         my $rows = keys %{questions{$year}};
         my $current_sheet = (scalar @sheets) - 1;
         my $y = 1; #Skip a row for the table header
+        my $lastgroup = 0;
+        my %sortgroup;
+        my @questionlist; #For keeping track of questions when iterating
 
         foreach my $question (keys %{$questions{$year}}) {
-            $sheets[$current_sheet]->write(0, $y, $question, $force_text_format);
-            $sheets[$current_sheet]->write(1, $y, $questions{$year}{$question}{'Question'}, $text_format);
-            $sheets[$current_sheet]->write(2, $y, $questions{$year}{$question}{'AnswerType'}, $force_text_format);
-            my $datatype = $questions{$year}{$question}{'DataType'};
-            my $answer = $questions{$year}{$question}{'Answer'};
-            if ($datatype eq "Integer") {
-                $sheets[$current_sheet]->write(3, $y, $answer, $number_format);
-            } elsif ($datatype eq "Currency") {
-                $sheets[$current_sheet]->write(3, $y, $answer, $currency_format);
-            } else {
-                $sheets[$current_sheet]->write(3, $y, $answer, $text_format);
+            foreach my $group (keys %{$questions{$year}{$question}}) {
+                foreach my $iteration (keys %{$questions{$year}{$question}{$group}}) {
+                    if ($group != $lastgroup) {
+                        if ($lastgroup != 0) {
+                            #Changed from a non-zero group number.  Print sorted.
+                            foreach my $qiteration (keys %sortgroup) {
+                                for (my $x = 0; $x < scalar @{$sortgroup{$qiteration}}; $x++) {
+                                    my %qdata = %{${$sortgroup{$qiteration}}[$x]};
+                                    $y = &printrow(\%qdata, $sheets[$current_sheet], $y, $questionlist[$x], \%formats);
+                                }
+                            }
+                            %sortgroup = undef;
+                            @questionlist = undef;
+                        }
+                        if ($group != 0) {
+                            #This is a new group which needs to be sorted
+                            $lastgroup = $group;
+                        } else {
+                            #Restore lastgroup to 0
+                            $lastgroup = 0;
+                        }
+                        if ($group == 0) {
+                            #Add a row to the spreadsheet
+                            $y = &printrow(\%{$questions{$year}{$question}{$group}{$iteration}}, $sheets[$current_sheet], $y, $question, \%formats);
+                        } else {
+                            #Add the question info to the sort group
+                            push(@{$sortgroup{$iteration}}, \%{$questions{$year}{$question}{$group}{$iteration}});
+                            if ($iteration == 1) {
+                                #In the first iteration add each question to the question list
+                                push(@questionlist, $question);
+                            }
+                        }
+
+                    }
+                }
             }
-            $y++;
         }
         my $tablename = $year . "Questions";
         $sheets[$current_sheet]->add_table(
@@ -102,6 +131,28 @@ if ($action eq "dump") {
     print $output;
 }
 exit;
+
+sub printrow {
+    my %response = %{$_[0]};
+    my $sheet = $_[1];
+    my $row = $_[2];
+    my $qno = $_[3];
+    my %formatlist = %{$_[4]};
+    $sheet->write(0, $row, $qno, $formatlist{'force_text'});
+    $sheet->write(1, $row, $response{'Question'}, $formatlist{'text'});
+    $sheet->write(2, $row, $response{'AnswerType'}, $formatlist{'force_text'});
+    my $datatype = $response{'DataType'};
+    my $answer = $response{'Answer'};
+    if ($datatype eq "Integer") {
+        $sheet->write(3, $row, $answer, $formatlist{'number'});
+    } elsif ($datatype eq "Currency") {
+        $sheet->write(3, $row, $answer, $formatlist{'currency'});
+    } else {
+        $sheet->write(3, $row, $answer, $formatlist{'text'});
+    }
+    $row++;
+    return $row;
+}
 
 sub return_error {
     my ($error, $message) = @_;
