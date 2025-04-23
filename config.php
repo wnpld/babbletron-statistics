@@ -1,8 +1,8 @@
 <?php
-######################
-# Database information
-######################
-#This site requires a MySQL or MariaDB database
+/*
+ Database information
+
+ This site requires a MySQL or MariaDB database */
 
 $mysqlhost = "localhost"; //If your database server is somewhere else, put that here
 $dbname = ""; //The name of your database
@@ -11,26 +11,18 @@ $dbadminpw = "";  //The password for a user with all rights
 $dbuser = "";  //A user with insert, select, delete, update access only
 $dbuserpw = "";  //Password for the restricted user
 
-#Use this variable for collecting data from other databases (example in comments)
-# $dblist = array( 
-# "Suma" => array(
-#    "host" => "localhost",
-#    "dbname" => "suma_db",
-#    "user" => "suma_user",
-#    "password" => "092j3jkalsfd",));
-$dblist = array(
-    "Suma" => array(
-        "host" => "localhost",
-        "dbname" => "",
-        "user" => "",
-        "password" => "",
-    )
-    );
+/* Use this variable for collecting data from other databases (example in comments)
+$dblist = array( 
+  "Suma" => array(
+    "host" => "localhost",
+    "dbname" => "suma_db",
+    "user" => "suma_user",
+    "password" => "092j3jkalsfd",));
+*/ 
 
-
-##################
-# Site information
-##################
+/*
+ Site information
+*/
 
 $sitename = "Babbletron"; //This should be a short descriptor for your site
                         //which shows up in the upper-left corner of each page.

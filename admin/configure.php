@@ -33,7 +33,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 } else {
     #Check for a user table.  If there is none, create it.
     try {
-        $result = $db->query("SHOW TABLES LIKE `Users`");
+        $result = $db->query("SHOW TABLES LIKE 'Users'");
         if ($result->num_rows == 0) {
             $db->query($users_table);
         }
@@ -47,9 +47,32 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 
     #Check for a date lookup table.  If there isn't one, create it
     try {
-        $result = $db->query("SHOW TABLES LIKE `DateLookup`");
+        $result = $db->query("SHOW TABLES LIKE 'DateLookup'");
         if ($result->num_rows == 0) {
             $db->query($date_lookup_table);
+            #Add several years to the date lookup table, starting over a year ago
+            try {
+                $insert_query = $db->prepare("INSERT INTO `DateLookup` (`Date`, `Weekday`, `Month`, `Year`) VALUES (?, ?, ?, ?)");
+                $startyear = date("Y") - 2;
+                $date = date_create("$startyear-12-31");
+                $endyear = date("Y") + 5;
+                $enddate = date_create("$endyear-12-31");
+                while ($date < $enddate) {
+                    date_add($date, date_interval_create_from_date_string("1 day"));
+                    $datestring = date_format($date, 'Y-m-d');
+                    $weekday = date_format($date, 'l');
+                    $month = date_format($date, 'F');
+                    $year = date_format($date, 'Y');
+                    $insert_query->bind_param('sssi', $datestring, $weekday, $month, $year);
+                    $insert_query->execute();
+                }
+            } catch (mysqli_sql_exception $e) {
+                echo "<html><head><title>Error</title></head><body>";
+                echo "<p>Error adding dates to date lookup table: ". $e->getMessage();
+                echo "</p></body></html>";
+                $db->close();
+                exit();
+            }
         }
     } catch (mysqli_sql_exception $e) {
         echo "<html><head><title>Error</title></head><body>";
@@ -59,33 +82,9 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();    
     }
 
-    #Add several years to the date lookup table, starting over a year ago
-    try {
-        $insert_query = $db->prepare("INSERT INTO `DateLookup` (`Date`, `Weekday`, `Month`, `Year`) VALUES (?, ?, ?, ?)");
-        $startyear = date("Y") - 2;
-        $date = date_create("$startyear-12-31");
-        $endyear = date("Y") + 5;
-        $enddate = date_create("$endyear-12-31");
-        while ($date < $enddate) {
-            date_add($date, date_interval_create_from_date_string("1 day"));
-            $datestring = date_format($date, 'Y-m-d');
-            $weekday = date_format($date, 'l');
-            $month = date_format($date, 'F');
-            $year = date_format($date, 'Y');
-            $query->bind_param('sssi', $datestring, $weekday, $month, $year);
-            $query->execute();
-        }
-    } catch (mysqli_sql_exception $e) {
-        echo "<html><head><title>Error</title></head><body>";
-        echo "<p>Error adding dates to date lookup table: ". $e->getMessage();
-        echo "</p></body></html>";
-        $db->close();
-        exit();
-    }
-
     #Check for the State Reports Sections table.  If there is none, create it.
     try {
-        $result = $db->query("SHOW TABLES LIKE `SRSections`");
+        $result = $db->query("SHOW TABLES LIKE 'SRSections'");
         if ($result->num_rows == 0) {
             $db->query( $report_sections);
             #After creating the table, add data
@@ -539,15 +538,20 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
         <script type="text/javascript" language="javascript">
             function validateForm(event) {
+                function validateForm(event) {
                 var success = true;
                 var libraryname = document.getElementById('libraryname').value;
                 var address = document.getElementById('address').value;
                 var city = document.getElementById('city').value;
+                var zip = document.getElementById('zip').value;
+                var county = document.getElementById('county').value;
+                var telephone = document.getElementById('telephone').value;
+                var squarefootage = document.getElementById('squarefootage').value;
 
                 if (/^[A-Za-z][A-Za-z0-9\- '().,]{3,98}[A-Za-z.]$/.exec(libraryname) === null) {
                     success = false;
                     document.getElementById('libraryname').classList.remove('is-valid');
-                    document.getElementById('libraryname').classList.add('is-invalid')
+                    document.getElementById('libraryname').classList.add('is-invalid');
                 } else {
                     document.getElementById('libraryname').classList.remove('is-invalid');
                     document.getElementById('libraryname').classList.add('is-valid');
@@ -571,12 +575,49 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     document.getElementById('city').classList.add('is-valid');
                 }
 
+                if (/^\d{5}(-\d{4}){0,1}$/.exec(zip) === null) {
+                    success = false ;
+                    document.getElementById('zip').classList.remove('is-valid');
+                    document.getElementById('zip').classList.add('is-invalid');
+                } else {
+                    document.getElementById('zip').classList.remove('is-invalid');
+                    document.getElementById('zip').classList.add('is-valid');
+                }
+
+                if (/^[A-Za-z][A-Za-z \-'.]{1,73}[A-Za-z.]$/.exec(county) === null) {
+                    success = false;
+                    document.getElementById('county').classList.remove('is-valid');
+                    document.getElementById('county').classList.add('is-invalid');
+                } else {
+                    document.getElementById('county').classList.remove('is-invalid');
+                    document.getElementById('county').classList.add('is-valid');
+                }
+
+                if (/^\d{3}[ \-]{0,1}\d{3}[ \-]{0,1}\d{4}$/.exec(telephone) === null) {
+                    success = false ;
+                    document.getElementById('telephone').classList.remove('is-valid');
+                    document.getElementById('telephone').classList.add('is-invalid');
+                } else {
+                    document.getElementById('telephone').classList.remove('is-invalid');
+                    document.getElementById('telephone').classList.add('is-valid');
+                }
+
+                if (/^\d{3,9}$/.exec(squarefootage) == null) {
+                    success = false ;
+                    document.getElementById('squarefootage').classList.remove('is-valid');
+                    document.getElementById('squarefootage').classList.add('is-invalid');
+                } else {
+                    document.getElementById('squarefootage').classList.remove('is-invalid');
+                    document.getElementById('squarefootage').classList.add('is-valid');
+                }
+
                 if (!success) {
                     event.preventDefault();
                     return false;
                 } else {
                     return true;
                 }
+            }
             }
         </script>        
     </head>
@@ -600,6 +641,16 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     </div>
                 </div>
                 <div class="mb-4">
+                    <label for="legallibraryname" class="form-label">Legal Library Name</label>
+                    <input type="text" id="legallibraryname" name="legallibraryname" class="form-control" aria-describedby="legallibrarynametips">
+                    <div class="invalid-feedback">
+                        The provided library name was too long, too short, or contained unusual characters.
+                    </div>
+                    <div id="legallibrarynametips" class="form-text">
+                        If the legal name of the library is not the name entered in the Library Name blank, enter the legal name here.
+                    </div>
+                </div>
+                <div class="mb-4">
                     <label for="address" class="form-label">Address</label>
                     <input type="text" id="address" name="address" class="form-control" required>
                     <div class="invalid-feedback">
@@ -612,6 +663,42 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     <div class="invalid-feedback">
                         No city was provided, it was absurdly short or absurdly long, or it contained invalid characters.
                     </div>
+                </div>
+                <div class="mb-4">
+                    <label for="ZIP" class="form-label">ZIP Code</label>
+                    <input type="text" id="zip" name="zip" class="form-control" size="10" required>
+                    <div class="invalid-feedback">
+                        No ZIP code was provided or it was in an unexpected format (5 numbers or 5 number plus 4 numbers separated by a hyphen)
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="county" class="form-label">County</label>
+                    <input type="text" id="county" name="county" class="form-control" size="25" required>
+                    <div class="invalid-feedback">
+                        No county was provided or it had invalid formatting.
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="telephone" class="form-label">Telephone Number</label>
+                    <input type="text" id="telephone" name="telephone" class="form-control" size="12" required>
+                    <div class="invalid-feedback">
+                        No telephone number was entered or it had invalid characters (use only numbers, and optionally, spaces or hyphens)
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="squarefootage" class="form-label">Square Footage</label>
+                    <input type="number" id="squarefootage" name="squarefootage" class="form-control" size="6" required>
+                    <div class="invalid-feedback">
+                        No square footage was provided or there were invalid characters.  If you aren't sure about the square footage, put a guess here and you can correct it later.
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="islcontrolno" class="form-label">ISL Control Number</label>
+                    <input type="number" id="islcontrolno" name="islcontrolno" class="form-control" size="5">
+                </div>
+                <div class="mb-4">
+                    <label for="islbranchno" class="form-label">ISL Branch Number</label>
+                    <input type="number" id="islbranchno" name="islbranchno" class="form-control" size="2">
                 </div>
                 <div class="mb-4">
                     <label for="fymonth" class="form-label">Fiscal Year Start</label>
@@ -631,6 +718,25 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     </select>
                     <div id="fymonthtips" class="form-text">
                         Choose the month in which your fiscal year begins.  It is assumed to start on the first of the chosen month.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Library Hours Open</h2>
+                        <label for="sundayopen" class="form-label">Sunday</label>
+                        <input type="number" min="0" max="24" id="sundayopen" name="sundayopen" class="form-control" size="2" step=".5" value="0" required>
+                        <label for="mondayopen" class="form-label">Monday</label>
+                        <input type="number" min="0" max="24" id="mondayopen" name="mondayopen" class="form-control" size="2" step=".5" value="0" required>
+                        <label for="tuesdayopen" class="form-label">Tuesday</label>
+                        <input type="number" min="0" max="24" id="tuesdayopen" name="tuesdayopen" class="form-control" size="2" step=".5" value="0" required>
+                        <label for="wednesdayopen" class="form-label">Wednesday</label>
+                        <input type="number" min="0" max="24" id="wednesdayopen" name="wednesdayopen" class="form-control" size="2" step=".5" value="0" required>
+                        <label for="thursdayopen" class="form-label">Thursday</label>
+                        <input type="number" min="0" max="24" id="thursdayopen" name="thursdayopen" class="form-control" size="2" step=".5" value="0" required>
+                        <label for="fridayopen" class="form-label">Friday</label>
+                        <input type="number" min="0" max="24" id="fridayopen" name="fridayopen" class="form-control" size="2" step=".5" value="0" required>
+                        <label for="saturdayopen" class="form-label">Saturday</label>
+                        <input type="number" min="0" max="24" id="saturdayopen" name="saturdayopen" class="form-control" size="2" step=".5" value="0" required>
                     </div>
                 </div>
                 <input type="hidden" name="formtype" value="mainlibrary">

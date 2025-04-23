@@ -170,7 +170,7 @@ array_push($report_sections_data, array(25, 'Public Library District Secretary\'
 array_push($report_sections_data, array(99, 'COVID-19 Questions'));
 
 #Questions Data
-$report_questions_prepared_statement = "INSERT INTO `SRQuestions` (`SectionID`, `Number`, `Question`, `Source`, `Query`, `Format`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+$report_questions_prepared_statement = "INSERT INTO `SRQuestions` (`SectionID`, `Number`, `Question`, `Source`, `Query`, `Format`) VALUES (?, ?, ?, ?, ?, ?)";
 $report_questions_data = array();
 array_push($report_questions_data, array(1, '01', 'ISL Control #', 'Direct', NULL, 'Text'));
 array_push($report_questions_data, array(1, '02', 'ISL Branch #', 'Direct', NULL, 'Text'));
@@ -497,10 +497,10 @@ array_push($report_questions_data, array(24, '03', 'Please provide any comments,
 
 #State Reporting Collected Data
 #The Iteration field is for handling questions with multiple sets of answers, e.g. list of board members
-$report_data = "CREATE TABLE `SRData` (`ReportYear` YEAR NOT NULL, `QuestionID` smallint UNSIGNED NOT NULL, 'Iteration' tinyint UNSIGNED DEFAULT 0, `IntegerData` int UNSIGNED NULL, `CurrencyData` decimal(10,2) NULL, `TextData` text NULL, PRIMARY KEY(`ReportYear`, `QuestionID`, `Iteration`), INDEX srquestion_fk (`QuestionID`), FOREIGN KEY (`QuestionID`) REFERENCES `SRQuestions`(`QuestionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+$report_data = "CREATE TABLE `SRData` (`ReportYear` YEAR NOT NULL, `QuestionID` smallint UNSIGNED NOT NULL, `Iteration` tinyint UNSIGNED DEFAULT 0, `IntegerData` int UNSIGNED NULL, `CurrencyData` decimal(10,2) NULL, `TextData` text NULL, PRIMARY KEY(`ReportYear`, `QuestionID`, `Iteration`), INDEX srquestion_fk (`QuestionID`), FOREIGN KEY (`QuestionID`) REFERENCES `SRQuestions`(`QuestionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Table for keeping track of user-created tables
-$custom_table_list = "CREATE TABLE `CustomTables` (`CustomTableID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, 'TableName' VARCHAR(50) NOT NULL, `SectionID` = tinyint UNSIGNED NOT NULL, `EntryMethod` enum('Manual', 'Database', 'File') NOT NULL, `CollectionFrequency` enum('PerInstance','Daily','Monthly','Static') NOT NULL, `InActiveUse` enum('Yes','No') NOT NULL, INDEX customsection_fk (`SectionID`), FOREIGN KEY (`SectionID`) REFERENCES `SRSections`(`SectionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+$custom_table_list = "CREATE TABLE `CustomTables` (`CustomTableID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `TableName` VARCHAR(50) NOT NULL, `SectionID` = tinyint UNSIGNED NOT NULL, `EntryMethod` enum('Manual', 'Database', 'File') NOT NULL, `CollectionFrequency` enum('PerInstance','Daily','Monthly','Static') NOT NULL, `InActiveUse` enum('Yes','No') NOT NULL, INDEX customsection_fk (`SectionID`), FOREIGN KEY (`SectionID`) REFERENCES `SRSections`(`SectionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 #Table for managing external database relationships
 $custom_table_dbs = "CREATE TABLE `CustomTableDBs` (`CustomTableDBID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CustomTableID` smallint UNSIGNED NOT NULL, `Database` varchar(50) NOT NULL, `ImportQuery` text NOT NULL, INDEX customtable_dbs_fk (`CustomTableID`), FOREIGN KEY (`CustomTableID`) REFERENCES `CustomTables` (`CustomTableID`) ON UPDATE CASCADE ON DELETE CASCADE)";

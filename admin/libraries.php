@@ -255,16 +255,6 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         </script>
         <?php } ?>
   </head>
-
-  <label for="vacationDate" class="form-label">Date of Vacation:</label>
-              <div class="input-group date" data-provide="datepicker" data-date-start-date="2025-02-27" data-date-end-date="2026-12-31">
-                <input id="vacationDate" name="vacationDate" class="form-control" type="text">
-                <div class="input-group-addon">
-                  <span class="glyphicon glyphicon-th">
-                  </span>
-                </div>
-              </div>
-
   <body>
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
@@ -304,10 +294,11 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         <div class="container-fluid">
             <?php if (isset($_REQUEST['action'])) {
                 if ($_REQUEST['action'] == "add") { ?>
+                <h1>Add a Library Branch</h1>
             <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
-                <div class="mb-4">
                 <div class="alert alert-secondary" type="alert">All values entered (legal name, address, city, ZIP, county, hours open) should be the values from the beginning of the fiscal year. If these values have changed since the beginning of the fiscal year, enter the old values and then update the record with the changed values noting the effective dates.</div>
-                <label for="libraryname" class="form-label">Library Name</label>
+                <div class="mb-4">
+                    <label for="libraryname" class="form-label">Library Name</label>
                     <input type="text" id="libraryname" name="libraryname" class="form-control" aria-describedby="librarynametips" required>
                     <div class="invalid-feedback">
                     The provided library name was too long, too short, or contained unusual characters.
@@ -316,7 +307,8 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                         This should represent the common way you refer to the branch.  It can be as simple as "Branch Library" or it can be more descriptive.
                     </div>
                 </div>
-                <label for="legallibraryname" class="form-label">Legal Library Name</label>
+                <div class="mb-4">
+                    <label for="legallibraryname" class="form-label">Legal Library Name</label>
                     <input type="text" id="legallibraryname" name="legallibraryname" class="form-control" aria-describedby="legallibrarynametips">
                     <div class="invalid-feedback">
                     The provided library name was too long, too short, or contained unusual characters.
@@ -416,6 +408,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 }
                 $query->close();
                 ?>
+                <h1>Modify a Library Branch</h1>
             <form action="<?php echo "$protocol://$server$webdir/admin/process.php" ?>" method="POST" onsubmit="validateForm(event)">
                 <div class="mb-4">
                     <label for="libraryname" class="form-label">Library Name</label>
