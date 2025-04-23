@@ -159,6 +159,48 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
+    //Create Library Hours Table
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'LibraryHours'");
+        if ($result->num_rows == 0) {
+            $db->query($library_hours_table);
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating LibraryHours table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
+    }
+
+    //Create Library Closings Table
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'LibraryClosings'");
+        if ($result->num_rows == 0) {
+            $db->query($library_closings_table);
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating LibraryClosings table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
+    }
+
+    //Create Library Changes Table
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'LibraryChanges'");
+        if ($result->num_rows == 0) {
+            $db->query($library_changes_table);
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating LibraryChanges table: ". $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();
+    }
+
     #After creating the Library Information Table, add the state report
     #support tables.  Many of these use this table so it should be created first
 

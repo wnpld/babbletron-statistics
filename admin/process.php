@@ -52,13 +52,13 @@ if (isset($_REQUEST['formtype'])) {
         }
     } else if ($_REQUEST['formtype'] == "mainlibrary") {
         #New main library
-        $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['legallibraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['zip'], $_REQUEST['county'], $_REQUEST['telephone'], $_REQUEST['squarefootage'], $_REQUEST['ISLControlNo'], $_REQUEST['ISLBranchNo'], $_REQUEST['fymonth'], $_REQUEST['sundayopen'], $_REQUEST['mondayopen'], $_REQUEST['tuesdayopen'], $_REQUEST['wednesdayopen'], $_REQUEST['thursdayopen'], $_REQUEST['fridayopen'], $_REQUEST['saturdayopen'], "new");
+        $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['legallibraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['zip'], $_REQUEST['county'], $_REQUEST['telephone'], $_REQUEST['squarefootage'], $_REQUEST['islcontrolno'], $_REQUEST['islbranchno'], $_REQUEST['fymonth'], $_REQUEST['sundayopen'], $_REQUEST['mondayopen'], $_REQUEST['tuesdayopen'], $_REQUEST['wednesdayopen'], $_REQUEST['thursdayopen'], $_REQUEST['fridayopen'], $_REQUEST['saturdayopen'], "new");
 
         if ($checked != false) {
             //If checked returns an array everything's fine.  If it's false there's an error
             try{
-                $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LegalName`, `LibraryAddress`, `LibraryCity`, `LibraryZIP`, `LibraryCounty`, `SquareFootage`, `ISLControlNo`, `ISLBranchNo`, `Branch`, `FYMonth`) VALUES (?, ?, ?, 0, ?)');
-                $query->bind_param('sssssssssii', $checked['LibraryName'], $checked['LegalName'], $checked['LibraryAddress'], $checked['LibraryCity'], $checked['LibraryZIP'], $checked['LibraryCounty'], $checked['SquareFootage'], $checked['ISLControlNo'], $checked['ISLBranchNo'], $checked['FYMonth']);
+                $query = $db->prepare('INSERT INTO `LibraryInfo` (`LibraryName`, `LegalName`, `LibraryAddress`, `LibraryCity`, `LibraryZIP`, `LibraryCounty`, `LibraryTelephone`, `SquareFootage`, `ISLControlNo`, `ISLBranchNo`, `Branch`, `FYMonth`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)');
+                $query->bind_param('sssssssissi', $checked['LibraryName'], $checked['LegalName'], $checked['LibraryAddress'], $checked['LibraryCity'], $checked['LibraryZIP'], $checked['LibraryCounty'], $checked['LibraryTelephone'], $checked['SquareFootage'], $checked['ISLControlNo'], $checked['ISLBranchNo'], $checked['FYMonth']);
                 $query->execute();
                 $lastid = $db->insert_id;
                 $query->close();
@@ -621,7 +621,7 @@ function branchchecks($libraryname, $legallibraryname, $address, $city, $zip, $c
     }
 
     if (isset($zip)) {
-        preg_match('/^\d{5}(-\d{4}){0,1}$/', $city, $matches);
+        preg_match('/^\d{5}(-\d{4}){0,1}$/', $zip, $matches);
         if ($matches[0]) {
             $checked_zip = $zip;
             if ($status == "old") {

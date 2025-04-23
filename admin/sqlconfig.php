@@ -23,10 +23,10 @@ $library_closings_table = "CREATE TABLE `LibraryClosings` (`ClosingID` smallint 
 #like figuring out how many Thursdays occurred in a fiscal year
 $date_lookup_table = "CREATE TABLE `DateLookup` (`Date` date PRIMARY KEY, `Weekday` enum('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday') NOT NULL, `Month` enum('January','February','March','April','May','June','July','August','September','October','November','December') NOT NULL, `Year` year NOT NULL)";
 
-#Special Tables for State Report
 #Library Changes Table - For tracking changes to Library information
 $library_changes_table = "CREATE TABLE `LibraryChanges` (`LibraryID` tinyint UNSIGNED NOT NULL, `FYChanged` year NOT NULL, `LegalName` varchar(100) NULL, `LegalNameChange` enum('Yes','No') NULL, `LibraryAddress` varchar(150) NULL, `PhysicalAddressChange` enum('Yes','No') NULL, `LibraryCity` varchar(75) NULL, `LibraryZIP` varchar(10) NULL, `LibraryCounty` varchar(75) NULL, `LibraryTelephone` char(10) NOT NULL, `SquareFootage` int NULL, `SquareFootageReason` varchar(200) NULL, CONSTRAINT pk_librarychanges PRIMARY KEY (`LibraryID`, `FYChanged`) INDEX fk_librarychanges (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
 
+#Special Tables for State Report
 #Referenda
 $referenda_table = "CREATE TABLE `Referenda` (`ReferendumID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `ReferendumType` varchar(75) NOT NULL, `ReferendumDate` date NOT NULL, `ReferendumPassed` enum('Yes','No') NOT NULL, `EffectiveDate` date NULL, `BallotLanguage` text NOT NULL)";
 
