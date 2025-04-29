@@ -27,6 +27,9 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Statistics Server Administration</title>
     <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
+    <script src="<?php echo $jquery; ?>"></script>;
+    <link id="bdsp-css" href="<?php echo $datepickercss; ?>" rel="stylesheet">
+    <script src="<?php echo $datepickerjs; ?>"></script>
     <?php if (isset($_REQUEST['action'])) { ?>
     <script type="text/javascript" language="javascript">
             function validateForm(event) {
@@ -114,16 +117,6 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             function toggleCalendarEntry(calendar, state) {
                 calendarfield = document.getElementById(calendar);
                 if (state == "off") {
-                    calendarfield.removeAttribute('disabled');
-                    if (calendar == "legallibraryname-calendar") {
-                        document.getElementById('legallibraryname-checkbox').removeAttribute('disabled');
-                    } else if (calendar == "address-calendar") {
-                        document.getElementById('address-checkbox').removeAttribute('disabled');
-                    } else if (calendar == "squarefootage-calendar") {
-                        document.getElementById('squarefootage-change-reason').removeAttribute('disabled');
-                        document.getElementById('squarefootage-change-reson').setAttribute('required', '');
-                    }
-                } else {
                     calendarfield.setAttribute('disabled', '');
                     if (calendar == "legallibraryname-calendar") {
                         document.getElementById('legallibraryname-checkbox').setAttribute('disabled', '');
@@ -131,144 +124,158 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                         document.getElementById('address-checkbox').setAttribute('disabled', '');
                     } else if (calendar == "squarefootage-calendar") {
                         document.getElementById('squarefootage-change-reason').setAttribute('disabled', '');
-                        document.getElementById('squarefootage-change-reason').removeAttribute('required', '');
+                        document.getElementById('squarefootage-change-reson').removeAttribute('required');
+                    }
+                } else {
+                    calendarfield.removeAttribute('disabled');
+                    if (calendar == "legallibraryname-calendar") {
+                        document.getElementById('legallibraryname-checkbox').removeAttribute('disabled');
+                    } else if (calendar == "address-calendar") {
+                        document.getElementById('address-checkbox').removeAttribute('disabled');
+                    } else if (calendar == "squarefootage-calendar") {
+                        document.getElementById('squarefootage-change-reason').removeAttribute('disabled');
+                        document.getElementById('squarefootage-change-reason').setAttribute('required', '');
                     }
                 }
             }
             
             function addQualifier(field) {
-                const fieldblock = document.getElementById(field + '-block');
-                const qualifierset = document.createElement('div');
-                const radioseta = document.createElement('div');
-                radioseta.classList.add('form-check');
-                radioseta.classList.add('form-check-inline');
-                radioseta.classList.add('mb-3');
+                var qualset = document.getElementById(field + '-qualifier');
+                if (!qualset) {
+                    const fieldblock = document.getElementById(field + '-block');
+                    const qualifierset = document.createElement('div');
+                    qualifierset.setAttribute('id', field + '-qualifier');
+                    const radioseta = document.createElement('div');
+                    radioseta.classList.add('form-check');
+                    radioseta.classList.add('form-check-inline');
+                    radioseta.classList.add('mb-3');
 
-                const correctionradio = document.createElement('input');
-                correctionradio.classList.add('form-check-input');
-                correctionradio.setAttribute('type', 'radio');
-                correctionradio.setAttribute('name', field + '-radio');
-                correctionradio.setAttribute('id', field + '-correction-radio');
-                correctionradio.setAttribute('value', 'correction');
-                correctionradio.setAttribute('onclick', 'toggleCalendarEntry("' + field + '-calendar", "off")');
-                correctionradio.checked = true;
-                radioseta.appendChild(correctionradio);
+                    const correctionradio = document.createElement('input');
+                    correctionradio.classList.add('form-check-input');
+                    correctionradio.setAttribute('type', 'radio');
+                    correctionradio.setAttribute('name', field + '-radio');
+                    correctionradio.setAttribute('id', field + '-correction-radio');
+                    correctionradio.setAttribute('value', 'correction');
+                    correctionradio.setAttribute('onclick', 'toggleCalendarEntry("' + field + '-calendar", "off")');
+                    correctionradio.checked = true;
+                    radioseta.appendChild(correctionradio);
 
-                const correctionlabel = document.createElement('label');
-                correctionlabel.classList.add('form-check-label');
-                correctionlabel.setAttribute('for', field + '-correction-radio');
-                correctionlabel.textContent = "Correction only";
-                radioseta.appendChild(correctionlabel);
+                    const correctionlabel = document.createElement('label');
+                    correctionlabel.classList.add('form-check-label');
+                    correctionlabel.setAttribute('for', field + '-correction-radio');
+                    correctionlabel.textContent = "Correction only";
+                    radioseta.appendChild(correctionlabel);
 
-                qualifierset.appendChild(radioseta);
+                    qualifierset.appendChild(radioseta);
 
-                const radiosetb = document.createElement('div');
-                radiosetb.classList.add('form-check');
-                radiosetb.classList.add('form-check-inline');
-                radiosetb.classList.add('mb-3');
+                    const radiosetb = document.createElement('div');
+                    radiosetb.classList.add('form-check');
+                    radiosetb.classList.add('form-check-inline');
+                    radiosetb.classList.add('mb-3');
 
-                const changeradio = document.createElement('input');
-                changeradio.classList.add('form-check-input');
-                changeradio.setAttribute('type', 'radio');
-                changeradio.setAttribute('name', field + '-radio')
-                changeradio.setAttribute('id', field + '-change-radio');
-                changeradio.setAttribute('value', 'change');
-                correctionradio.setAttribute('onclick', 'toggleCalendarEntry("' + field + '-calendar", "on")');
-                radiosetb.appendChild(changeradio);
+                    const changeradio = document.createElement('input');
+                    changeradio.classList.add('form-check-input');
+                    changeradio.setAttribute('type', 'radio');
+                    changeradio.setAttribute('name', field + '-radio')
+                    changeradio.setAttribute('id', field + '-change-radio');
+                    changeradio.setAttribute('value', 'change');
+                    changeradio.setAttribute('onclick', 'toggleCalendarEntry("' + field + '-calendar", "on")');
+                    radiosetb.appendChild(changeradio);
 
-                const changelabel = document.createElement('label');
-                changelabel.classList.add('form-check-label');
-                changelabel.textContent = "Formal Change";
-                radiosetb.appendChild(changelabel);
+                    const changelabel = document.createElement('label');
+                    changelabel.classList.add('form-check-label');
+                    changelabel.textContent = "Formal Change";
+                    radiosetb.appendChild(changelabel);
 
-                qualifierset.appendChild(radiosetb);
+                    qualifierset.appendChild(radiosetb);
 
-                if ((field == "legallibraryname") || (field == "address")) {
-                    //There's an additional qualifier for this
-                    const radiosetc = document.createElement('div');
-                    radiosetc.classList.add('form-check');
-                    radiosetc.classList.add('form-check-inline');
-                    radiosetc.classList.add('mb-3');
+                    if ((field == "legallibraryname") || (field == "address")) {
+                        //There's an additional qualifier for this
+                        const radiosetc = document.createElement('div');
+                        radiosetc.classList.add('form-check');
+                        radiosetc.classList.add('form-check-inline');
+                        radiosetc.classList.add('mb-3');
 
-                    const officialcheck = document.createElement('input');
-                    officialcheck.classList.add('form-check-input');
-                    officialcheck.setAttribute('type', 'checkbox');
-                    officialcheck.setAttribute('name', field + '-checkbox');
-                    officialcheck.setAttribute('id', field + '-checkbox');
-                    officialcheck.setAttribute('value', 'Yes');
-                    officialcheck.setAttribute('disabled', '');
-                    radiosetc.appendChild(officialcheck);
+                        const officialcheck = document.createElement('input');
+                        officialcheck.classList.add('form-check-input');
+                        officialcheck.setAttribute('type', 'checkbox');
+                        officialcheck.setAttribute('name', field + '-checkbox');
+                        officialcheck.setAttribute('id', field + '-checkbox');
+                        officialcheck.setAttribute('value', 'Yes');
+                        officialcheck.setAttribute('disabled', '');
+                        radiosetc.appendChild(officialcheck);
 
-                    const officialchecklabel = document.createElement('label');
-                    officialchecklabel.classList.add('form-check-label');
-                    if (field == "legallibraryname") {
-                        officialchecklabel.textContent = "Official Change";
-                    } else {
-                        officialchecklabel.textConent = "Physical Change";
+                        const officialchecklabel = document.createElement('label');
+                        officialchecklabel.classList.add('form-check-label');
+                        if (field == "legallibraryname") {
+                            officialchecklabel.textContent = "Official Change";
+                        } else {
+                            officialchecklabel.textConent = "Physical Change";
+                        }
+                        
+                        officialchecklabel.setAttribute('for', field + '-checkbox');
+                        radiosetc.appendChild(officialchecklabel);
+                        qualifierset.appendChild(radiosetc);
+                    } else if (field == "squarefootage") {
+                        //There's an additional qualifier
+                        const radiosetc = document.createElement('div');
+                        radiosetc.classList.add('form-check');
+                        radiosetc.classList.add('form-check-inline');
+                        radiosetc.classList.add('mb-3');
+
+                        const changereasonlabel = document.createElement('label');
+                        changereasonlabel.classList.add('form-label');
+                        changereasonlabel.setAttribute('for', field + '-change-reason');
+                        changereasonlabel.textContent = "Reason for Change";
+                        radiosetc.appendChild(changereasonlabel);
+
+                        const changereason = document.createElement('input');
+                        changereason.setAttribute('type', 'text');
+                        changereason.classList.add('form-control');
+                        changereason.setAttribute('name', field + '-change-reason');
+                        changereason.setAttribute('size', '6');
+                        changereason.setAttribute('disabled', '');
+                        radiosetc.appendChild(changereason);
+
+                        const changereasonfeedback = document.createElement('div');
+                        changereasonfeedback.classList.add('invalid-feedback');
+                        changereasonfeedback.textContent = "If the square footage is formally different from the previous year's, it's necessary to provide a reason.";
+                        radiosetc.appendChild(changereasonfeedback);
+                        qualifierset.appendChild(radiosetc);
                     }
+
+                    const calendarblock = document.createElement('div');
+                    calendarblock.classList.add('input-group');
+                    calendarblock.classList.add('date');
+                    calendarblock.classList.add('mb-3');
+                    calendarblock.setAttribute('data-provide', 'datepicker');
+                    calendarblock.setAttribute('data-date-end-date', '<?php echo date('Y-m-d'); ?>');
                     
-                    officialchecklabel.setAttribute('for', field + '-checkbox');
-                    radiosetc.appendChild(officialchecklabel);
-                    qualifierset.appendChild(radiosetc);
-                } else if (field == "squarefootage") {
-                    //There's an additional qualifier
-                    const radiosetc = document.createElement('div');
-                    radiosetc.classList.add('form-check');
-                    radiosetc.classList.add('form-check-inline');
-                    radiosetc.classList.add('mb-3');
+                    const calendarspan = document.createElement('span');
+                    calendarspan.classList.add('input-group-text');
+                    calendarspan.setAttribute('id', field + "-calendar-span");
+                    calendarspan.textContent = "Effective Date of Change";
+                    calendarblock.appendChild(calendarspan);
 
-                    const changereasonlabel = document.createElement('label');
-                    changereasonlabel.classList.add('form-label');
-                    changereasonlabel.setAttribute('for', field + '-change-reason');
-                    changereasonlabel.textContent = "Reason for Change";
-                    radiosetc.appendChild(changereasonlabel);
+                    const calendarinput = document.createElement('input');
+                    calendarinput.classList.add('form-control');
+                    calendarinput.setAttribute('type', 'text');
+                    calendarinput.setAttribute('id', field + '-calendar');
+                    calendarinput.setAttribute('name', field + '-calendar');
+                    calendarinput.setAttribute('disabled', '');
+                    calendarblock.appendChild(calendarinput);
 
-                    const changereason = document.createElement('input');
-                    changereason.setAttribute('type', 'text');
-                    changereason.classList.add('form-control');
-                    changereason.setAttribute('name', field + '-change-reason');
-                    changereason.setAttribute('size', '6');
-                    changereason.setAttribute('disabled', '');
-                    radiosetc.appendChild(changereason);
+                    const glyphdiv = document.createElement('div');
+                    glyphdiv.classList.add('input-group-addon');
 
-                    const changereasonfeedback = document.createElement('div');
-                    changereasonfeedback.classList.add('invalid-feedback');
-                    changereasonfeedback.textContent = "If the square footage is formally different from the previous year's, it's necessary to provide a reason.";
-                    radiosetc.appendChild(changereasonfeedback);
-                    qualifierset.appendChild(radiosetc);
+                    const glyphspan = document.createElement('span');
+                    glyphspan.classList.add('glyphicon');
+                    glyphspan.classList.add('glyphicon-th');
+                    glyphdiv.appendChild(glyphspan);
+                    calendarblock.appendChild(glyphdiv);
+                    qualifierset.appendChild(calendarblock);
+                    fieldblock.appendChild(qualifierset);
                 }
-
-                const calendarblock = document.createElement('div');
-                calendarblock.classList.add('input-group');
-                calendarblock.classList.add('date');
-                calendarblock.classList.add('mb-3');
-                calendarblock.setAttribute('data-provide', 'datepicker');
-                calendarblock.setAttribute('data-date-end-date', '<?php echo date('Y-m-d'); ?>');
-                
-                const calendarspan = document.createElement('span');
-                calendarspan.classList.add('input-group-text');
-                calendarspan.setAttribute('id', field + "-calendar-span");
-                calendarspan.textContent = "Effective Date of Change";
-                calendarblock.appendChild(calendarspan);
-
-                const calendarinput = document.createElement('input');
-                calendarinput.classList.add('form-control');
-                calendarinput.setAttribute('type', 'text');
-                calendarinput.setAttribute('id', field + '-calendar');
-                calendarinput.setAttribute('name', field + '-calendar');
-                calendarinput.setAttribute('disabled', '');
-                calendarblock.appendChild(calendarinput);
-
-                const glyphdiv = document.createElement('div');
-                glyphdiv.classList.add('input-group-addon');
-
-                const glyphspan = document.createElement('span');
-                glyphspan.classList.add('glyphicon');
-                glyphspan.classList.add('glyphicon-th');
-                glyphdiv.appendChild(glyphspan);
-                calendarblock.appendChild(glyphdiv);
-                qualifierset.appendChild(calendarblock);
-                fieldblock.appendChild(qualifierset);
             }
             <?php } ?>
         </script>
@@ -418,7 +425,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 $query->close();
 
                 //Get hour data separately and append it onto the end of the existing result set
-                $query = $db->prepare("SELECT MAX(`DateImplemented`) AS `DateImplemented`, `DayOfWeek`, `HoursOpen` FROM `LibraryHours` WHERE `LibraryID` = ? ORDER BY `DateImplemented` ASC, GROUP BY `DayOfWeek`");
+                $query = $db->prepare("SELECT MAX(`DateImplemented`) AS `DateImplemented`, `DayOfWeek`, `HoursOpen` FROM `LibraryHours` WHERE `LibraryID` = ? GROUP BY `DayOfWeek`");
                 $query->bind_param('i', $_REQUEST['libraryid']);
                 $query->execute();
                 $result = $query->get_result();
@@ -582,6 +589,9 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         </div>
     </main>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript">
+        $('.date').datepicker({ format: "yyyy-mm-dd", });
+    </script>
   </body>
 </html>
 <?php 

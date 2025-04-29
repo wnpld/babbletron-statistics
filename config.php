@@ -40,6 +40,9 @@ $webdir = ""; //The directory this site is installed into
                //If the directory is the root directory, leave blank
 
 $bootstrapdir = ""; //The directory bootstrap is installed into
+$datepickerjs = "https://unpkg.com/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"; //The path to the Bootstrap Datepicker js file
+$datepickercss = "https://unpkg.com/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker3.min.css"; //The path to the Bootstrap Datepicker css file
+$jquery = "https://code.jquery.com/jquery-3.7.1.slim.min.js"; //The path to jquery js file                  
 $entryrestriction = 0; //Set to 1 to require a login to enter data (no login for viewing)
                        //Set to 2 to require a login to enter data or view reports
 
