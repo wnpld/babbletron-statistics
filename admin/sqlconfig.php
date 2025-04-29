@@ -10,13 +10,13 @@ $users_table = "CREATE TABLE `Users` (`UserID` int UNSIGNED AUTO_INCREMENT PRIMA
 $libraries_table = "CREATE TABLE `LibraryInfo` (`LibraryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryName` varchar(100) NOT NULL, `LegalName` varchar(100) NOT NULL, `LibraryAddress` varchar(150), `LibraryCity` varchar(75), `LibraryZIP` varchar(10) NOT NULL, `LibraryCounty` varchar(75) NOT NULL, `LibraryTelephone` char(10) NOT NULL, `SquareFootage` int NOT NULL, `Branch` tinyint(1) DEFAULT 1, `FYMonth` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') DEFAULT 'January', `ISLControlNo` char(5) DEFAULT NULL, `ISLBranchNo` char(2) DEFAULT NULL)";
 
 #Library Hours Table
-$library_hours_table = "CREATE TABLE `LibraryHours` (`LibraryID` tinyint UNSIGNED, `DateImplemented` date NOT NULL, `DayOfWeek` enum('Sunday','Monday','Tuesday',Wednesday','Thursday','Friday','Saturday') NOT NULL, `HoursOpen` decimal(3,1) UNSIGNED NOT NULL, CONSTRAINT pk_libraryhours PRIMARY KEY (`LibraryID`, `DateImplemented`, `DayOfWeek`), INDEX fk_libraryhours (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
+$library_hours_table = "CREATE TABLE `LibraryHours` (`LibraryID` tinyint UNSIGNED, `DateImplemented` date NOT NULL, `DayOfWeek` enum('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday') NOT NULL, `HoursOpen` decimal(3,1) UNSIGNED NOT NULL, CONSTRAINT pk_libraryhours PRIMARY KEY (`LibraryID`, `DateImplemented`, `DayOfWeek`), INDEX fk_libraryhours (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
 
 #Library Closings Table
 #This is mainly to track closings, but it can also be used to track days where there
 #were extended hours by storing a negative value that is equal to the extra hours
 #(e.g. if a day is normally 4 hours but the library was open 8, a -4 could be stored here)
-$library_closings_table = "CREATE TABLE `LibraryClosings` (`ClosingID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryID` tinyint NULL, `DateClosed` date NOT NULL, `HoursClosed` smallint UNSIGNED NOT NULL, `ClosingType` enum('Holiday','Staff Meeting','Weather','Other') NOT NULL, INDEX fk_libraryclosings (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
+$library_closings_table = "CREATE TABLE `LibraryClosings` (`ClosingID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryID` tinyint UNSIGNED NULL, `DateClosed` date NOT NULL, `HoursClosed` smallint UNSIGNED NOT NULL, `ClosingType` enum('Holiday','Staff Meeting','Weather','Other') NOT NULL, INDEX fk_libraryclosings (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
 
 #Date Lookup Table
 #This table is automatically populated and is used for complicated date calculations
@@ -24,7 +24,7 @@ $library_closings_table = "CREATE TABLE `LibraryClosings` (`ClosingID` smallint 
 $date_lookup_table = "CREATE TABLE `DateLookup` (`Date` date PRIMARY KEY, `Weekday` enum('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday') NOT NULL, `Month` enum('January','February','March','April','May','June','July','August','September','October','November','December') NOT NULL, `Year` year NOT NULL)";
 
 #Library Changes Table - For tracking changes to Library information
-$library_changes_table = "CREATE TABLE `LibraryChanges` (`LibraryID` tinyint UNSIGNED NOT NULL, `FYChanged` year NOT NULL, `LegalName` varchar(100) NULL, `LegalNameChange` enum('Yes','No') NULL, `LibraryAddress` varchar(150) NULL, `PhysicalAddressChange` enum('Yes','No') NULL, `LibraryCity` varchar(75) NULL, `LibraryZIP` varchar(10) NULL, `LibraryCounty` varchar(75) NULL, `LibraryTelephone` char(10) NOT NULL, `SquareFootage` int NULL, `SquareFootageReason` varchar(200) NULL, CONSTRAINT pk_librarychanges PRIMARY KEY (`LibraryID`, `FYChanged`) INDEX fk_librarychanges (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
+$library_changes_table = "CREATE TABLE `LibraryChanges` (`LibraryID` tinyint UNSIGNED NOT NULL, `FYChanged` year NOT NULL, `LegalName` varchar(100) NULL, `LegalNameChange` enum('Yes','No') NULL, `LibraryAddress` varchar(150) NULL, `PhysicalAddressChange` enum('Yes','No') NULL, `LibraryCity` varchar(75) NULL, `LibraryZIP` varchar(10) NULL, `LibraryCounty` varchar(75) NULL, `LibraryTelephone` char(10) NOT NULL, `SquareFootage` int NULL, `SquareFootageReason` varchar(200) NULL, CONSTRAINT pk_librarychanges PRIMARY KEY (`LibraryID`, `FYChanged`), INDEX fk_librarychanges (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
 
 #Special Tables for State Report
 #Referenda

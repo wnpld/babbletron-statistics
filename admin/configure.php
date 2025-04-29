@@ -583,6 +583,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 function validateForm(event) {
                 var success = true;
                 var libraryname = document.getElementById('libraryname').value;
+                var legalname = document.getElementById('legallibraryname').value;
                 var address = document.getElementById('address').value;
                 var city = document.getElementById('city').value;
                 var zip = document.getElementById('zip').value;
@@ -597,6 +598,15 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 } else {
                     document.getElementById('libraryname').classList.remove('is-invalid');
                     document.getElementById('libraryname').classList.add('is-valid');
+                }
+
+                if (/^[A-Za-z][A-Za-z0-9\- '().,]{3,98}[A-Za-z.]$/.exec(legalname) === null) {
+                    success = false;
+                    document.getElementById('legallibraryname').classList.remove('is-valid');
+                    document.getElementById('legallibraryname').classList.add('is-invalid');
+                } else {
+                    document.getElementById('legallibraryname').classList.remove('is-invalid');
+                    document.getElementById('legallibraryname').classList.add('is-valid');
                 }
 
                 if (/^[A-Za-z0-9][A-Za-z0-9 #\'\-.]{4,148}[A-Za-z0-9.]$/.exec(address) === null) {

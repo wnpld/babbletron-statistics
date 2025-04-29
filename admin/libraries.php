@@ -139,10 +139,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             function addQualifier(field) {
                 const fieldblock = document.getElementById(field + '-block');
                 const qualifierset = document.createElement('div');
-                const radioset = document.createElement('div');
-                radioset.classList.add('form-check');
-                radioset.classList.add('form-check-inline');
-                radioset.classList.add('mb-3');
+                const radioseta = document.createElement('div');
+                radioseta.classList.add('form-check');
+                radioseta.classList.add('form-check-inline');
+                radioseta.classList.add('mb-3');
 
                 const correctionradio = document.createElement('input');
                 correctionradio.classList.add('form-check-input');
@@ -152,13 +152,20 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 correctionradio.setAttribute('value', 'correction');
                 correctionradio.setAttribute('onclick', 'toggleCalendarEntry("' + field + '-calendar", "off")');
                 correctionradio.checked = true;
-                radioset.appendChild(correctionradio);
+                radioseta.appendChild(correctionradio);
 
                 const correctionlabel = document.createElement('label');
                 correctionlabel.classList.add('form-check-label');
                 correctionlabel.setAttribute('for', field + '-correction-radio');
                 correctionlabel.textContent = "Correction only";
-                radioset.appendChild(correctionlabel);
+                radioseta.appendChild(correctionlabel);
+
+                qualifierset.appendChild(radioseta);
+
+                const radiosetb = document.createElement('div');
+                radiosetb.classList.add('form-check');
+                radiosetb.classList.add('form-check-inline');
+                radiosetb.classList.add('mb-3');
 
                 const changeradio = document.createElement('input');
                 changeradio.classList.add('form-check-input');
@@ -167,17 +174,22 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 changeradio.setAttribute('id', field + '-change-radio');
                 changeradio.setAttribute('value', 'change');
                 correctionradio.setAttribute('onclick', 'toggleCalendarEntry("' + field + '-calendar", "on")');
-                radioset.appendChild(changeradio);
+                radiosetb.appendChild(changeradio);
 
                 const changelabel = document.createElement('label');
                 changelabel.classList.add('form-check-label');
                 changelabel.textContent = "Formal Change";
-                radioset.appendChild(changelabel);
+                radiosetb.appendChild(changelabel);
 
-                qualifierset.appendChild(radioset);
+                qualifierset.appendChild(radiosetb);
 
-                if ((field == "legallibraryname") or (field == "address")) {
+                if ((field == "legallibraryname") || (field == "address")) {
                     //There's an additional qualifier for this
+                    const radiosetc = document.createElement('div');
+                    radiosetc.classList.add('form-check');
+                    radiosetc.classList.add('form-check-inline');
+                    radiosetc.classList.add('mb-3');
+
                     const officialcheck = document.createElement('input');
                     officialcheck.classList.add('form-check-input');
                     officialcheck.setAttribute('type', 'checkbox');
@@ -185,7 +197,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     officialcheck.setAttribute('id', field + '-checkbox');
                     officialcheck.setAttribute('value', 'Yes');
                     officialcheck.setAttribute('disabled', '');
-                    radioset.appendChild(officialcheck);
+                    radiosetc.appendChild(officialcheck);
 
                     const officialchecklabel = document.createElement('label');
                     officialchecklabel.classList.add('form-check-label');
@@ -196,14 +208,20 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     }
                     
                     officialchecklabel.setAttribute('for', field + '-checkbox');
-                    radioset.appendChild(officialchecklabel);
+                    radiosetc.appendChild(officialchecklabel);
+                    qualifierset.appendChild(radiosetc);
                 } else if (field == "squarefootage") {
                     //There's an additional qualifier
+                    const radiosetc = document.createElement('div');
+                    radiosetc.classList.add('form-check');
+                    radiosetc.classList.add('form-check-inline');
+                    radiosetc.classList.add('mb-3');
+
                     const changereasonlabel = document.createElement('label');
                     changereasonlabel.classList.add('form-label');
                     changereasonlabel.setAttribute('for', field + '-change-reason');
                     changereasonlabel.textContent = "Reason for Change";
-                    radioset.appendChild(changereasonlabel);
+                    radiosetc.appendChild(changereasonlabel);
 
                     const changereason = document.createElement('input');
                     changereason.setAttribute('type', 'text');
@@ -211,18 +229,19 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     changereason.setAttribute('name', field + '-change-reason');
                     changereason.setAttribute('size', '6');
                     changereason.setAttribute('disabled', '');
-                    radioset.appendChild(changereason);
+                    radiosetc.appendChild(changereason);
 
                     const changereasonfeedback = document.createElement('div');
                     changereasonfeedback.classList.add('invalid-feedback');
                     changereasonfeedback.textContent = "If the square footage is formally different from the previous year's, it's necessary to provide a reason.";
-                    radioset.appendChild(changereasonfeedback);
+                    radiosetc.appendChild(changereasonfeedback);
+                    qualifierset.appendChild(radiosetc);
                 }
 
                 const calendarblock = document.createElement('div');
                 calendarblock.classList.add('input-group');
                 calendarblock.classList.add('date');
-                calendarblock.classlist.add('mb-3');
+                calendarblock.classList.add('mb-3');
                 calendarblock.setAttribute('data-provide', 'datepicker');
                 calendarblock.setAttribute('data-date-end-date', '<?php echo date('Y-m-d'); ?>');
                 
@@ -391,7 +410,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             </form>
             <?php } else if (($_REQUEST['action'] == "modify") && (isset($_REQUEST['libraryid']))) { 
                 //Get branch information
-                $query = $db->prepare("SELECT `LibraryName`, `LegalLibraryName`, `LibraryAddress`, `LibraryCity`, `LibraryZIP`, `LibraryCounty`, `SquareFootage`, `Branch`, `FYMonth`+0 AS FYMonth FROM `LibraryInfo` WHERE `LibraryID` = ?");
+                $query = $db->prepare("SELECT `LibraryName`, `LegalName`, `LibraryAddress`, `LibraryCity`, `LibraryZIP`, `LibraryCounty`, `LibraryTelephone`, `SquareFootage`, `Branch`, `FYMonth`+0 AS FYMonth, `ISLControlNo`, `ISLBranchNo` FROM `LibraryInfo` WHERE `LibraryID` = ?");
                 $query->bind_param("i", $_REQUEST['libraryid']);
                 $query->execute();
                 $result = $query->get_result();
@@ -399,7 +418,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 $query->close();
 
                 //Get hour data separately and append it onto the end of the existing result set
-                $query->$db->prepare("SELECT MAX(`DateImplemented`) AS `DateImplemented`, `DayOfWeek`, `HoursOpen` FROM `LibraryHours` WHERE `LibraryID` = ? GROUP BY `DayOfWeek`");
+                $query = $db->prepare("SELECT MAX(`DateImplemented`) AS `DateImplemented`, `DayOfWeek`, `HoursOpen` FROM `LibraryHours` WHERE `LibraryID` = ? ORDER BY `DateImplemented` ASC, GROUP BY `DayOfWeek`");
                 $query->bind_param('i', $_REQUEST['libraryid']);
                 $query->execute();
                 $result = $query->get_result();
@@ -422,13 +441,13 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 </div>
                 <div class="mb-4">
                     <div id="legallibraryname-block">
-                        <label for="legallibraryname" class="form-label">Library Name</label>
-                        <input type="text" id="legallibraryname" name="legallibraryname" class="form-control" aria-describedby="legallibrarynametips" value="<?php echo $libraryinfo['LegalLibraryName']; ?>" onchange="addQualifier('legallibraryname')" required>
+                        <label for="legallibraryname" class="form-label">Legal Library Name</label>
+                        <input type="text" id="legallibraryname" name="legallibraryname" class="form-control" aria-describedby="legallibrarynametips" value="<?php echo $libraryinfo['LegalName']; ?>" onchange="addQualifier('legallibraryname')" required>
                         <div class="invalid-feedback">
                             The provided library name was too long, too short, or contained unusual characters.
                         </div>
                         <div id="legallibrarynametips" class="form-text">
-                            This should represent the common way you refer to the main library.  It can be as simple as "Main Library" or it can be more descriptive ("Harold Washington Library Center of the Chicago Public Library").
+                            This should be the formal, legal name of the library, if it differs from the common name.
                         </div>
                     </div>
                 </div>
@@ -453,7 +472,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <div class="mb-4">
                     <div id="zip-block">
                         <label for="zip" class="form-label">ZIP Code</label>
-                        <input type="text" id="zip" name="zip" class="form-control" value="<?php echo $libraryinfo['ZIP']; ?>" onchange="addQualifier('zip')" required>
+                        <input type="text" id="zip" name="zip" class="form-control" value="<?php echo $libraryinfo['LibraryZIP']; ?>" onchange="addQualifier('zip')" required>
                         <div class="invalid-feedback">
                             No ZIP code was provided or it contained characters other than numbers and a hyphen.
                         </div>          
@@ -462,7 +481,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <div class="mb-4">
                     <div id="county-block">
                         <label for="county" class="form-label">County</label>
-                        <input type="text" id="county" name="county" class="form-control" value="<?php echo $libraryinfo['county']; ?>" onchange="addQualifier('county')" required>
+                        <input type="text" id="county" name="county" class="form-control" value="<?php echo $libraryinfo['LibraryCounty']; ?>" onchange="addQualifier('county')" required>
                         <div class="invalid-feedback">
                             No county was provided or it invalid characters.
                         </div>                            
@@ -471,7 +490,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <div class="mb-4">
                     <div id="telephone-block">
                         <label for="telephone" class="form-label">Telephone Number</label>
-                        <input type="text" id="telephone" name="telephone" class="form-control" value="<?php echo $libraryinfo['telephone']; ?>" onchange="addQualifier('telephone')" required>
+                        <input type="text" id="telephone" name="telephone" class="form-control" value="<?php echo $libraryinfo['LibraryTelephone']; ?>" onchange="addQualifier('telephone')" required>
                         <div class="invalid-feedback">
                         No telephone number was entered or it had invalid characters (use only numbers, and optionally, spaces or hyphens)
                         </div>          
@@ -480,7 +499,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 <div class="mb-4">
                     <div id="squarefootage-block">
                         <label for="squarefootage" class="form-label">Square Footage</label>
-                        <input type="number" id="squarefootage" name="squarefootage" class="form-control" size="6" onchange="addQualifier('squarefootage')" required>
+                        <input type="number" id="squarefootage" name="squarefootage" class="form-control" size="6" value="<?php echo $libraryinfo['SquareFootage']; ?>" onchange="addQualifier('squarefootage')" required>
                         <div class="invalid-feedback">
                             No square footage was provided or there were invalid characters.  If you aren't sure about the square footage, put a guess here and you can correct it later.
                         </div>
@@ -488,11 +507,11 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 </div>
                 <div class="mb-4">
                     <label for="islcontrolno" class="form-label">ISL Control Number</label>
-                    <input type="number" id="islcontrolno" name="islcontrolno" class="form-control" value="<?php echo $libraryinfo['islcontrolno']; ?>" size="5">
+                    <input type="number" id="islcontrolno" name="islcontrolno" class="form-control" value="<?php echo $libraryinfo['ISLControlNo']; ?>" size="5">
                 </div>
                 <div class="mb-4">
                     <label for="islbranchno" class="form-label">ISL Branch Number</label>
-                    <input type="number" id="islbranchno" name="islbranchno" class="form-control" value="<?php echo $libraryinfo['islbranchno']; ?>" size="2">
+                    <input type="number" id="islbranchno" name="islbranchno" class="form-control" value="<?php echo $libraryinfo['ISLBranchNo']; ?>" size="2">
                 </div>
                 <?php if ($libraryinfo['Branch'] == 0) { 
                     //Only main library has fiscal year adjustable ?>

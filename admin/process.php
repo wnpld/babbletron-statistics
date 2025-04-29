@@ -80,7 +80,6 @@ if (isset($_REQUEST['formtype'])) {
                 $db->close();
                 exit();
             }
-            $query->close();
             $db->close();
             header("Location: $protocol://$server$webdir/admin/index.php");
             exit();
@@ -269,7 +268,7 @@ if (isset($_REQUEST['formtype'])) {
             $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['legallibraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['zip'], $_REQUEST['county'], $_REQUEST['telephone'], $_REQUEST['squarefootage'], $_REQUEST['islcontrolno'], $_REQUEST['islbranchno'], $_REQUEST['fymonth'], $_REQUEST['sundayopen'], $_REQUEST['mondayopen'], $_REQUEST['tuesdayopen'], $_REQUEST['wednesdayopen'], $_REQUEST['thursdayopen'], $_REQUEST['fridayopen'], $_REQUEST['saturdayopen'], "old");
 
             #ChangeFields
-            $changefields = array('LegalName' => array('legallibraryname-radio', 'legallibraryname-calendar', 'LegalNameOfficial', 'legallibraryname-checkbox'), 'LibraryAddress' => array('address-radio', 'address-calendar', 'LibraryAddressPhysical', 'address-checkbox'), 'LibraryCity' => array('city-radio', 'city-calendar'), 'LibraryZIP' => array('zip-radio', 'zip-calendar'), 'LibraryCounty' => array('county-radio', 'county-calendar'), 'LibraryTelephone' => array('telephone-radio', 'telephone-calendar'), 'SquareFootage' => array('squarefootage-radio', 'SquareFootageReason', 'squarefootage-change-reason'), 'ISLControlNo' => 0, 'ISLBranchNo' => 0, 'FYmonth' => 0);
+            $changefields = array('LegalName' => array('legallibraryname-radio', 'legallibraryname-calendar', 'LegalNameOfficial', 'legallibraryname-checkbox'), 'LibraryAddress' => array('address-radio', 'address-calendar', 'LibraryAddressPhysical', 'address-checkbox'), 'LibraryCity' => array('city-radio', 'city-calendar'), 'LibraryZIP' => array('zip-radio', 'zip-calendar'), 'LibraryCounty' => array('county-radio', 'county-calendar'), 'LibraryTelephone' => array('telephone-radio', 'telephone-calendar'), 'SquareFootage' => array('squarefootage-radio', 'SquareFootageReason', 'squarefootage-change-reason'), 'ISLControlNo' => 0, 'ISLBranchNo' => 0, 'FYmonth' => 0, 'hours' => array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'));
 
             if ($checked != false) {
                 //If checked returns false something failed
