@@ -656,7 +656,7 @@ function showList($db) {
                         <a class="btn btn-primary btn-sm" href="libraries.php?action=modify&libraryid=<?php echo $library['LibraryID']; ?>">Modify Branch</a>
                     <?php if ($library['Branch'] == 1) {
                         //Cannot delete main library ?>
-                        <a class="btn btn-danger btn-sm" href="process.php?formtype=deletelibrary&libraryid=<?php echo $library['LibraryID']; ?>" onclick="return confirm('Are you sure you wish to delete the <?php echo $library['LibraryName']; ?> branch?')">Delete Branch</a>
+                        <a class="btn btn-danger btn-sm" href="process.php?formtype=deletebranch&libraryid=<?php echo $library['LibraryID']; ?>" onclick="return confirm('Are you sure you wish to delete the <?php echo $library['LibraryName']; ?> branch?')">Delete Branch</a>
                     <?php } ?>
                     </td>
                 </tr>

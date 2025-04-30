@@ -222,7 +222,7 @@ if (isset($_REQUEST['formtype'])) {
 
         } else if ($_REQUEST['formtype'] == "newbranch") {
             #New branch library
-            $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['legallibraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['zip'], $_REQUEST['county'], $_REQUEST['telephone'], $_REQUEST['squarefootage'], $_REQUEST['ISLControlNo'], $_REQUEST['ISLBranchNo'], null, $_REQUEST['sundayopen'], $_REQUEST['mondayopen'], $_REQUEST['tuesdayopen'], $_REQUEST['wednesdayopen'], $_REQUEST['thursdayopen'], $_REQUEST['fridayopen'], $_REQUEST['saturdayopen'], "new");
+            $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['legallibraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['zip'], $_REQUEST['county'], $_REQUEST['telephone'], $_REQUEST['squarefootage'], $_REQUEST['islcontrolno'], $_REQUEST['islbranchno'], null, $_REQUEST['sundayopen'], $_REQUEST['mondayopen'], $_REQUEST['tuesdayopen'], $_REQUEST['wednesdayopen'], $_REQUEST['thursdayopen'], $_REQUEST['fridayopen'], $_REQUEST['saturdayopen'], "new");
 
             if ($checked != false) {
                 //If checked returns false something failed
@@ -245,12 +245,11 @@ if (isset($_REQUEST['formtype'])) {
                     $query->close();                    
                 } catch (mysqli_sql_exception $e) {
                     echo "<html><head><title>Error</title></head><body>";
-                    echo "<p>Error adding branch info: " . $e->getMessage();
+                    echo "<p>Error adding new branch info: " . $e->getMessage();
                     echo "</p></body></html>";
                     $db->close();
                     exit();
                 }
-                $query->close();
                 $db->close();
                 header("Location: $protocol://$server$webdir/admin/libraries.php?branchadded=true");
                 exit();
@@ -281,11 +280,10 @@ if (isset($_REQUEST['formtype'])) {
                         #Go through the change fields and use those to determine what
                         #fields should be being paid attention to.
                         if (gettype($value) == "array") {
-                            $values[] = $value;
                             if ($field != "hours") {
                                 #Hours has an extra level of analysis and is stored in a different place
-                                if (isset($_REQUEST[$values[0]])) {
-                                    if ($_REQUEST[$values[0]] == "correction") {
+                                if (isset($_REQUEST[$value[0]])) {
+                                    if ($_REQUEST[$value[0]] == "correction") {
                                         #no need to update the changes table
                                         try {
                                             $sql = $db->prepare("UPDATE `LibraryInfo` SET `$field` = ? WHERE `LibraryID` = $libraryid");
@@ -356,14 +354,14 @@ if (isset($_REQUEST['formtype'])) {
                                                 #Invalid or blank calendar submission
                                                 #error out
                                                 echo "<html><head><title>Error</title></head><body>";
-                                                echo "<p>Date submitted with value change invalid: " . $_REQUEST[$values[1]] . " ($field, $checked[$field])";
+                                                echo "<p>Date submitted with value change invalid: " . $_REQUEST[$value[1]] . " ($field, $checked[$field])";
                                                 echo "</p></body></html>";
                                                 $db->close();
                                                 exit();
                                             }
                                         } catch (mysqli_sql_exception $e) {
                                             echo "<html><head><title>Error</title></head><body>";
-                                            echo "<p>Error adding branch info: " . $e->getMessage();
+                                            echo "<p>Error changing branch info: " . $e->getMessage();
                                             echo "</p></body></html>";
                                             $db->close();
                                             exit();
@@ -372,45 +370,47 @@ if (isset($_REQUEST['formtype'])) {
                                 }
                             } else {
                                 #This is an hours change
-                                foreach ($values as $day => $dayvalues) {
-                                    if ($_REQUEST[$dayvalues[0]] == "correction") {
-                                        #Just update the currently used value
-                                        try {
-                                            $sql = $db->prepare("UPDATE `LibraryHours` SET `HoursOpen` = ? WHERE `LibraryID` = $libraryid AND `DayOfWeek` = ? ORDER BY `DateImplemented` DESC LIMIT 1");
-                                            $sql->bind_param('is', $checked[$day], $day);
-                                            $sql->execute();
-                                            $sql->close();
-                                        } catch (mysqli_sql_exception $e) {
-                                            echo "<html><head><title>Error</title></head><body>";
-                                            echo "<p>Error updating library hours: " . $e->getMessage();
-                                            echo "</p></body></html>";
-                                            $db->close();
-                                            exit();      
-                                        }
-                                    } else {
-                                        #If it's a change, add a new row
-                                        try {
-                                            preg_match('/(\d\d\d\d)-(\d\d)-\d\d/', $_REQUEST[$dayvalues[1]], $matches);
-                                            if ($matches[0]) {
-                                                $sql = $db->prepare("INSERT INTO `LibraryHours` (`LibraryID`, `DateImplemented`, `DayOfWeek`, `HoursOpen`) VALUES ($libraryid, ?, ?, ?)");
-                                                $sql->bind_param('ssi', $_REQUEST[$dayvalues[1]], $day, $checked[$day]);
+                                foreach ($value as $day => $dayvalues) {
+                                    if (isset($_REQUEST[$dayvalues[0]])) {
+                                        if ($_REQUEST[$dayvalues[0]] == "correction") {
+                                            #Just update the currently used value
+                                            try {
+                                                $sql = $db->prepare("UPDATE `LibraryHours` SET `HoursOpen` = ? WHERE `LibraryID` = $libraryid AND `DayOfWeek` = ? ORDER BY `DateImplemented` DESC LIMIT 1");
+                                                $sql->bind_param('is', $checked['hours'][$day], $day);
                                                 $sql->execute();
                                                 $sql->close();
-                                            } else {
-                                                #Invalid or blank calendar submission
-                                                #error out
+                                            } catch (mysqli_sql_exception $e) {
                                                 echo "<html><head><title>Error</title></head><body>";
-                                                echo "<p>Date submitted with hours change invalid:" . $_REQUEST[$dayvalues[1]] . " ($day, $checked[$day])";
+                                                echo "<p>Error updating library hours: " . $e->getMessage();
+                                                echo "</p></body></html>";
+                                                $db->close();
+                                                exit();      
+                                            }
+                                        } else {
+                                            #If it's a change, add a new row
+                                            try {
+                                                preg_match('/(\d\d\d\d)-(\d\d)-\d\d/', $_REQUEST[$dayvalues[1]], $matches);
+                                                if ($matches[0]) {
+                                                    $sql = $db->prepare("INSERT INTO `LibraryHours` (`LibraryID`, `DateImplemented`, `DayOfWeek`, `HoursOpen`) VALUES ($libraryid, ?, ?, ?)");
+                                                    $sql->bind_param('ssi', $_REQUEST[$dayvalues[1]], $day, $checked['hours'][$day]);
+                                                    $sql->execute();
+                                                    $sql->close();
+                                                } else {
+                                                    #Invalid or blank calendar submission
+                                                    #error out
+                                                    echo "<html><head><title>Error</title></head><body>";
+                                                    echo "<p>Date submitted with hours change invalid:" . $_REQUEST[$dayvalues[1]] . " ($day, " . $checked['hours'][$day] . ")";
+                                                    echo "</p></body></html>";
+                                                    $db->close();
+                                                    exit();
+                                                }
+                                            } catch (mysqli_sql_exception $e) {
+                                                echo "<html><head><title>Error</title></head><body>";
+                                                echo "<p>Error changing branch hours: " . $e->getMessage();
                                                 echo "</p></body></html>";
                                                 $db->close();
                                                 exit();
                                             }
-                                        } catch (mysqli_sql_exception $e) {
-                                            echo "<html><head><title>Error</title></head><body>";
-                                            echo "<p>Error adding branch info: " . $e->getMessage();
-                                            echo "</p></body></html>";
-                                            $db->close();
-                                            exit();
                                         }
                                     }
                                 }
@@ -450,6 +450,10 @@ if (isset($_REQUEST['formtype'])) {
             if (isset($_REQUEST['libraryid'])) {
                 try {
                     //Want to avoid any situation where the main library were to be deleted
+                    $query = $db->prepare("DELETE FROM LibraryHours WHERE LibraryID = ?");
+                    $query->bind_param("i", $_REQUEST['libraryid']);
+                    $query->execute();
+                    $query->close();
                     $query = $db->prepare("DELETE FROM LibraryInfo WHERE LibraryID = ? AND Branch != 0");
                     $query->bind_param("i", $_REQUEST['libraryid']);
                     $query->execute();
@@ -767,7 +771,7 @@ function branchchecks($libraryname, $legallibraryname, $address, $city, $zip, $c
             #This check won't trigger an error, but if the value is
             #weird it will just make it 0
             if (is_numeric($openhours)) {
-                if (($hours < 0) or ($hours > 24)) {
+                if (($openhours < 0) or ($openhours > 24)) {
                     $hours[$day] = 0;
                 }
             } else {
@@ -777,10 +781,10 @@ function branchchecks($libraryname, $legallibraryname, $address, $city, $zip, $c
             #If it's not new, we'll be more picky
             #and only take valid numbers
             if (is_numeric($openhours)) {
-                if (($hours >= 0) or ($hours <= 24)) {
+                if (($openhours >= 0) or ($openhours <= 24)) {
                     #Put all of the hours in an additional layer for changed
                     #so they can be easily identified
-                    $changed['hours'][$day] = $hours;
+                    $changed['hours'][$day] = $openhours;
                 }
             }
         }
