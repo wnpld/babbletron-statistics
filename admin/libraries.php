@@ -27,7 +27,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Statistics Server Administration</title>
     <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
-    <script src="<?php echo $jquery; ?>"></script>;
+    <script src="<?php echo $jquery; ?>"></script>
     <link id="bdsp-css" href="<?php echo $datepickercss; ?>" rel="stylesheet">
     <script src="<?php echo $datepickerjs; ?>"></script>
     <?php if (isset($_REQUEST['action'])) { ?>
@@ -590,7 +590,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     </main>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
-        $('.date').datepicker({ format: "yyyy-mm-dd", });
+        $.fn.datepicker.defaults.format = "yyyy-mm-dd";
+        $('.date').datepicker({ 
+            startDate: "-7d" 
+        });
     </script>
   </body>
 </html>

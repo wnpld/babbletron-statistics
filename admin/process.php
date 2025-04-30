@@ -268,7 +268,7 @@ if (isset($_REQUEST['formtype'])) {
             $checked = branchchecks($_REQUEST['libraryname'], $_REQUEST['legallibraryname'], $_REQUEST['address'], $_REQUEST['city'], $_REQUEST['zip'], $_REQUEST['county'], $_REQUEST['telephone'], $_REQUEST['squarefootage'], $_REQUEST['islcontrolno'], $_REQUEST['islbranchno'], $_REQUEST['fymonth'], $_REQUEST['sundayopen'], $_REQUEST['mondayopen'], $_REQUEST['tuesdayopen'], $_REQUEST['wednesdayopen'], $_REQUEST['thursdayopen'], $_REQUEST['fridayopen'], $_REQUEST['saturdayopen'], "old");
 
             #ChangeFields
-            $changefields = array('LegalName' => array('legallibraryname-radio', 'legallibraryname-calendar', 'LegalNameOfficial', 'legallibraryname-checkbox'), 'LibraryAddress' => array('address-radio', 'address-calendar', 'LibraryAddressPhysical', 'address-checkbox'), 'LibraryCity' => array('city-radio', 'city-calendar'), 'LibraryZIP' => array('zip-radio', 'zip-calendar'), 'LibraryCounty' => array('county-radio', 'county-calendar'), 'LibraryTelephone' => array('telephone-radio', 'telephone-calendar'), 'SquareFootage' => array('squarefootage-radio', 'SquareFootageReason', 'squarefootage-change-reason'), 'ISLControlNo' => 0, 'ISLBranchNo' => 0, 'FYmonth' => 0, 'hours' => array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'));
+            $changefields = array('LegalName' => array('legallibraryname-radio', 'legallibraryname-calendar', 'LegalNameOfficial', 'legallibraryname-checkbox'), 'LibraryAddress' => array('address-radio', 'address-calendar', 'LibraryAddressPhysical', 'address-checkbox'), 'LibraryCity' => array('city-radio', 'city-calendar'), 'LibraryZIP' => array('zip-radio', 'zip-calendar'), 'LibraryCounty' => array('county-radio', 'county-calendar'), 'LibraryTelephone' => array('telephone-radio', 'telephone-calendar'), 'SquareFootage' => array('squarefootage-radio', 'SquareFootageReason', 'squarefootage-change-reason'), 'ISLControlNo' => 0, 'ISLBranchNo' => 0, 'FYMonth' => 0, 'hours' => array('Sunday' => array('sunday-radio','sunday-calendar'),'Monday' => array('mondayopen-radio', 'mondayopen-calendar'),'Tuesday' => array('tuesdayopen-radio', 'tuesdayopen-calendar'),'Wednesday' => array('wednesdayopen-radio', 'wednesdayopen-calendar'),'Thursday' => array('thursdayopen-radio', 'thursdayopen-calendar'),'Friday' => array('fridayopen-radio', 'fridayopen-calendar'),'Saturday' => array('saturdayopen-radio', 'saturdayopen-calendar')));
 
             if ($checked != false) {
                 //If checked returns false something failed
@@ -281,85 +281,137 @@ if (isset($_REQUEST['formtype'])) {
                         #Go through the change fields and use those to determine what
                         #fields should be being paid attention to.
                         if (gettype($value) == "array") {
-                            if (isset($_REQUEST[$value[0]])) {
-                                #Legal name, Library Address, or Square Footage
-                                if ($_REQUEST[$value[0]] == "correction") {
-                                    #no need to update the changes table
-                                    try {
-                                        $sql = $db->prepare("UPDATE `LibraryInfo` SET `$field` = ? WHERE `LibraryID` = $libraryid");
-                                        $sql->bind_param('s', $checked[$field]);
-                                        $sql->execute();
-                                        $sql->close();
-                                    } catch (mysqli_sql_exception $e) {
-                                        echo "<html><head><title>Error</title></head><body>";
-                                        echo "<p>Error updating library: " . $e->getMessage();
-                                        echo "</p></body></html>";
-                                        $db->close();
-                                        exit();      
-                                    }
-                                } else {
-                                    #If it's not a correction, it's a change. A lot more steps.
-                                    #Get the old value
-                                    try {
-                                        $sql = $db->prepare("SELECT `$field` FROM LibraryInfo WHERE `LibraryID` = ?");
-                                        $sql->bind_param('i', $_REQUEST['libraryid']);
-                                        $sql->execute();
-                                        $result = $sql->get_result();
-                                        $oldvalue = $result->fetch_column(0);
-                                        $sql->close();
-
-                                        #Using the submitted date, figure out the fiscal year for the change
-                                        preg_match('/(\d\d\d\d)-(\d\d)-\d\d/', $_REQUEST[$value[1]], $matches);
-                                        if ($matches[0]) {
-                                            $year = $matches[1];
-                                            $month = $matches[2];
-                                            if ($fymonth == 1) {
-                                                $fyear = $year;
-                                            } else {
-                                                if ($month <= $fymonth) {
-                                                    $fyear = $year;
-                                                } else {
-                                                    $fyear = $year-1;
-                                                }
-                                            }
-                                            $change_info = $db->query("SELECT `LibraryID` FROM `LibraryChanges` WHERE `LibraryID` = '$libraryid' AND `FYChanged` = '$fyear'");
-                                            if ($change_info->num_rows == 0) {
-                                                #Add a row
-                                                $db->query("INSERT INTO `LibraryChanges` (`LibraryID`, `FYChanged`) VALUES ('$libraryid', '$fyear')");
-                                            }
-                                            #Three data types have specific forms, so do those first
-                                            #The old information goes into the changes table,
-                                            #not the new.  This is so we have a record of what the old
-                                            #information was, but the current information is in the primary
-                                            #record
-                                            if (count($value) == 4) {
-                                                #This is a category with two values to update
-                                                $sql = $db->prepare("UPDATE `LibraryChanges` SET `$field` = ?, `$value[2]` =? WHERE `LibraryID` = '$libraryid' AND `FYChanged` = '$fyear'");
-                                                $sql->bind_param('ss', $oldvalue, $_REQUEST[$value[3]]);
-                                                $sql->execute();
-                                                $sql->close();
-                                            } else {
-                                                #Everything else
-                                                $sql = $db->prepare("UPDATE `LibraryChanges` SET `$field` = ? WHERE `LibraryID` = '$libraryid' AND `FYChanged` = '$fyear'");
-                                                $sql->bind_param('s', $oldvalue);
-                                                $sql->execute();
-                                                $sql->close();
-                                            }
-                                            #Finally, update the library info table with the new information
-                                            $sql = $db->prepare("UPDATE `LibraryInfo` SET `$field` = ? WHERE `LibraryID` = '$libraryid'");
+                            $values[] = $value;
+                            if ($field != "hours") {
+                                #Hours has an extra level of analysis and is stored in a different place
+                                if (isset($_REQUEST[$values[0]])) {
+                                    if ($_REQUEST[$values[0]] == "correction") {
+                                        #no need to update the changes table
+                                        try {
+                                            $sql = $db->prepare("UPDATE `LibraryInfo` SET `$field` = ? WHERE `LibraryID` = $libraryid");
                                             $sql->bind_param('s', $checked[$field]);
                                             $sql->execute();
                                             $sql->close();
-                                        } else {
-                                            #Invalid or blank calendar submission
-                                            #error out
+                                        } catch (mysqli_sql_exception $e) {
+                                            echo "<html><head><title>Error</title></head><body>";
+                                            echo "<p>Error updating library: " . $e->getMessage();
+                                            echo "</p></body></html>";
+                                            $db->close();
+                                            exit();      
                                         }
-                                    } catch (mysqli_sql_exception $e) {
-                                        echo "<html><head><title>Error</title></head><body>";
-                                        echo "<p>Error adding branch info: " . $e->getMessage();
-                                        echo "</p></body></html>";
-                                        $db->close();
-                                        exit();
+                                    } else {
+                                        #If it's not a correction, it's a change. A lot more steps.
+                                        #Get the old value
+                                        try {
+                                            $sql = $db->prepare("SELECT `$field` FROM LibraryInfo WHERE `LibraryID` = ?");
+                                            $sql->bind_param('i', $_REQUEST['libraryid']);
+                                            $sql->execute();
+                                            $result = $sql->get_result();
+                                            $oldvalue = $result->fetch_column(0);
+                                            $sql->close();
+
+                                            #Using the submitted date, figure out the fiscal year for the change
+                                            preg_match('/(\d\d\d\d)-(\d\d)-\d\d/', $_REQUEST[$value[1]], $matches);
+                                            if ($matches[0]) {
+                                                $year = $matches[1];
+                                                $month = $matches[2];
+                                                if ($fymonth == 1) {
+                                                    $fyear = $year;
+                                                } else {
+                                                    if ($month <= $fymonth) {
+                                                        $fyear = $year;
+                                                    } else {
+                                                        $fyear = $year-1;
+                                                    }
+                                                }
+                                                $change_info = $db->query("SELECT `LibraryID` FROM `LibraryChanges` WHERE `LibraryID` = '$libraryid' AND `FYChanged` = '$fyear'");
+                                                if ($change_info->num_rows == 0) {
+                                                    #Add a row
+                                                    $db->query("INSERT INTO `LibraryChanges` (`LibraryID`, `FYChanged`) VALUES ('$libraryid', '$fyear')");
+                                                }
+                                                #Three data types have specific forms, so do those first
+                                                #The old information goes into the changes table,
+                                                #not the new.  This is so we have a record of what the old
+                                                #information was, but the current information is in the primary
+                                                #record
+                                                if (count($value) == 4) {
+                                                    #This is a category with two values to update
+                                                    $sql = $db->prepare("UPDATE `LibraryChanges` SET `$field` = ?, `$value[2]` =? WHERE `LibraryID` = '$libraryid' AND `FYChanged` = '$fyear'");
+                                                    $sql->bind_param('ss', $oldvalue, $_REQUEST[$value[3]]);
+                                                    $sql->execute();
+                                                    $sql->close();
+                                                } else {
+                                                    #Everything else
+                                                    $sql = $db->prepare("UPDATE `LibraryChanges` SET `$field` = ? WHERE `LibraryID` = '$libraryid' AND `FYChanged` = '$fyear'");
+                                                    $sql->bind_param('s', $oldvalue);
+                                                    $sql->execute();
+                                                    $sql->close();
+                                                }
+                                                #Finally, update the library info table with the new information
+                                                $sql = $db->prepare("UPDATE `LibraryInfo` SET `$field` = ? WHERE `LibraryID` = '$libraryid'");
+                                                $sql->bind_param('s', $checked[$field]);
+                                                $sql->execute();
+                                                $sql->close();
+                                            } else {
+                                                #Invalid or blank calendar submission
+                                                #error out
+                                                echo "<html><head><title>Error</title></head><body>";
+                                                echo "<p>Date submitted with value change invalid: " . $_REQUEST[$values[1]] . " ($field, $checked[$field])";
+                                                echo "</p></body></html>";
+                                                $db->close();
+                                                exit();
+                                            }
+                                        } catch (mysqli_sql_exception $e) {
+                                            echo "<html><head><title>Error</title></head><body>";
+                                            echo "<p>Error adding branch info: " . $e->getMessage();
+                                            echo "</p></body></html>";
+                                            $db->close();
+                                            exit();
+                                        }
+                                    }
+                                }
+                            } else {
+                                #This is an hours change
+                                foreach ($values as $day => $dayvalues) {
+                                    if ($_REQUEST[$dayvalues[0]] == "correction") {
+                                        #Just update the currently used value
+                                        try {
+                                            $sql = $db->prepare("UPDATE `LibraryHours` SET `HoursOpen` = ? WHERE `LibraryID` = $libraryid AND `DayOfWeek` = ? ORDER BY `DateImplemented` DESC LIMIT 1");
+                                            $sql->bind_param('is', $checked[$day], $day);
+                                            $sql->execute();
+                                            $sql->close();
+                                        } catch (mysqli_sql_exception $e) {
+                                            echo "<html><head><title>Error</title></head><body>";
+                                            echo "<p>Error updating library hours: " . $e->getMessage();
+                                            echo "</p></body></html>";
+                                            $db->close();
+                                            exit();      
+                                        }
+                                    } else {
+                                        #If it's a change, add a new row
+                                        try {
+                                            preg_match('/(\d\d\d\d)-(\d\d)-\d\d/', $_REQUEST[$dayvalues[1]], $matches);
+                                            if ($matches[0]) {
+                                                $sql = $db->prepare("INSERT INTO `LibraryHours` (`LibraryID`, `DateImplemented`, `DayOfWeek`, `HoursOpen`) VALUES ($libraryid, ?, ?, ?)");
+                                                $sql->bind_param('ssi', $_REQUEST[$dayvalues[1]], $day, $checked[$day]);
+                                                $sql->execute();
+                                                $sql->close();
+                                            } else {
+                                                #Invalid or blank calendar submission
+                                                #error out
+                                                echo "<html><head><title>Error</title></head><body>";
+                                                echo "<p>Date submitted with hours change invalid:" . $_REQUEST[$dayvalues[1]] . " ($day, $checked[$day])";
+                                                echo "</p></body></html>";
+                                                $db->close();
+                                                exit();
+                                            }
+                                        } catch (mysqli_sql_exception $e) {
+                                            echo "<html><head><title>Error</title></head><body>";
+                                            echo "<p>Error adding branch info: " . $e->getMessage();
+                                            echo "</p></body></html>";
+                                            $db->close();
+                                            exit();
+                                        }
                                     }
                                 }
                             }
@@ -381,24 +433,6 @@ if (isset($_REQUEST['formtype'])) {
                         }
                     }
                     
-                    foreach ($checked as $field => $value) {
-                        #First do everything except hours.
-                        #Hours changes go in a different database table
-
-                        if ($field != 'hours') {
-
-                            if (strlen($paramtypes) > 0) {
-                                $update_sql .= ", ";
-                            }
-                            $update_sql .= "`$field` = ?";
-                            array_push($params, $value);
-                            if ($field == "fymonth") {
-                                $paramtypes .= "i";
-                            } else {
-                                $paramtypes .= "s";
-                            }
-                        }
-                    }
                     header("Location: $protocol://$server$webdir/admin/libraries.php?modify=true");
                     exit();
                 } else {
