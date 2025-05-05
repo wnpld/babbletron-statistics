@@ -16,7 +16,7 @@ $library_hours_table = "CREATE TABLE `LibraryHours` (`LibraryID` tinyint UNSIGNE
 #This is mainly to track closings, but it can also be used to track days where there
 #were extended hours by storing a negative value that is equal to the extra hours
 #(e.g. if a day is normally 4 hours but the library was open 8, a -4 could be stored here)
-$library_closings_table = "CREATE TABLE `LibraryClosings` (`ClosingID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryID` tinyint UNSIGNED NULL, `DateClosed` date NOT NULL, `HoursClosed` smallint UNSIGNED NOT NULL, `ClosingType` enum('Holiday','Staff Meeting','Weather','Other') NOT NULL, INDEX fk_libraryclosings (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
+$library_closings_table = "CREATE TABLE `LibraryClosings` (`ClosingID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryID` tinyint UNSIGNED NULL, `DateClosed` date NOT NULL, `HoursClosed` smallint NOT NULL, `ClosingType` enum('Holiday','Staff Meeting','Weather','Other') NOT NULL, INDEX fk_libraryclosings (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
 
 #Date Lookup Table
 #This table is automatically populated and is used for complicated date calculations

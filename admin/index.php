@@ -71,6 +71,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                         <p class="card-text">Add or remove library branches.</p>
                         <a class="card-link" href="libraries.php?action=add">Add a Branch</a>
                         <a class="card-link" href="libraries.php">Manage Branches</a>
+                        <a class="card-link" href="closings.php">Closed/Extended Hours</a>
                     </div>
                 </div>
             </div>
