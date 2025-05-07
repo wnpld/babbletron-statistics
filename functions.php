@@ -101,12 +101,14 @@ function outletInfo($db, $fiscalyear) {
         #Loop backwards through a year
         while ($startdate >= $enddate) {
             $weekday = date_format($startdate, 'l');
+            #Capture hours open since it will be needed later as well
+            $hours_open = $hourrule['HoursOpen'];
             #Loop through rules, looking for a rule that matches the day that was
             #Implemented before or on the current date
             foreach ($open_hours as $hourrule) {
                 if ($hourrule['DayOfWeek'] == $weekday) {
                     if (date_create($hourrule['DateImplemented']) <= $startdate) {
-                        $hours += $hourrule['HoursOpen'];
+                        $hours += $hours_open;
                         #If a match is found, break out of this foreach
                         #so a duplicate match is not found
                         break;
@@ -141,6 +143,12 @@ function outletInfo($db, $fiscalyear) {
                             $daysinarow = 0;
                             $nextdate = date_create("2000-01-01");
                         }
+                    }
+                    #If the number of hours closed is greater than the number of hours open
+                    #for this day of the week, make the number of hours closed equal to the
+                    #number of hours open
+                    if ($hours_closed > $hours_open) {
+                        $hours_closed = $hours_open;
                     }
                     #Subtract the hours from the total number of hours open
                     $hours = $hours - $hours_closed;

@@ -24,11 +24,11 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         #If action is set we are creating, editing, or deleting an entry
         #Get a list of all closings and put them into JSON for dynamic display
         try {
-            $closings = $db->query('SELECT lc.ClosingID, li.LibraryName, lc.DateClosed, lc.HoursClosed, lc.ClosingType, IF((SELECT FYMonth FROM LibraryInfo WHERE Branch = 0) != 1 AND MONTH(lc.DateClosed) >= (SELECT FYMonth FROM LibraryInfo WHERE Branch = 0), YEAR(lc.DateClosed) + 1, YEAR(lc.DateClosed)) AS FiscalYear FROM LibraryClosings lc INNER JOIN LibraryInfo li ON lc.LibraryID = li.LibraryID ORDER BY lc.DateClosed ASC');
+            $closings = $db->query('SELECT lc.ClosingID, li.LibraryName, lc.DateClosed, lc.HoursClosed, lc.ClosingType, IF((SELECT FYMonth+0 FROM LibraryInfo WHERE Branch = 0) != 1 AND MONTH(lc.DateClosed) >= (SELECT FYMonth+0 FROM LibraryInfo WHERE Branch = 0), YEAR(lc.DateClosed) + 1, YEAR(lc.DateClosed)) AS FiscalYear FROM LibraryClosings lc LEFT JOIN LibraryInfo li ON lc.LibraryID = li.LibraryID ORDER BY lc.DateClosed ASC');
             $fiscalyears = array();
             $libraries = array();
             if ($closings->num_rows > 0) {
-                $json_array = "closings: [";
+                $json_array = "var closings: [";
                 while ($closinginfo = $closings->fetch_assoc()) {
                     $json_array .= "{";
                     $json_array .= "\"id\": \"" . $closinginfo['ClosingID'] . "\",";
@@ -177,6 +177,8 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     $query = $db->prepare("UPDATE LibraryClosings SET LibraryID = ?, DateClosed = ?, HoursClosed = ?, ClosingType = ? WHERE ClosingID = ?");
                     $query->bind_param('isisi', $library, $date, $hours, $reason, $id);
                     $query->execute();
+                    $query->close();
+                    header("Location: $protocol://$server$webdir/admin/closings.php");
                 } catch (mysqli_sql_exception $e) {
                     echo "<html><head><title>SQL Query Error</title></head><body>";
                     echo "<h1>Error Updating LibraryClosings table</h1>";
@@ -189,6 +191,8 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     $query = $db->prepare("INSERT INTO LibraryClosings (LibraryID, DateClosed, HoursClosed, ClosingType) VALUES (?, ?, ?, ?)");
                     $query->bind_param('isis', $library, $date, $hours, $reason);
                     $query->execute();
+                    $query->close();
+                    header("Location: $protocol://$server$webdir/admin/closings.php");
                 } catch (mysqli_sql_exception $e) {
                     echo "<html><head><title>SQL Query Error</title></head><body>";
                     echo "<h1>Error Adding to LibraryClosings table</h1>";
@@ -206,7 +210,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             $librarylist = $db->query("SELECT LibraryID, LibraryName FROM LibraryInfo");
             $libraries = array();
             while ($item = $librarylist->fetch_assoc()) {
-                array_push($libraries, array('id' => $item['id'], 'library' => $item['LibraryName']));
+                array_push($libraries, array('id' => $item['LibraryID'], 'library' => $item['LibraryName']));
             }
         } catch (mysqli_sql_exception $e) {
             echo "<html><head><title>SQL Query Error</title></head><body>";
@@ -236,7 +240,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         $closeinfo = array();
         if ($_REQUEST['action'] == 'edit') {
             try {
-                $query = $db->prepare("SELECT * FROM LibraryClosings WHERE LibraryID = ?");
+                $query = $db->prepare("SELECT * FROM LibraryClosings WHERE ClosingID = ?");
                 $query->bind_param('i', $_REQUEST['id']);
                 $query->execute();
                 $result = $query->get_result();
@@ -277,6 +281,11 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 <!doctype html>
 <html lang="en">
   <head>
+    <style>
+        label {
+            font-weight: bold;
+        }
+    </style>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Library Closings and Extended Hours</title>
@@ -296,7 +305,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             const cellfour = document.createElement('td');
             cellfour.textContent = hours;
             newrow.appendChild(cellfour);
-            const cellfive = doucument.createElement('td');
+            const cellfive = document.createElement('td');
             cellfive.textContent = reason;
             newrow.appendChild(cellfive);
             const cellsix = document.createElement('td');
@@ -352,14 +361,14 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                         }
                     } else if (library == "all") {
                         //Check fiscal year field
-                        if (closing.fiscalyear == fiscalyear) {
+                        if (closing.fy == fiscalyear) {
                             const closingrow = buildRow(closing.id, closing.date, closing.library, closing.type, closing.hours, closing.reason);
                             closingbody.appendChild(closingrow);
                             rowcount++;
                         }
                     } else {
                         //Check both fields
-                        if ((closing.fiscalyear == fiscalyear) && (closing.library == library)) {
+                        if ((closing.fy == fiscalyear) && (closing.library == library)) {
                             const closingrow = buildRow(closing.id, closing.date, closing.library, closing.type, closing.hours, closing.reason);
                             closingbody.appendChild(closingrow);
                             rowcount++;
@@ -380,7 +389,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         }
     </script>
   </head>
-  <body>
+  <body onload="rebuildTable()">
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#"><?php echo $sitename; ?></a>
@@ -439,7 +448,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     <?php } else { ?>
                         <select class="form-select" aria-label="Choose a library to limit results to" id="library" onchange="rebuildTable()">
                     <?php } ?>
-                        <option value="all" selected>All</option>
+                        <option value="all" selected>All Closings</option>
+                    <?php if (count($libraries) > 0) { ?>
+                        <option value="All Libraries">All Libraries</option>
+                    <?php } ?>
                     <?php foreach ($libraries as $library) { ?>
                         <option value="<?php echo $library; ?>"><?php echo $library; ?></option>
                     <?php } ?>
@@ -452,8 +464,8 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                         <th>Date</th>
                         <th>Library</th>
                         <th>Kind of Event</th>
-                        <th>Reason</th>
                         <th>Number of Hours</th>
+                        <th>Reason</th>
                         <th>Edit/Delete</th>
                     </tr>
                 </thead>
@@ -461,7 +473,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     <?php 
                         if (count($fiscalyears) == 0) { ?>
                     <tr>
-                        <td cospan="6">
+                        <td colspan="6">
                             No closing dates have been set.
                         </td>
                     </tr>
@@ -471,14 +483,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     ?>
                 </tbody>
             </table>
+            <p><a class="btn btn-primary" href="closings.php?action=add">Add New Closed/Extended Hours</a></p>
         </div>
     </main>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
-    <?php if (count($fiscalyears) > 0) { ?>
-    <script type="text/javascript">
-        rebuildTable();
-    </script>
-    <?php } ?>
   </body>
 </html>
 <?php 
@@ -490,6 +498,11 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Library Closings and Extended Hours</title>
+    <style>
+        label {
+            font-weight: bold;
+        }
+    </style>
     <link href="<?php echo $bootstrapdir; ?>/css/bootstrap.min.css" rel="stylesheet">
     <script src="<?php echo $jquery; ?>"></script>
     <link id="bdsp-css" href="<?php echo $datepickercss; ?>" rel="stylesheet">
@@ -509,7 +522,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 document.getElementById('date').classList.add('is-valid');
             }
 
-            if(/^\d{1,2}\.\d$/.exec(hours) === null) {
+            if(/^\d{1,2}\.{0,1}\d{0,1}$/.exec(hours) === null) {
                 success = false;
                 document.getElementById('hours').classList.remove('is-valid');
                 document.getElementById('hours').classList.add('is-invalid');
@@ -570,12 +583,12 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     </nav>
     <main>
         <div class="container-fluid">
-            <?php if ($_REQUEST['action'] == "update") { ?>
+            <?php if ($_REQUEST['action'] == "edit") { ?>
                 <h1>Update Closed Hours/Hour Extension</h1>
             <?php } else { ?>
                 <h1>Add Closed Hours/Hour Extension</h1>
             <?php } ?>
-            <form action="<?php echo $protocol . '://' . $server . $webdir . '/closings.php'; ?>" method="POST"  onsubmit="validateForm(event)>
+            <form action="<?php echo $protocol . '://' . $server . $webdir . '/admin/closings.php'; ?>" method="POST"  onsubmit="validateForm(event)">
                 <div class="mb-3">
                     <label for="date" class="form-label">Date</label>
                     <div class="input-group date" data-provide="datepicker">
@@ -597,8 +610,8 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 </div>
                 <div class="mb-3">
                     <label for="library" class="form-label">Library</label>
-                    <select class="form-select" aria-describedby="librarytips">
-                        <option id="library" name="library" value="all" <?php if (isset($closeinfo)) {
+                    <select class="form-select" aria-describedby="librarytips" id="library" name="library">
+                        <option value="all" <?php if (isset($closeinfo)) {
                             if ($closeinfo['LibraryID'] == null) { echo " selected"; } }  ?>>All</option>
                         <?php foreach ($libraries as $libinfo) { ?>
                             <option value="<?php echo $libinfo['id']; ?>" <?php if (isset($closeinfo)) {
@@ -678,14 +691,12 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         </div>
     </main>
     <script src="<?php echo $bootstrapdir; ?>/js/bootstrap.bundle.min.js"></script>
-    <?php if (count($fiscalyears) > 0) { ?>
     <script type="text/javascript">
         $.fn.datepicker.defaults.format = "yyyy-mm-dd";
         $('.date').datepicker({ 
             startDate: "-7d" 
         });
     </script>
-    <?php } ?>
   </body>
 </html>
 <?php  }
