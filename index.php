@@ -16,7 +16,7 @@ try {
 try {
     $result = $db->query("SHOW TABLES LIKE 'LibraryInfo'");
     if ($result->num_rows == 0) {
-        #Site's not configured.  Redirect to configuration page.
+        # Site's not configured.  Redirect to configuration page.
         $db->close();
         header("Location: $protocol://$server$webdir/admin/configure.php");
         exit();
@@ -29,8 +29,8 @@ try {
     exit();
 }
 
-#Also check that date lookup table goes out at least to the end of a
-#calendar year a few years from now
+# Also check that date lookup table goes out at least to the end of a
+# calendar year a few years from now
 try {
     $testyear = date('Y') + 3;
     $testdate = date_create("$testyear-12-31");
@@ -38,7 +38,7 @@ try {
     $tableinfo = $result->fetch_row();
     $tabledate = date_create($tableinfo[0]);
     if ($tabledate < $testdate) {
-        #add another year
+        # add another year
         $date_query = $db->prepare("INSERT INTO `DateLookup` (`Date`, `Weekday`, `Month`, `Year`) VALUES (?, ?, ?, ?)");
         while ($tabledate < $testdate) {
             date_add($tabledate, date_interval_create_from_date_string("1 day"));
@@ -75,7 +75,7 @@ if ($entryrestriction > 0) {
         $edit = 0;
         $view = 1;
     } else {
-        #Activity is completely restricted so there's no reason to stay here
+        # Activity is completely restricted so there's no reason to stay here
         header("Location: $protocol://$server$webdir/login.php");
     }
 } else {
@@ -83,7 +83,7 @@ if ($entryrestriction > 0) {
     $view = 1;
 } 
 if ($view == 1) {
-    #We'll check for edit later   
+    # We'll check for edit later   
 ?>
 <!doctype html>
 <html lang="en">
@@ -111,7 +111,7 @@ if ($view == 1) {
                 <ul class="navbar-nav">
                 <?php
                     if (isset($_SESSION['FirstName'])) {
-                        #Someone is logged in
+                        # Someone is logged in
                 ?>
                     <?php
                     if ($_SESSION['UserRole'] == "Admin") {
@@ -132,7 +132,7 @@ if ($view == 1) {
                     </li>
                 <?php 
                     } else {
-                        #No one is logged in                    }
+                        # No one is logged in                    }
                 ?>
                     <li class="nav-item">
                         <a class="nav-link" href="login.php">Login</a>
@@ -150,7 +150,7 @@ if ($view == 1) {
 </html>
 <?php 
 } else {
-    #Redirect the user to the login page
+    # Redirect the user to the login page
     header("Location: $protocol://$server$webdir/login.php?destination=admin_index");
 }
 ?>

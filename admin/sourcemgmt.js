@@ -1,7 +1,7 @@
 function startManualForm() {
-    //Changes form values for annual and static entries
-    //Sets section information
-    //Hides options form and shows main form
+    // Changes form values for annual and static entries
+    // Sets section information
+    // Hides options form and shows main form
     const sectionfield = document.getElementById("selectionselect");
     sectionid = sectionfield.ariaValueNow;
     sectionname = sectionfield.options[sectionfield.selectedIndex].text;
@@ -15,7 +15,7 @@ function startManualForm() {
         document.getElementById("year").remove;
         document.getElementById("fieldcount").value = 0;
     }
-    //default is monthly
+    // default is monthly
     document.getElementById("dsourceoptions").setAttribute("style", "display:none;");
     document.getElementById("dsourceform").setAttribute("style", "display:block;");
 }
@@ -26,7 +26,7 @@ function addFormField(formtype) {
     const newrow = document.createElement("div");
     newrow.classList.add("row");
 
-    //Name Field
+    // Name Field
     const namecol = document.createElement("div");
     namecol.classList.add("col");
     newrow.appendChild(namecol);
@@ -44,7 +44,7 @@ function addFormField(formtype) {
     namefield.setAttribute("size", "50");
     namecol.appendChild(namefield);
 
-    //Type Field
+    // Type Field
     const typecol = document.createElement("div");
     typecol.classList.add("col");
     newrow.appendChild(typecol);
@@ -91,10 +91,10 @@ function addFormField(formtype) {
     typehelp.textContent = "Choose a maximum range for this number.";
     typecol.appendChild(typehelp);
 
-    //Option Field
-    //Options are highly variable and mainly setup by a different
-    //script when a field type is selected.  The default setup
-    //is for a number
+    // Option Field
+    // Options are highly variable and mainly setup by a different
+    // script when a field type is selected.  The default setup
+    // is for a number
     const optioncol = document.createElement("div");
     optionblock.setAttribute("id", "options" + fieldcount.toString());
     optioncol.classList.add("col");
@@ -137,8 +137,8 @@ function addFormField(formtype) {
     optioncol.appendChild(optionblock);
     newrow.appendChild(optioncol);
 
-    //Delete Column
-    //Has a button that can be used to delete the row
+    // Delete Column
+    // Has a button that can be used to delete the row
     const deletecol = document.createElement("div");
     deletecol.classList.add("col");
     newrow.appendChild(deletecol);
@@ -158,7 +158,7 @@ function changeOptions(fieldcount) {
     const typeselect = document.getElementById("fieldtype" + fieldcount.toString());
     const datatype = typeselect.value;
 
-    //delete the current option set and then put a new one in
+    // delete the current option set and then put a new one in
     const oldblock = document.getElementById("optionset" + fieldcount.toString());
     oldblock.remove();
 
@@ -259,7 +259,7 @@ function changeOptions(fieldcount) {
     } else if (datatype == "date") {
         document.getElementById("typehelp" + fieldcount.toString()).textContent = "Dates are available as a type for situations where you're doing a static inventory.  Don't use this for date-based statistics.";
     } else {
-        //text
+        // text
         document.getElementById("typehelp" + fieldcount.toString()).textContent = "Select a maximum length for your text field.";
         const optionlabel = document.createElement("label");
         optionlabel.setAttribute("for", "fieldoptions" + fieldcount.toString());

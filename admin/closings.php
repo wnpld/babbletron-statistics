@@ -70,14 +70,14 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             exit();        
         }
     } else if (($_REQUEST['action'] == "update") or ($_REQUEST['action'] == "insert")) {
-        //Create a proxy value to differentiate actions
+        // Create a proxy value to differentiate actions
         if ($_REQUEST['action'] == "update") {
             $update = true;
         } else {
             $update = false;
         }
         if ($update) {
-            //Update a record based on a completed form
+            // Update a record based on a completed form
             if (isset($_REQUEST['id']) and is_numeric($_REQUEST['id'])) {
                 $id = $_REQUEST['id'];
             } else {
@@ -204,8 +204,8 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         }
 
     } else if ($_REQUEST['action'] != "delete") {
-        //Action should be either edit or add
-        //Both require building out a form with some basic information
+        // Action should be either edit or add
+        // Both require building out a form with some basic information
         try {
             $librarylist = $db->query("SELECT LibraryID, LibraryName FROM LibraryInfo");
             $libraries = array();
@@ -221,8 +221,8 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         }
 
         try {
-            //Just in case it's changed in the future, dynamically get a list of the 
-            //Enum values available in LibraryClosings ClosingType
+            // Just in case it's changed in the future, dynamically get a list of the 
+            // Enum values available in LibraryClosings ClosingType
             $closingtypedata = $db->query("SHOW COLUMNS FROM LibraryClosings LIKE 'ClosingType'");
             $closingtypeinfo = $closingtypedata->fetch_assoc();
             $closingtypestring = $closingtypeinfo['Type'];
@@ -256,7 +256,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         }
 
     } else {
-        //Action is delete, so delete the record and then redirect back to this page without an action
+        // Action is delete, so delete the record and then redirect back to this page without an action
         if (isset($_REQUEST['id'])) {
             try {
                 $query = $db->prepare('DELETE FROM LibraryClosings WHERE LibraryID = ?');
@@ -271,7 +271,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 exit(); 
             }
         } else {
-            //Just redirect back to this page
+            // Just redirect back to this page
             header("Location: $protocol://$server$webdir/closings.php");
             exit;
         }
@@ -330,14 +330,14 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 
         function rebuildTable() {
             <?php
-                //Drop in the array built earlier
+                // Drop in the array built earlier
                 echo $json_array; ?>;
             var fiscalyear = document.getElementById("fiscalyear").value;
             var library = document.getElementById("library").value;
             const closingbody = document.getElementById("closing-body");
             closingbody.innerHTML = '';
             if (closings[0] == 0) {
-                //There's nothing to filter
+                // There's nothing to filter
                 const tablerow = document.createElement('tr');
                 const unicell = document.createElement('td');
                 unicell.setAttribute('colspan', '6');
@@ -348,26 +348,26 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 rowcount = 0;
                 closings.forEach((closing) => {
                     if ((fiscalyear == "all") && (library == "all")) {
-                        //Don't check values of either field
+                        // Don't check values of either field
                         const closingrow = buildRow(closing.id, closing.date, closing.library, closing.type, closing.hours, closing.reason);
                         closingbody.appendChild(closingrow);
                         rowcount++;
                     } else if (fiscalyear == "all") {
-                        //Check library field
+                        // Check library field
                         if (closing.library == library) {
                             const closingrow = buildRow(closing.id, closing.date, closing.library, closing.type, closing.hours, closing.reason);
                             closingbody.appendChild(closingrow);
                             rowcount++;
                         }
                     } else if (library == "all") {
-                        //Check fiscal year field
+                        // Check fiscal year field
                         if (closing.fy == fiscalyear) {
                             const closingrow = buildRow(closing.id, closing.date, closing.library, closing.type, closing.hours, closing.reason);
                             closingbody.appendChild(closingrow);
                             rowcount++;
                         }
                     } else {
-                        //Check both fields
+                        // Check both fields
                         if ((closing.fy == fiscalyear) && (closing.library == library)) {
                             const closingrow = buildRow(closing.id, closing.date, closing.library, closing.type, closing.hours, closing.reason);
                             closingbody.appendChild(closingrow);
@@ -376,7 +376,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     }
                 });
                 if (rowcount == 0) {
-                    //Nothing matched the criteria, so print a row that says that
+                    // Nothing matched the criteria, so print a row that says that
                     const emptyrow = document.createElement('tr');
                     const emptycell = document.createElement('td');
                     emptycell.setAttribute('colspan', '6');
@@ -491,7 +491,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 </html>
 <?php 
     } else {
-        //Insert/Update form ?>
+        // Insert/Update form ?>
 <!doctype html>
 <html lang="en">
   <head>

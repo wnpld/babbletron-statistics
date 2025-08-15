@@ -3,8 +3,8 @@ session_start();
 require "../config.php";
 require "sqlconfig.php";
 
-//If we're on this page it's likely we'll need to use the database,
-//so just establish a connection
+// If we're on this page it's likely we'll need to use the database,
+// so just establish a connection
 try {
     $db = new mysqli($mysqlhost, $dbadmin, $dbadminpw, $dbname);
 } catch (mysqli_sql_exception $e) {
@@ -17,8 +17,8 @@ try {
 
 if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     if ($_SESSION['UserRole'] == "Admin") {
-        //Don't know if the main library is set or not yet
-        //so check for that
+        // Don't know if the main library is set or not yet
+        // so check for that
         $adminset = true;
         $result = $db->query("SELECT `LibraryID` FROM `LibraryInfo` WHERE `Branch` = 0");
         if ($result->num_rows > 0) {
@@ -31,7 +31,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit;
     }
 } else {
-    #Check for a user table.  If there is none, create it.
+    # Check for a user table.  If there is none, create it.
     try {
         $result = $db->query("SHOW TABLES LIKE 'Users'");
         if ($result->num_rows == 0) {
@@ -45,12 +45,12 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Check for a date lookup table.  If there isn't one, create it
+    # Check for a date lookup table.  If there isn't one, create it
     try {
         $result = $db->query("SHOW TABLES LIKE 'DateLookup'");
         if ($result->num_rows == 0) {
             $db->query($date_lookup_table);
-            #Add several years to the date lookup table, starting over a year ago
+            # Add several years to the date lookup table, starting over a year ago
             try {
                 $insert_query = $db->prepare("INSERT INTO `DateLookup` (`Date`, `Weekday`, `Month`, `Year`) VALUES (?, ?, ?, ?)");
                 $startyear = date("Y") - 2;
@@ -82,12 +82,12 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();    
     }
 
-    #Check for the State Reports Sections table.  If there is none, create it.
+    # Check for the State Reports Sections table.  If there is none, create it.
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRSections'");
         if ($result->num_rows == 0) {
             $db->query( $report_sections);
-            #After creating the table, add data
+            # After creating the table, add data
             $insert_query = $db->prepare($report_sections_prepared_statement);
             foreach ($report_sections_data AS $section_data) {
                 $insert_query->bind_param("is", $section_data[0], $section_data[1]);
@@ -102,12 +102,12 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Check for the State Reports Questions table.  If there is none, create it.
+    # Check for the State Reports Questions table.  If there is none, create it.
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRQuestions'");
         if ($result->num_rows == 0) {
             $db->query($report_questions);
-            #After creating the table, add data
+            # After creating the table, add data
             $insert_query = $db->prepare($report_questions_prepared_statement);
             foreach ($report_questions_data AS $question_data) {
                 $insert_query->bind_param("iisssss", $question_data[0], $question_data[1], $question_data[2], $question_data[3], $question_data[4], $question_data[5], $question_data[6]);
@@ -122,7 +122,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Check for the State Reports Data table.  If there is none, create it.
+    # Check for the State Reports Data table.  If there is none, create it.
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRData'");
         if ($result->num_rows == 0) {
@@ -136,8 +136,70 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
+    # Check for the User Categories table.  If it doesn't exist, create it.
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'UserCategories'");
+        if ($result->num_rows == 0) {
+            $db->query($user_categories);
+            # After creating the table add data
+            $insert_query = $db->prepare($user_categories_prepared_statement);
+            foreach ($user_categories_data AS $category_data) {
+                $insert_query->bind_param("s", $category_data);
+                $insert_query->execute();
+            }          
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating categories table for user created reports: " . $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();       
+    }
 
-    #Check to see if there's a defined administrative user
+    # Check for the Custom Tables table.  This lists tables created by the end user.
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'CustomTables'");
+        if ($result->num_rows == 0) {
+            $db->query($custom_table_list);       
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating the Custom Tables table for tracking user created tables: " . $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();       
+    }
+
+    # Check for the CustomTableDBs table.  This is used for managing data collection from other databases
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'CustomTableDBs'");
+        if ($result->num_rows == 0) {
+            $db->query($custom_table_dbs);       
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating the Custom Table Databases table for tracking relationships with external databases and custom user tables: " . $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();       
+    }    
+
+    # Check for the CustomTableFiles table.  This is used for storing information about file formats used
+    # in populating custom table data
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'CustomTableFiles'");
+        if ($result->num_rows == 0) {
+            $db->query($custom_table_files);       
+        }
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Error</title></head><body>";
+        echo "<p>Error creating the Custom Table Files table for maintaining file formatting information for importing data into custom user tables: " . $e->getMessage();
+        echo "</p></body></html>";
+        $db->close();
+        exit();       
+    } 
+
+    # Check to see if there's a defined administrative user
     $result = $db->query("SELECT `Userid` FROM `Users` WHERE `UserRole` = 'Admin'");
     if ($result->num_rows > 0) {
         $adminset = true;
@@ -145,7 +207,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         $adminset = false;
     }
 
-    #Check for a Library Information table.  If there is none, create it.
+    # Check for a Library Information table.  If there is none, create it.
     try {
         $result = $db->query("SHOW TABLES LIKE 'LibraryInfo'");
         if ($result->num_rows == 0) {
@@ -159,7 +221,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    //Create Library Hours Table
+    // Create Library Hours Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'LibraryHours'");
         if ($result->num_rows == 0) {
@@ -173,7 +235,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    //Create Library Closings Table
+    // Create Library Closings Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'LibraryClosings'");
         if ($result->num_rows == 0) {
@@ -187,7 +249,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    //Create Library Changes Table
+    // Create Library Changes Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'LibraryChanges'");
         if ($result->num_rows == 0) {
@@ -201,10 +263,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #After creating the Library Information Table, add the state report
-    #support tables.  Many of these use this table so it should be created first
+    # After creating the Library Information Table, add the state report
+    # support tables.  Many of these use this table so it should be created first
 
-    #Spaces Table
+    # Spaces Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRSpaces'");
         if ($result->num_rows == 0) {
@@ -218,7 +280,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #SpaceUse Table
+    # SpaceUse Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRSpaceUse'");
         if ($result->num_rows == 0) {
@@ -232,13 +294,13 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #BudgetCategories Table
+    # BudgetCategories Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRBudgetCategories'");
         if ($result->num_rows == 0) {
             $db->query($budgetcategories_table);
-            #BudgetCategories Data
-            #Unlike most of these tables there are some fixed values that should be added here
+            # BudgetCategories Data
+            # Unlike most of these tables there are some fixed values that should be added here
             $insert_query = $db->prepare($budgetcategories_stmt);
             foreach ($budgetcategories_data as $budgetcategory) {
                 $insert_query->bind_param("ss", $budgetcategory[0], $budgetcategory[1]);
@@ -253,7 +315,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Budget Adjustment Table - Monthly Expenses & Income Go Here
+    # Budget Adjustment Table - Monthly Expenses & Income Go Here
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRBudgetAdjustments'");
         if ($result->num_rows == 0) {
@@ -267,7 +329,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Library Visits Table
+    # Library Visits Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRVisits'");
         if ($result->num_rows == 0) {
@@ -281,7 +343,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Library Programs Table
+    # Library Programs Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRPrograms'");
         if ($result->num_rows == 0) {
@@ -295,7 +357,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Library Collection Table
+    # Library Collection Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRCollection'");
         if ($result->num_rows == 0) {
@@ -309,7 +371,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Interlibrary Loan Table
+    # Interlibrary Loan Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRILL'");
         if ($result->num_rows == 0) {
@@ -323,7 +385,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Computer Inventory Table
+    # Computer Inventory Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRComputers'");
         if ($result->num_rows == 0) {
@@ -337,7 +399,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Technology Use Table
+    # Technology Use Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRTechnologyCounts'");
         if ($result->num_rows == 0) {
@@ -351,7 +413,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Reference Questions & Assistance Table
+    # Reference Questions & Assistance Table
     try {
         $result = $db->query("SHOW TABLES LIKE 'SRPatronAssistance'");
         if ($result->num_rows == 0) {
@@ -365,7 +427,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         exit();
     }
 
-    #Check to see if there's a defined main library (library defined as not being a branch)
+    # Check to see if there's a defined main library (library defined as not being a branch)
     try {
         $result = $db->query("SELECT `LibraryID` FROM `LibraryInfo` WHERE `Branch` = 0");
         if ($result->num_rows > 0) {
@@ -384,7 +446,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     # Database operations are complete;
     $db->close();
 
-    #Check to see if a Perl configuration file has been created
+    # Check to see if a Perl configuration file has been created
     $path = $cgidir . "/shared/Common.pm";
     if (!file_exists($path)) {
         $perlconfig = fopen($path, "w") or die("Unable to create common Perl file in cgi-bin shared directory.  Make sure that you have created a folder in the cgi-bin directory which the web service can write to.");
@@ -407,9 +469,9 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     }
 
     if ($adminset) {
-        #Administrator already set so redirect them
-        #If there is no main library set, though, that's a problem
-        #So have the user authenticate and then set that up
+        # Administrator already set so redirect them
+        # If there is no main library set, though, that's a problem
+        # So have the user authenticate and then set that up
         if ($mainlibset) {
             header("Location: $protocol://$server$webdir/index.php");
             exit;
@@ -486,29 +548,29 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     return false;
                 } else {
                     if (window.location.protocol === "https:") {
-                        //The hash gets hashed again with salt on the server side
-                        //but this obscures the password more
+                        // The hash gets hashed again with salt on the server side
+                        // but this obscures the password more
 
-                        //Encode password
+                        // Encode password
                         const encodedpw = new TextEncoder().encode(password);
 
-                        //Hash the password
+                        // Hash the password
                         const hashBuffer = await crypto.subtle.digest('SHA-256', encodedpw);
 
-                        //Convert ArrayBuffer into an Array
+                        // Convert ArrayBuffer into an Array
                         const hashArray = Array.from(new Uint8Array(hashBuffer));
 
-                        //Convert bytes into hex
+                        // Convert bytes into hex
                         const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
 
-                        //Write hashed password to field in form
+                        // Write hashed password to field in form
                         document.getElementById('pwhash').value = hashHex;
                     } else {
                         document.getElementById('pwhash').value = password;
                         document.getElementById('hashalgo').value = "none";
                     }
 
-                    //submit form with hashed password
+                    // submit form with hashed password
                     return true;
                 }
             }

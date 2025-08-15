@@ -4,11 +4,11 @@ require "../config.php";
 
 if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     if (!$_SESSION['UserRole'] == "Admin") {
-        #Send to the main site page
+        # Send to the main site page
         header("Location: $protocol://$server$webdir/login.php?nomatch=privilege");
         exit();
     }
-    #Show Content
+    # Show Content
 ?>
 <!doctype html>
 <html lang="en">
@@ -68,9 +68,9 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             </thead>
             <tbody>
             <?php 
-            //Check for existing data in the SRData table.  Changing question data is likely to cause chaos
-            //with question data, so force a user to export that data (if desired) and delete the data before
-            //changing the questions
+            // Check for existing data in the SRData table.  Changing question data is likely to cause chaos
+            // with question data, so force a user to export that data (if desired) and delete the data before
+            // changing the questions
             try {
                 $db = new mysqli($mysqlhost, $dbadmin, $dbadminpw, $dbname);
             } catch (mysqli_sql_exception $e) {
@@ -183,7 +183,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 </html>
 <?php 
 } else {
-    #Redirect the user to the login page
+    # Redirect the user to the login page
     header("Location: $protocol://$server$webdir/login.php?destination=admin_index");
     exit();
 }

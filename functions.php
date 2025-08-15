@@ -1,27 +1,27 @@
 <?php
-//These are shared functions, primarily for managing report question data for 
-//questions that are repeatable for multiple instances of a counted element
+// These are shared functions, primarily for managing report question data for 
+// questions that are repeatable for multiple instances of a counted element
 
 function outletInfo($db, $fiscalyear) {
     $data = array();
-    #Get fiscal year month
+    # Get fiscal year month
     $monthinfo = $db->query("SELECT `FYMonth`+0 FROM `LibraryInfo` WHERE `Branch` = 0");
     $fymonth = $monthinfo->fetch_column();
 
-    #Get basic Outlet info
+    # Get basic Outlet info
     $current_info = $db->query("SELECT * FROM `LibraryInfo`");
     while ($library = $current_info->fetch_assoc()) {
         $currentid = $library['LibraryID'];
         $old_info = $db->query("SELECT * FROM `LibraryChanges` WHERE `LibraryID` = $currentid AND `FYChanges` = $fiscalyear");
 
-        #Set values as if there were no changes (which likely there aren't)
+        # Set values as if there were no changes (which likely there aren't)
         foreach ($library as $key => $value) {
             if ($key != 'LibraryID') {
                 $data[$currentid][$key] = $value;
             }
         }
 
-        #If there are any changes, note those and move the current value to the new value
+        # If there are any changes, note those and move the current value to the new value
         if ($old_info->num_rows == 1) {
             $oldlibrary = $old_info->fetch_assoc();
             if (isset($oldlibrary['LegalName'])) {
@@ -57,7 +57,7 @@ function outletInfo($db, $fiscalyear) {
             }
         }
 
-        #Calculate total hours and weeks open
+        # Calculate total hours and weeks open
         $hours = 0;
         $weeks = 52;
         $nextdate = date_create("2000-01-01");
@@ -65,14 +65,14 @@ function outletInfo($db, $fiscalyear) {
         $hour_info = $db->query("SELECT `DateImplemented`, `DayOfWeek`, `HoursOpen` FROM `LibraryHours` WHERE `LibraryID` = $currentid ORDER BY `DayOfWeek`, `DateImplemented` DESC");
         $open_hours = array();
         while ($info = $hour_info->fetch_assoc()) {
-            #Need to keep these rules in the order they are returned in
+            # Need to keep these rules in the order they are returned in
             array_push($open_hours, array("DateImplemented" => $info['DateImplemented'], "DayOfWeek" => $info['DayOfWeek'], "HoursOpen" => $info['HoursOpen']));
         }
 
-        #To catch schedule changes for different days of the week we need to loop through each schedule
-        #backwards.  To start we need to find the day after the end of the current fiscal year.
-        #In most cases the day after the end of the fiscal year is in the same numerical calendar year
-        #as the fiscal year, but that's not the case in a Jan-Dec fiscal year.
+        # To catch schedule changes for different days of the week we need to loop through each schedule
+        # backwards.  To start we need to find the day after the end of the current fiscal year.
+        # In most cases the day after the end of the fiscal year is in the same numerical calendar year
+        # as the fiscal year, but that's not the case in a Jan-Dec fiscal year.
         if ($fymonth == 1) {
             $startstring = $fiscalyear . "-01-01";
             $endstring = $fiscalyear . "-01-01";
@@ -98,29 +98,29 @@ function outletInfo($db, $fiscalyear) {
             $closed_hours[$info['DateClosed']] = $info['HoursClosed'];
         }
 
-        #Loop backwards through a year
+        # Loop backwards through a year
         while ($startdate >= $enddate) {
             $weekday = date_format($startdate, 'l');
-            #Capture hours open since it will be needed later as well
+            # Capture hours open since it will be needed later as well
             $hours_open = $hourrule['HoursOpen'];
-            #Loop through rules, looking for a rule that matches the day that was
-            #Implemented before or on the current date
+            # Loop through rules, looking for a rule that matches the day that was
+            # Implemented before or on the current date
             foreach ($open_hours as $hourrule) {
                 if ($hourrule['DayOfWeek'] == $weekday) {
                     if (date_create($hourrule['DateImplemented']) <= $startdate) {
                         $hours += $hours_open;
-                        #If a match is found, break out of this foreach
-                        #so a duplicate match is not found
+                        # If a match is found, break out of this foreach
+                        # so a duplicate match is not found
                         break;
                     }
                 }
             }
-            #Now check the same date for closings
-            #This also will add extra hours open.  These are stored as negative closed hours
+            # Now check the same date for closings
+            # This also will add extra hours open.  These are stored as negative closed hours
             foreach ($closed_hours as $date_closed => $hours_closed) {
                 if (date_create($date_closed) == $startdate) {
                     if ($daysinarow == 0) {
-                        #Check if we're building up to an entire week off, starting with Saturday
+                        # Check if we're building up to an entire week off, starting with Saturday
                         if (date_format($startdate, "l") == "Saturday") {
                             $daysinarow = 1;
                             $nextdate = $startdate;
@@ -135,7 +135,7 @@ function outletInfo($db, $fiscalyear) {
                             }
                             date_sub($nextdate, date_interval_create_from_date_string("1 day"));
                         } else if (date_format($startdate, "l") == "Saturday") {
-                            #We've missed a whole bunch of days but we're on a Saturday again
+                            # We've missed a whole bunch of days but we're on a Saturday again
                             $daysinarow = 1;
                             $nextdate = $startdate;
                             date_sub($nextdate, date_interval_create_from_date_string("1 day"));
@@ -144,27 +144,27 @@ function outletInfo($db, $fiscalyear) {
                             $nextdate = date_create("2000-01-01");
                         }
                     }
-                    #If the number of hours closed is greater than the number of hours open
-                    #for this day of the week, make the number of hours closed equal to the
-                    #number of hours open
+                    # If the number of hours closed is greater than the number of hours open
+                    # for this day of the week, make the number of hours closed equal to the
+                    # number of hours open
                     if ($hours_closed > $hours_open) {
                         $hours_closed = $hours_open;
                     }
-                    #Subtract the hours from the total number of hours open
+                    # Subtract the hours from the total number of hours open
                     $hours = $hours - $hours_closed;
-                    #Remove this date since it won't occur again
+                    # Remove this date since it won't occur again
                     unset($closed_hours[$date_closed]);
-                    #Escape from this loop
+                    # Escape from this loop
                     break;
                 }
             }
-            #Reduce the start date by 1
+            # Reduce the start date by 1
             date_sub($startdate, date_interval_create_from_date_string("1 day"));
         }
         $data[$currentid]['TotalHours'] = $hours;
         $data[$currentid]['TotalWeeks'] = $weeks;
 
-        #Get total visits for this location
+        # Get total visits for this location
         $visit_info = $db->query("SELECT SUM(`Total`) AS `Total` FROM `SRVisits` WHERE (DATE(CONCAT(`Year`, '-', IF(`Month`+0 < 10, '0', ''), `Month`+0, '-01')) BETWEEN DATE('$endstring') AND DATE('$startstring')) AND (`LibraryID` = $currentid)");
         $data[$currentid]['TotalVisits'] = $visit_info->fetch_column(0);
     }
@@ -172,7 +172,7 @@ function outletInfo($db, $fiscalyear) {
 }
 
 function referendumInfo($db, $fiscalyear) {
-    #Get fiscal year month
+    # Get fiscal year month
     $monthinfo = $db->query("SELECT `FYMonth`+0 FROM `LibraryInfo` WHERE `Branch` = 0");
     $fymonth = $monthinfo->fetch_column();
 
@@ -236,7 +236,7 @@ function otherPositionInfo($db, $fiscalyear) {
 function vacancyPositionInfo($db, $fiscalyear) {
     $data = array();
     
-    #Get fiscal year month
+    # Get fiscal year month
     $monthinfo = $db->query("SELECT `FYMonth`+0 FROM `LibraryInfo` WHERE `Branch` = 0");
     $fymonth = $monthinfo->fetch_column();
 
@@ -255,7 +255,7 @@ function vacancyPositionInfo($db, $fiscalyear) {
 
     if ($position_info->num_rows > 0) {
         while ($info = $position_info->fetch_assoc()) {
-            //Need to calculate weeks vacant
+            // Need to calculate weeks vacant
             $date_vacant = date_create($info['DateVacated']);
             $end_date = date_create($yearend);
             $timespan = date_diff($date_vacant, $end_date, true);
@@ -271,7 +271,7 @@ function vacancyPositionInfo($db, $fiscalyear) {
 function newPositionInfo($db, $fiscalyear) {
     $data = array();
 
-    #Get fiscal year month
+    # Get fiscal year month
     $monthinfo = $db->query("SELECT `FYMonth`+0 FROM `LibraryInfo` WHERE `Branch` = 0");
     $fymonth = $monthinfo->fetch_column();
 
@@ -290,7 +290,7 @@ function newPositionInfo($db, $fiscalyear) {
 
     if ($position_info->num_rows > 0) {
         while ($info = $position_info->fetch_assoc()) {
-            //Determine if the position was filled at the end of the fiscal year
+            // Determine if the position was filled at the end of the fiscal year
             if (isset($info['DatePositionFilled'])) {
                 $filled_date = date_create($info['DatePositionFilled']);
                 $enddate = date_create($yearend);
@@ -318,7 +318,7 @@ function newPositionInfo($db, $fiscalyear) {
 function eliminatedPositionInfo($db, $fiscalyear) {
     $data = array();
 
-    #Get fiscal year month
+    # Get fiscal year month
     $monthinfo = $db->query("SELECT `FYMonth`+0 FROM `LibraryInfo` WHERE `Branch` = 0");
     $fymonth = $monthinfo->fetch_column();
 

@@ -4,7 +4,7 @@ require "../config.php";
 
 if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     if (!$_SESSION['UserRole'] == "Admin") {
-        #Send to the main site page
+        # Send to the main site page
         header("Location: $protocol://$server$webdir/login.php?nomatch=privilege");
         exit();
     }
@@ -18,7 +18,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         }
         
     } else {
-        //If no action is set, display will be default
+        // If no action is set, display will be default
         $display = null;
     }
 
@@ -70,7 +70,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     </nav>
     <main>
         <div class="container-fluid">
-            <?php if ($display == "create") {
+            <?php if ($display == "add") {
                 if (isset($_REQUEST['sourcetype'])) {
                     if ($_REQUEST['sourcetype'] == "manual") { ?>
                         <h1>Create a Manual Entry Data Source</h1>
@@ -81,7 +81,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                                     <select class="form-control" id="sectionselect">
                                     
                                     </select>
-                                    <small id="sectionhelp" class="form-text text-muted">You need to select a primary category which your data is for.  It is possible to use data from one category for reports for a different category.</small>
+                                    <small id="sectionhelp" class="form-text text-muted">You need to select a primary category which your data is for.  It is possible to use data from one category different category's report.</small>
                                 </div>
                             </div>
                             <div class="form-group row mb-3">
@@ -154,7 +154,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                         </form>
 
 
-                    <? } else if ($_REQUEST['sourcetype'] == "file") {
+                    <?php } else if ($_REQUEST['sourcetype'] == "file") {
 
                     } else if ($_REQUEST['sourcetype'] == "db") {
 
@@ -214,7 +214,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 </html>
 <?php 
 } else {
-    #Redirect the user to the login page
+    # Redirect the user to the login page
     header("Location: $protocol://$server$webdir/login.php?destination=admin_index");
     exit();
 }

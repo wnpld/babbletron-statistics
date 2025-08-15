@@ -11,12 +11,12 @@ my $query = CGI->new;
 my $action = $query->param('action');
 
 if ($action eq "dump") {
-    #Dump the entire database table into an Excel document
+    # Dump the entire database table into an Excel document
     my $dsn = "DBI:mysql:database=$Common::$mysqldb";
     my $dbh = DBI->connect($dsn, $Common::$dbuser, $Common::$dbuserpw, { RaiseError => 1});
 
-    #These sort results aren't completely in order.  They need to be subgrouped by question sequence under group and then by iteration if there's a group,
-    #but that's nearly impossible to stuff into a SQL query.
+    # These sort results aren't completely in order.  They need to be subgrouped by question sequence under group and then by iteration if there's a group,
+    # but that's nearly impossible to stuff into a SQL query.
     my $sth = $dbh->prepare(q{SELECT `d.ReportYear`, CONCAT(`q.SectionID`, '.', `q.Number`) AS QNumber, IF(`q.Source` == 'Multiple', SUBSTRING_INDEX(`q.Query`, '|', 1), 0) AS `Group`, `d.Iteration`, `q.Question`, `q.Format`, `q.Source`, `d.IntegerData`, `d.CurrencyData`, `d.TextData` FROM `SRData` d INNER JOIN `SRQuestions` q ON `d.QuestionID` = q.`QuestionID` ORDER BY `d.ReportYear` ASC, `q.SectionID` ASC, `q.Number` ASC, IF(`q.Source` == 'Multiple', SUBSTRING_INDEX(`q.Query`, '|', 1), 0) ASC, `d.Iteration` ASC}) or return_error("SQL Error", "Could not prepare report query: " . $DBI::errstr);
     $sth->execute() or return_error("SQL Error", "Could not execute report query: " . $DBI::errstr);
 
@@ -73,7 +73,7 @@ if ($action eq "dump") {
                 foreach my $iteration (keys %{$questions{$year}{$question}{$group}}) {
                     if ($group != $lastgroup) {
                         if ($lastgroup != 0) {
-                            #Changed from a non-zero group number.  Print sorted.
+                            # Changed from a non-zero group number.  Print sorted.
                             foreach my $qiteration (keys %sortgroup) {
                                 for (my $x = 0; $x < scalar @{$sortgroup{$qiteration}}; $x++) {
                                     my %qdata = %{${$sortgroup{$qiteration}}[$x]};
@@ -84,20 +84,20 @@ if ($action eq "dump") {
                             @questionlist = undef;
                         }
                         if ($group != 0) {
-                            #This is a new group which needs to be sorted
+                            # This is a new group which needs to be sorted
                             $lastgroup = $group;
                         } else {
-                            #Restore lastgroup to 0
+                            # Restore lastgroup to 0
                             $lastgroup = 0;
                         }
                         if ($group == 0) {
-                            #Add a row to the spreadsheet
+                            # Add a row to the spreadsheet
                             $y = &printrow(\%{$questions{$year}{$question}{$group}{$iteration}}, $sheets[$current_sheet], $y, $question, \%formats);
                         } else {
-                            #Add the question info to the sort group
+                            # Add the question info to the sort group
                             push(@{$sortgroup{$iteration}}, \%{$questions{$year}{$question}{$group}{$iteration}});
                             if ($iteration == 1) {
-                                #In the first iteration add each question to the question list
+                                # In the first iteration add each question to the question list
                                 push(@questionlist, $question);
                             }
                         }

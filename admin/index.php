@@ -4,11 +4,11 @@ require "../config.php";
 
 if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     if (!$_SESSION['UserRole'] == "Admin") {
-        #Send to the main site page
+        # Send to the main site page
         header("Location: $protocol://$server$webdir/login.php?nomatch=privilege");
         exit();
     }
-    #Show Admin modules
+    # Show Admin modules
 ?>
 <!doctype html>
 <html lang="en">
@@ -115,7 +115,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 </html>
 <?php 
 } else {
-    #Redirect the user to the login page
+    # Redirect the user to the login page
     header("Location: $protocol://$server$webdir/login.php?destination=admin_index");
     exit();
 }

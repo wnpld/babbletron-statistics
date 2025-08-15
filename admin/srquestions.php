@@ -4,7 +4,7 @@ require "../config.php";
 
 if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     if (!$_SESSION['UserRole'] == "Admin") {
-        #Send to the main site page
+        # Send to the main site page
         header("Location: $protocol://$server$webdir/login.php?nomatch=privilege");
         exit();
     }
@@ -20,7 +20,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     }
 
     if (isset($_REQUEST['totalcount'])) {
-        //Delete, Update and Insert data (in that order)
+        // Delete, Update and Insert data (in that order)
         $section = $_REQUEST['section'];
         $deletes = array();
         $updates = array();
@@ -46,15 +46,15 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             }
 
             if (($delete == "1") && ($qid != false)) {
-                //Anything to be deleted should be identified first
+                // Anything to be deleted should be identified first
                 array_push($deletes, $qid);
             } else if ($new == "1") {
-                //New will be executed after modified, but new records will have both new and modify set
-                //Modified will only have modify, so check for new to identify modified separately from new
+                // New will be executed after modified, but new records will have both new and modify set
+                // Modified will only have modify, so check for new to identify modified separately from new
                 $newvalues = array("SectionID" => $section, "Number" => $qnumber, "Question" => $question, "Source" => $source, "Format" => $format, "Query" => $querydata);
                 array_push($inserts, $newvalues);
             } else if (($modify == "1") && ($qid != false)) {
-                //No reason to include section id on updates.  It can't be changed on this page
+                // No reason to include section id on updates.  It can't be changed on this page
                 $newvalues = array("QuestionID" => $qid, "Number" => $qnumber, "Question" => $question, "Source" => $source, "Format" => $format, "Query" => $querydata);
                 array_push($updates, $newvalues);
             }
@@ -80,7 +80,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 try {
                     $query = $db->prepare("UPDATE `SRQuestions` SET `Number` = ?, `Question` = ?, `Source` = ?, `Format` = ?, `Query` = ? WHERE `QuestionID` = ?");
                     foreach ($updates as $updateitem) {
-                        //Checkfor false values in Format and Query
+                        // Checkfor false values in Format and Query
                         if ($updateitem['Format']) {
                             $format = $updateitem['Format'];
                         } else {
@@ -108,7 +108,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 try {
                     $query = $db->prepare("INSERT INTO `SRQuestions` (`SectionID`, `Number`, `Question`, `Source`, `Format`, `Query`) VALUES (?, ?, ?, ?, ?, ?)");
                     foreach ($inserts as $insertitem) {
-                        //Check for false values in Format and Query
+                        // Check for false values in Format and Query
                         if ($insertitem['Format']) {
                             $format = $insertitem['Format'];
                         } else {
@@ -133,7 +133,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             }
         }
     }
-    #Show Page
+    # Show Page
 ?>
 <!doctype html>
 <html lang="en">
@@ -146,15 +146,15 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         function setModified(counterid) {
             var modfield = "qmodify" + counterid.toString();
             document.getElementById(modfield).value = "1";
-            //Check if changes should be made to query textarea
+            // Check if changes should be made to query textarea
             var queryfield = "query" + counterid.toString();
             const query = document.getElementById(queryfield);
             var sourcefield = "qsource" + counterid.toString();
             const qsource = document.getElementById(sourcefield);
             var formatfield = "qformat" + counterid.toString();
             const qformat = document.getElementById(formatfield);
-            //Any time something is changed, make sure the change
-            //has an appropriate effect on other fields
+            // Any time something is changed, make sure the change
+            // has an appropriate effect on other fields
             if (qsource.value == "Direct") {
                 qformat.disabled = false;
                 query.disabled = true;
@@ -165,7 +165,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         }
 
         function addRow() {
-            //Get the current row count and increment it
+            // Get the current row count and increment it
             var rowcount = document.getElementById('totalcount').value;
             rowcount++;
             document.getElementById('totalcount').value = rowcount;
@@ -173,7 +173,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             const newrow = table.insertRow(rowcount);
             newrow.classList.add("table-success");
 
-            //Create Cells
+            // Create Cells
             const numbercell = newrow.insertCell(0);
             const questioncell = newrow.insertCell(1);
             const sourcecell = newrow.insertCell(2);
@@ -181,7 +181,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             const querycell = newrow.insertCell(4);
             const deletecell = newrow.insertCell(5);
 
-            //Create input fields
+            // Create input fields
             const numberinput = document.createElement('input');
             numberinput.classList.add('form-control');
             numberinput.setAttribute('id', 'qnumber' + rowcount);
@@ -320,7 +320,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             const query = document.getElementById(query);
 
             if (checkbox.checked) {
-                //Item is marked as to be deleted
+                // Item is marked as to be deleted
                 row.classList.add('table-danger');
                 qnumber.disabled = true;
                 qnumber.removeAttribute('required');
@@ -331,7 +331,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 query.disabled = true;
                 query.removeAttribute('required');
             } else {
-                //Item is marked as to be retained
+                // Item is marked as to be retained
                 row.classList.remove('table-danger');
                 qnumber.disabled = false;
                 qnumber.setAttribute('required', '');
@@ -350,17 +350,17 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             var rowcount = document.getElementById('totalcount').value;
             const problemalert = document.getElementById('problemalert');
             const problemlist = document.getElementById('problemlist');
-            //Reset problem items
+            // Reset problem items
             while (problemlist.firstChild) {
                 problemlist.removeChild(problemlist.lastChild);
             }
-            //Reset visability on alert in case it's been set to visible
+            // Reset visability on alert in case it's been set to visible
             problemalert.setAttribute("style", "display: none;");
             problems = false;
             for (x = 0; x < rowcount; x++) {
                 let modifiedState = document.getElementById('qmodify' + x.toString()).value;
                 let deletedState = document.getElementById('qdelete' + x.toString()).value;
-                //There's no need to validate rows being deleted or rows not being modified
+                // There's no need to validate rows being deleted or rows not being modified
                 if ((deletedState != "1") && (modifiedState != '0')) {
                     let source = document.getElementById('qsource' + x.toString()).value;
                     let query = document.getElementById('query' + x.toString());
@@ -369,7 +369,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                     let queryvalid = true;
                     let qnumbervalid = true;
                     let questionvalid = true;
-                    //Validate query if qsource is query or Calculation
+                    // Validate query if qsource is query or Calculation
                     if (source == "Query") {
                         let re = /^SELECT [A-Za-z`'| (),._]+$/;
                         if (!re.test(query.value)) {
@@ -391,7 +391,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                             query.classList.add('is-valid');
                         }
                     }
-                    let re = /^\d\d[a-z]{0,1}$/;
+                    re = /^\d\d[a-z]{0,1}$/;
                     if (!re.test(qnumber.value)) {
                         qnumbervalid = false;
                         qnumber.classList.remove('is-valid');
@@ -410,9 +410,9 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                         question.classList.add('is-valid');
                     }
                     if ((queryvalid === false) || (qnumbervalid === false) || (questionvalid === false)) {
-                        //Add information to the alert
+                        // Add information to the alert
                         if (problems === false) {
-                            //If the alert isn't on, turn it on
+                            // If the alert isn't on, turn it on
                             problemalert.setAttribute("style", "display: block;");
                         }
                         const problemitem = document.createElement('li');
@@ -468,19 +468,19 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     <main>
         <div class="container-fluid">
             <?php
-            //Check for existing data in the SRData table.  Changing question data is likely to cause chaos
-            //with question data, so force a user to export that data (if desired) and delete the data before
-            //changing the questions
+            // Check for existing data in the SRData table.  Changing question data is likely to cause chaos
+            // with question data, so force a user to export that data (if desired) and delete the data before
+            // changing the questions
             if (isset($_REQUEST['action'])) {
                 if ($_REQUEST['action'] == "force") {
-                    //Force editing questions even with undeleted data
+                    // Force editing questions even with undeleted data
                     $existingdata = false;
                 } else if ($_REQUEST['action'] == "deletesrdata") {
                     try {
                         if( $db->query("DELETE * FROM `SRData`") ) {
                             $existingdata = false;
                         } else {
-                            //Don't know why this would happen, but just in case
+                            // Don't know why this would happen, but just in case
                             $existingdata = true;
                         }
                     } catch (mysqli_sql_exception $e) {
@@ -509,7 +509,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 }
             }
             if ($existingdata == true) {
-                //Provide tools for saving and deleting data ?>
+                // Provide tools for saving and deleting data ?>
             <h1>Existing State Report Data</h1>    
             <p>
                 You have existing state report data established.  Changing the state report
@@ -649,7 +649,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
 </html>
 <?php
 } else {
-    #Redirect the user to the login page
+    # Redirect the user to the login page
     header("Location: $protocol://$server$webdir/login.php?destination=admin_index");
     exit();
 }

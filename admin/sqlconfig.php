@@ -3,43 +3,43 @@
 # SQL Structures & Data
 #######################
 
-#Users Table
+# Users Table
 $users_table = "CREATE TABLE `Users` (`UserID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `UserName` varchar(25) UNIQUE NOT NULL, `LastName` varchar(50), `FirstName` varchar(50), `Password` binary(32) NOT NULL, `Salt` char(100) NOT NULL, `UserRole` enum('Admin','Edit','View') NOT NULL)";
 
-#Library Information Table
+# Library Information Table
 $libraries_table = "CREATE TABLE `LibraryInfo` (`LibraryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryName` varchar(100) NOT NULL, `LegalName` varchar(100) NOT NULL, `LibraryAddress` varchar(150), `LibraryCity` varchar(75), `LibraryZIP` varchar(10) NOT NULL, `LibraryCounty` varchar(75) NOT NULL, `LibraryTelephone` char(10) NOT NULL, `SquareFootage` int NOT NULL, `Branch` tinyint(1) DEFAULT 1, `FYMonth` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') DEFAULT 'January', `ISLControlNo` char(5) DEFAULT NULL, `ISLBranchNo` char(2) DEFAULT NULL)";
 
-#Library Hours Table
+# Library Hours Table
 $library_hours_table = "CREATE TABLE `LibraryHours` (`LibraryID` tinyint UNSIGNED, `DateImplemented` date NOT NULL, `DayOfWeek` enum('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday') NOT NULL, `HoursOpen` decimal(3,1) UNSIGNED NOT NULL, CONSTRAINT pk_libraryhours PRIMARY KEY (`LibraryID`, `DateImplemented`, `DayOfWeek`), INDEX fk_libraryhours (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
 
-#Library Closings Table
-#This is mainly to track closings, but it can also be used to track days where there
-#were extended hours by storing a negative value that is equal to the extra hours
+# Library Closings Table
+# This is mainly to track closings, but it can also be used to track days where there
+# were extended hours by storing a negative value that is equal to the extra hours
 #(e.g. if a day is normally 4 hours but the library was open 8, a -4 could be stored here)
 $library_closings_table = "CREATE TABLE `LibraryClosings` (`ClosingID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryID` tinyint UNSIGNED NULL, `DateClosed` date NOT NULL, `HoursClosed` smallint NOT NULL, `ClosingType` enum('Holiday','Staff Meeting','Weather','Other') NOT NULL, INDEX fk_libraryclosings (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
 
-#Date Lookup Table
-#This table is automatically populated and is used for complicated date calculations
-#like figuring out how many Thursdays occurred in a fiscal year
+# Date Lookup Table
+# This table is automatically populated and is used for complicated date calculations
+# like figuring out how many Thursdays occurred in a fiscal year
 $date_lookup_table = "CREATE TABLE `DateLookup` (`Date` date PRIMARY KEY, `Weekday` enum('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday') NOT NULL, `Month` enum('January','February','March','April','May','June','July','August','September','October','November','December') NOT NULL, `Year` year NOT NULL)";
 
-#Library Changes Table - For tracking changes to Library information
+# Library Changes Table - For tracking changes to Library information
 $library_changes_table = "CREATE TABLE `LibraryChanges` (`LibraryID` tinyint UNSIGNED NOT NULL, `FYChanged` year NOT NULL, `LegalName` varchar(100) NULL, `LegalNameChange` enum('Yes','No') NULL, `LibraryAddress` varchar(150) NULL, `PhysicalAddressChange` enum('Yes','No') NULL, `LibraryCity` varchar(75) NULL, `LibraryZIP` varchar(10) NULL, `LibraryCounty` varchar(75) NULL, `LibraryTelephone` char(10) NOT NULL, `SquareFootage` int NULL, `SquareFootageReason` varchar(200) NULL, CONSTRAINT pk_librarychanges PRIMARY KEY (`LibraryID`, `FYChanged`), INDEX fk_librarychanges (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`))";
 
-#Special Tables for State Report
-#Referenda
+# Special Tables for State Report
+# Referenda
 $referenda_table = "CREATE TABLE `Referenda` (`ReferendumID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `ReferendumType` varchar(75) NOT NULL, `ReferendumDate` date NOT NULL, `ReferendumPassed` enum('Yes','No') NOT NULL, `EffectiveDate` date NULL, `BallotLanguage` text NOT NULL)";
 
-#Board Trustees
+# Board Trustees
 $board_table = "CREATE TABLE `BoardTrustees` (`TrusteeID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `TrusteeName` varchar(100) NOT NULL, `TrusteePosition` varchar(75) NOT NULL, `TrusteeTermEnds` date NOT NULL, `TrusteeTelephone` varchar(10) NOT NULL, `TrusteeEmail` varchar(100) NOT NULL, `TrusteeHomeAddress` varchar(150) NOT NULL, `TrusteeCity` varchar(75) NOT NULL, `TrusteeState` varchar(50) NOT NULL, `TrusteeZIP` varchar(10) NOT NULL)";
 
-#Librarians
+# Librarians
 $librarians_table = "CREATE TABLE `LibrarianPositions` (`PositionID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `PositionStatus` enum('Active','Vacant','New','Eliminated') NOT NULL, `PositionTitle` varchar(100) NOT NULL, `WorkAreaID` varchar(4) NOT NULL, `EducationLevelID` varchar(3) NOT NULL, `HourlyRate` DECIMAL(5,2) NULL, `HoursPerWeek` tinyint UNSIGNED NOT NULL, `AnnualSalaryMinimum` DECIMAL(8,2) NULL, `AnnualSalaryMaximum` DECIMAL(8,2) NULL, `DateFilled` date NULL, `DateVacated` date NULL, `DateCreated` date NULL, `DateEliminated` date NULL, `LastSalaryPaid` DECIMAL(8,2) NULL, `ReasonEliminated` varchar(200) NULL, INDEX fk_librarianworkarea, FOREIGN KEY (`WorkAreaID`) REFERENCES `WorkAreas`(`WorkAreaID`), INDEX fk_librarianeducation, FOREIGN KEY (`EducationLevelID`) REFERENCES `EducationLevels`(`EducationLevelID`)";
 
-#Work Areas
+# Work Areas
 $work_areas_table = "CREATE TABLE `WorkAreas` (`WorkAreaID` varchar(4) PRIMARY KEY, `WorkAreaDescription` varchar(50) NOT NULL)";
 
-#Add Work Areas to the Work Areas table
+# Add Work Areas to the Work Areas table
 $work_areas_stmt = "INSERT INTO `WorkAreas` (`WorkAreaID`, `WorkAreaDescription`) VALUES (?, ?)";
 $work_areas = array();
 array_push($work_areas, array('LD', 'Library Director'));
@@ -58,10 +58,10 @@ array_push($work_areas, array('ADT', 'Adult Services'));
 array_push($work_areas, array('OTH', 'Other Type of Librarian'));
 array_push($work_areas, array('NA', 'N/A'));
 
-#Education Levels
+# Education Levels
 $education_levels_table = "CREATE TABLE `EducationLevels` (`EducationLevelID` varchar(3) PRIMARY KEY, `EducationLevel` varchar(100) NOT NULL)";
 
-#Add Education Levels
+# Add Education Levels
 $education_levels_stmt = "INSERT INTO `EducationLevels` (`EducationLevelID`, `EducationLevel`) VALUES (?, ?)";
 $education_levels = array();
 array_push($education_levels, array('MLS', 'Master\'s Degree in library science'));
@@ -72,17 +72,17 @@ array_push($education_levels, array('LTA', 'Less than a Bachelor\'s degree but w
 array_push($education_levels, array('HS', 'Less than a Bachelor\'s degree'));
 array_push($education_levels, array('NA', 'N/A'));
 
-##State Report Support Tables
-#Library Spaces (Meeting rooms & study Rooms)
+## State Report Support Tables
+# Library Spaces (Meeting rooms & study Rooms)
 $spaces_table = "CREATE TABLE `SRSpaces` (`SpaceID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SpaceDescription` varchar(75), `LibraryID` tinyint UNSIGNED NOT NULL, `SpaceType` enum('Meeting Room', 'Study Room'), INDEX libraryspace_fk (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
-#Space Use
+# Space Use
 $spaceuse_table = "CREATE TABLE `SRSpaceUse` (`SpaceUseID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SpaceID` tinyint UNSIGNED NOT NULL, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `Total` smallint UNSIGNED NOT NULL, INDEX spaceid_fk (`SpaceID`), FOREIGN KEY (`SpaceID`) REFERENCES `SRSpaces`(`SpaceID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
-#Budget Categories
+# Budget Categories
 $budgetcategories_table = "CREATE TABLE `SRBudgetCategories` (`CategoryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CategoryDescription` varchar(100) NOT NULL, `CategoryType` enum('Income', 'Expense') NOT NULL)";
 
-#Budget Categories - Data
+# Budget Categories - Data
 $budgetcategories_stmt = "INSERT INTO `SRBudgetCategories` (`CategoryDescription`, `CategoryType`) VALUES (?, ?)";
 $budgetcategories_data = array();
 array_push($budgetcategories_data, array('Local Government Income', 'Income'));
@@ -99,47 +99,47 @@ array_push($budgetcategories_data, array('Other Materials', 'Expense'));
 array_push($budgetcategories_data, array('Other Operating Expenditures', 'Expense'));
 array_push($budgetcategories_data, array('Capital Expenditures', 'Expense'));
 
-#Budget Expenses/Income
+# Budget Expenses/Income
 $budgetadjustments_table = "CREATE TABLE `SRBudgetAdjustments` (`AdjustmentID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CategoryID` tinyint UNSIGNED NOT NULL, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `Total` decimal(8,2) NOT NULL, INDEX budgetcategory_fk (`CategoryID`), FOREIGN KEY (`CategoryID`) REFERENCES `SRBudgetCategories`(`CategoryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
-#Library Visits
+# Library Visits
 $visits_table = "CREATE TABLE `SRVisits` (`VisitID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `LibraryID` tinyint UNSIGNED NOT NULL, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `Total` int UNSIGNED NOT NULL, INDEX libraryvisits_fk (`LibraryID`), FOREIGN KEY (`LibraryID`) REFERENCES `LibraryInfo`(`LibraryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
-#Registered Library Cards
+# Registered Library Cards
 $cards_table = "CREATE TABLE `SRCards` (`CardCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, CountType = enum('Resident', 'Non-Resident') NOT NULL, `TotalCards` int UNSIGNED NOT NULL)";
 
-#Registered Library Cards
+# Registered Library Cards
 $cards_table = "CREATE TABLE `SRCards` (`CardCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `TotalCards` int UNSIGNED NOT NULL)";
 
-#Library Programs
+# Library Programs
 $programs_table = "CREATE TABLE `SRPrograms` (`ProgramCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `CountType` enum('Event','Attendance') NOT NULL, `Age` enum('0-5', '6-11', '12-18', '19+', 'All Ages') NOT NULL, `Synchronous` enum('Yes', 'No') NOT NULL, `ProgramLocation` enum('Onsite', 'Offsite', 'Virtual') NOT NULL, `Total` smallint UNSIGNED NOT NULL)";
 
-#Library Collection Size
+# Library Collection Size
 $collection_table = "CREATE TABLE`SRCollection` (`CollectionCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `Material` enum('Book', 'Serial Subscription', 'Audio', 'Video', 'Other') NOT NULL, `MaterialType` enum('Physical', 'Digital') NOT NULL, `Audience` enum('Adult', 'Young Adult', 'Child') NOT NULL, `Total` int UNSIGNED NOT NULL)";
 
-#Library Circulation
+# Library Circulation
 $circulation_table = "CREATE TABLE SRCirculation (`CirculationCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL,  `Material` enum('Book', 'Audio', 'Magazine', 'Video', 'Other') NOT NULL, `MaterialType` enum('Physical', 'Digital') NOT NULL, `Audience` enum('Adult', 'Young Adult', 'Children') NOT NULL, `Total` int UNSIGNED NOT NULL)";
 
-#Interlibrary Loan
+# Interlibrary Loan
 $ill_table = "CREATE TABLE `SRILL` (`ILLID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `ILLRole` enum('Lender', 'Borrower') NOT NULL, `Total` int UNSIGNED NOT NULL)";
 
-#Computer Inventory
+# Computer Inventory
 $computers_table = "CREATE TABLE `SRComputers` (`ComputerID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `FormFactor` enum('Desktop', 'Laptop', 'Server') NOT NULL, `User` enum('Staff', 'Public') NOT NULL, `InternetAccess` enum('Yes', 'No') NOT NULL)";
 
-#Technology Use
+# Technology Use
 $technologies_table = "CREATE TABLE `SRTechnologyCounts` (`TechnologyCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `TechnologyType` enum('Public Internet', 'Wireless Access', 'Website Sessions') NOT NULL, `Total` int UNSIGNED NOT NULL)";
 
-#Reference Questions & Assistance
+# Reference Questions & Assistance
 $patronassistance_table = "CREATE TABLE `SRPatronAssistance` (`AssistanceCountID` int UNSIGNED AUTO_INCREMENT PRIMARY KEY, `Month` enum('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December') NOT NULL, `Year` YEAR NOT NULL, `AssistanceType` enum('Reference', 'Tutorial') NOT NULL, `Total` smallint UNSIGNED NOT NULL)";
 
-##State Report Tables
-#Sections Table
+## State Report Tables
+# Sections Table
 $report_sections = "CREATE TABLE `SRSections` (`SectionID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SectionDescription` varchar(75) NOT NULL)";
 
-#Questions Table
+# Questions Table
 $report_questions = "CREATE TABLE `SRQuestions` (`QuestionID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `SectionID` tinyint UNSIGNED NOT NULL, `Number` varchar(10) NOT NULL, `Question` varchar(550) NOT NULL, `Source` enum('Direct', 'Query', 'Multiple', 'Calculation') NOT NULL, `Query` text DEFAULT NULL, `Format` enum('Integer', 'Currency', 'Text') NOT NULL, UNIQUE (`SectionID`, `Number`), INDEX section_fk (`SectionID`), FOREIGN KEY (`SectionID`) REFERENCES `SRSections`(`SectionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
-#Sections Data
+# Sections Data
 $report_sections_prepared_statement = "INSERT INTO SRSections (`SectionID`, `SectionDescription`) VALUES (?, ?)";
 $report_sections_data = array();
 array_push($report_sections_data, array(1, 'Identification'));
@@ -169,7 +169,7 @@ array_push($report_sections_data, array(24, 'Comments and Suggestions'));
 array_push($report_sections_data, array(25, 'Public Library District Secretary\'s Audit'));
 array_push($report_sections_data, array(99, 'COVID-19 Questions'));
 
-#Questions Data
+# Questions Data
 $report_questions_prepared_statement = "INSERT INTO `SRQuestions` (`SectionID`, `Number`, `Question`, `Source`, `Query`, `Format`) VALUES (?, ?, ?, ?, ?, ?)";
 $report_questions_data = array();
 array_push($report_questions_data, array(1, '01', 'ISL Control #', 'Direct', NULL, 'Text'));
@@ -255,7 +255,7 @@ array_push($report_questions_data, array(3, '07', 'E-Mail Address', 'Direct', NU
 array_push($report_questions_data, array(4, '01a', 'Was your library involved in a referendum during the fiscal year reporting period?', 'Query', 'SELECT IF(COUNT(ReferendumID) > 0, "Yes", "No") AS `Total` FROM `Referenda` WHERE `ReferendumDate` BETWEEN DATE(\'|startyear|-|startmonth|-01\') AND DATE(\'|endyear|-|startmonth|-01\')', 'Text'));
 array_push($report_questions_data, array(4, '01b', 'How many referenda was your library involved in?', 'Query', 'SELECT COUNT(ReferendumID) AS `Total` FROM `Referenda` WHERE `ReferendumDate` BETWEEN DATE(\'|startyear|-|startmonth|-01\') AND DATE(\'|endyear|-|startmonth|-01\')', 'Integer'));
 array_push($report_questions_data, array(4, '02', 'Referendum Type', 'Multiple', '2|referendumInfo|ReferendumType', 'Text'));
-#array_push($report_questions_data, array(4, '03', 'Examples are: Annexation, Bond Issue, District Establishment, Tax Increase', 'Multiple', '2|referendumInfo|ReferendumType', 'Text'));
+# array_push($report_questions_data, array(4, '03', 'Examples are: Annexation, Bond Issue, District Establishment, Tax Increase', 'Multiple', '2|referendumInfo|ReferendumType', 'Text'));
 array_push($report_questions_data, array(4, '04', 'Referendum Date (mm/dd/year)', 'Multiple', '2|referendumInfo|ReferendumDate', 'Text'));
 array_push($report_questions_data, array(4, '05', 'Passed or Failed?', 'Multiple', '2|referendumInfo|ReferendumPassed', 'Text'));
 array_push($report_questions_data, array(4, '06', 'If PASSED, enter the effective date (mm/dd/year)', 'Multiple', '2|referendumInfo|ReferendumDatePassed', 'Text'));
@@ -495,17 +495,33 @@ array_push($report_questions_data, array(24, '01', 'Are there any other factors 
 array_push($report_questions_data, array(24, '02', 'Are there any unique programs or services your library provided during the report period of which you would like to make us aware?', 'Direct', NULL, 'Text'));
 array_push($report_questions_data, array(24, '03', 'Please provide any comments, suggestions or concers about the Illinois Public Library Annual Report (IPLAR)', 'Direct', NULL, 'Text'));
 
-#State Reporting Collected Data
-#The Iteration field is for handling questions with multiple sets of answers, e.g. list of board members
+# State Reporting Collected Data
+# The Iteration field is for handling questions with multiple sets of answers, e.g. list of board members
 $report_data = "CREATE TABLE `SRData` (`ReportYear` YEAR NOT NULL, `QuestionID` smallint UNSIGNED NOT NULL, `Iteration` tinyint UNSIGNED DEFAULT 0, `IntegerData` int UNSIGNED NULL, `CurrencyData` decimal(10,2) NULL, `TextData` text NULL, PRIMARY KEY(`ReportYear`, `QuestionID`, `Iteration`), INDEX srquestion_fk (`QuestionID`), FOREIGN KEY (`QuestionID`) REFERENCES `SRQuestions`(`QuestionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
-#Table for keeping track of user-created tables
-$custom_table_list = "CREATE TABLE `CustomTables` (`CustomTableID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `TableName` VARCHAR(50) NOT NULL, `SectionID` = tinyint UNSIGNED NOT NULL, `EntryMethod` enum('Manual', 'Database', 'File') NOT NULL, `CollectionFrequency` enum('PerInstance','Daily','Monthly','Static') NOT NULL, `InActiveUse` enum('Yes','No') NOT NULL, INDEX customsection_fk (`SectionID`), FOREIGN KEY (`SectionID`) REFERENCES `SRSections`(`SectionID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+# Table for categorizing user-created tables
+# The report sections are simultaneously too focused and too broad to be used effectively in this way
+$user_categories = "CREATE TABLE `UserCategories` (`UserCategoryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `UserCategoryName` varchar(50)";
 
-#Table for managing external database relationships
+# Basic Report Categories
+$user_categories_prepared_statement = "INSERT INTO UserCategories (`UserCategoryName`) VALUES (?)";
+$user_categories_data = array();
+array_push($user_categories_data, "Finances");
+array_push($user_categories_data, "Patron Interactions");
+array_push($user_categories_data, "Digital Collections");
+array_push($user_categories_data, "Physical Collections");
+array_push($user_categories_data, "Technology");
+array_push($user_categories_data, "Visits");
+array_push($user_categories_data, "Programs");
+array_push($user_categories_data, "Other Library Services");
+
+# Table for keeping track of user-created tables
+$custom_table_list = "CREATE TABLE `CustomTables` (`CustomTableID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `TableName` VARCHAR(50) NOT NULL, `UserCategoryID` = tinyint UNSIGNED NOT NULL, `EntryMethod` enum('Manual', 'Database', 'File') NOT NULL, `CollectionFrequency` enum('PerInstance','Daily','Monthly','Static') NOT NULL, `InActiveUse` enum('Yes','No') NOT NULL, INDEX customsection_fk (`UserCategoryID`), FOREIGN KEY (`UserCategoryID`) REFERENCES `UserCategories`(`UserCategoryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+
+# Table for managing external database relationships
 $custom_table_dbs = "CREATE TABLE `CustomTableDBs` (`CustomTableDBID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CustomTableID` smallint UNSIGNED NOT NULL, `Database` varchar(50) NOT NULL, `ImportQuery` text NOT NULL, INDEX customtable_dbs_fk (`CustomTableID`), FOREIGN KEY (`CustomTableID`) REFERENCES `CustomTables` (`CustomTableID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
-#Table for managing file relationships
+# Table for managing file relationships
 $custom_table_files = "CREATE TABLE `CustomTableFiles` (`TableFileMatchID` UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CustomTableID` smallint UNSIGNED NOT NULL, `FileType` enum('CSV','Tab','XLS','XLSX') NOT NULL, `FileFieldMappings` text NOT NULL, INDEX customtable_files_fk (`CustomTableID`), FOREIGN KEY (`CustomTableID`) REFERENCES `CustomTables` (`CustomTableID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 //// Relationship Lookup Query (reference)
