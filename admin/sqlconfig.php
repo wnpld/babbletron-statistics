@@ -501,7 +501,7 @@ $report_data = "CREATE TABLE `SRData` (`ReportYear` YEAR NOT NULL, `QuestionID` 
 
 # Table for categorizing user-created tables
 # The report sections are simultaneously too focused and too broad to be used effectively in this way
-$user_categories = "CREATE TABLE `UserCategories` (`UserCategoryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `UserCategoryName` varchar(50)";
+$user_categories = "CREATE TABLE `UserCategories` (`UserCategoryID` tinyint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `UserCategoryName` varchar(50))";
 
 # Basic Report Categories
 $user_categories_prepared_statement = "INSERT INTO UserCategories (`UserCategoryName`) VALUES (?)";
@@ -516,13 +516,13 @@ array_push($user_categories_data, "Programs");
 array_push($user_categories_data, "Other Library Services");
 
 # Table for keeping track of user-created tables
-$custom_table_list = "CREATE TABLE `CustomTables` (`CustomTableID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `TableName` VARCHAR(50) NOT NULL, `UserCategoryID` = tinyint UNSIGNED NOT NULL, `EntryMethod` enum('Manual', 'Database', 'File') NOT NULL, `CollectionFrequency` enum('PerInstance','Daily','Monthly','Static') NOT NULL, `InActiveUse` enum('Yes','No') NOT NULL, INDEX customsection_fk (`UserCategoryID`), FOREIGN KEY (`UserCategoryID`) REFERENCES `UserCategories`(`UserCategoryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+$custom_table_list = "CREATE TABLE `CustomTables` (`CustomTableID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `TableName` VARCHAR(50) NOT NULL, `UserCategoryID` tinyint UNSIGNED NOT NULL, `EntryMethod` enum('Manual', 'Database', 'File') NOT NULL, `CollectionFrequency` enum('PerInstance','Daily','Monthly','Static') NOT NULL, `InActiveUse` enum('Yes','No') NOT NULL, INDEX customsection_fk (`UserCategoryID`), FOREIGN KEY (`UserCategoryID`) REFERENCES `UserCategories`(`UserCategoryID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 # Table for managing external database relationships
 $custom_table_dbs = "CREATE TABLE `CustomTableDBs` (`CustomTableDBID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CustomTableID` smallint UNSIGNED NOT NULL, `Database` varchar(50) NOT NULL, `ImportQuery` text NOT NULL, INDEX customtable_dbs_fk (`CustomTableID`), FOREIGN KEY (`CustomTableID`) REFERENCES `CustomTables` (`CustomTableID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 # Table for managing file relationships
-$custom_table_files = "CREATE TABLE `CustomTableFiles` (`TableFileMatchID` UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CustomTableID` smallint UNSIGNED NOT NULL, `FileType` enum('CSV','Tab','XLS','XLSX') NOT NULL, `FileFieldMappings` text NOT NULL, INDEX customtable_files_fk (`CustomTableID`), FOREIGN KEY (`CustomTableID`) REFERENCES `CustomTables` (`CustomTableID`) ON UPDATE CASCADE ON DELETE CASCADE)";
+$custom_table_files = "CREATE TABLE `CustomTableFiles` (`TableFileMatchID` smallint UNSIGNED AUTO_INCREMENT PRIMARY KEY, `CustomTableID` smallint UNSIGNED NOT NULL, `FileType` enum('CSV','Tab','XLS','XLSX') NOT NULL, `FileFieldMappings` text NOT NULL, INDEX customtable_files_fk (`CustomTableID`), FOREIGN KEY (`CustomTableID`) REFERENCES `CustomTables` (`CustomTableID`) ON UPDATE CASCADE ON DELETE CASCADE)";
 
 //// Relationship Lookup Query (reference)
 // SELECT `TABLE_NAME`, `COLUMN_NAME`, `REFERENCED_TABLE_NAME`, `REFERENCED_COLUMN_NAME` FROM 

@@ -110,7 +110,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             # After creating the table, add data
             $insert_query = $db->prepare($report_questions_prepared_statement);
             foreach ($report_questions_data AS $question_data) {
-                $insert_query->bind_param("iisssss", $question_data[0], $question_data[1], $question_data[2], $question_data[3], $question_data[4], $question_data[5], $question_data[6]);
+                $insert_query->bind_param("isssss", $question_data[0], $question_data[1], $question_data[2], $question_data[3], $question_data[4], $question_data[5]);
                 $insert_query->execute();
             }
         }
@@ -160,7 +160,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
     try {
         $result = $db->query("SHOW TABLES LIKE 'CustomTables'");
         if ($result->num_rows == 0) {
-            $db->query($custom_table_list);       
+            $db->query($custom_table_list); 
         }
     } catch (mysqli_sql_exception $e) {
         echo "<html><head><title>Error</title></head><body>";

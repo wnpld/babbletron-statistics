@@ -22,6 +22,15 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         $display = null;
     }
 
+    #Connect to the database
+    try {
+        $db = new mysqli($mysqlhost, $dbadmin, $dbadminpw, $dbname);
+    } catch (mysqli_sql_exception $e) {
+        echo "<html><head><title>Configuration problem</title></head><body>";
+        echo "<h1>Configuration problem</h1>";
+        echo "<p>It was not possible to establish a connection to a MySQL or MariaDB server to begin site configuration.  Make sure that you have established a MySQL database following the instructions in the README and have added the required information to the config.php file in the root directory.  Here is the exact error message that was returned from the connection attempt: " . $e->getMessage() . "</p></body></html>";
+        exit();
+    }
     
 ?>
 <!doctype html>
@@ -74,12 +83,36 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 if (isset($_REQUEST['sourcetype'])) {
                     if ($_REQUEST['sourcetype'] == "manual") { ?>
                         <h1>Create a Manual Entry Data Source</h1>
-                        <form id="dsourceoptions">
+                        <form id="dsourceoptions" action="javascript:void(0);">
                             <div class="form-group row mb-3">
                                 <label for="sectionselect" class="col-sm-2 col-form-label">Select a Category</label>
                                 <div class="col-sm-10">
                                     <select class="form-control" id="sectionselect">
-                                    
+                                        <option value="" disabled selected hidden>Select a category...</option>
+                                    <?php 
+                                        try {
+                                            $query = $db->prepare("SELECT UserCategoryID, UserCategoryName FROM UserCategories");
+                                            if (! $query->execute()) {
+                                                echo "<html><head><title>Error</title></head><body>";
+                                                echo "<p>Error executing user search: " . $db->error;
+                                                echo "<p></body></html>";
+                                                $query->close();
+                                                $db->close();
+                                                exit();
+                                            }
+                                            $results = $query->get_result();
+                                            do {
+                                                echo "<option value=\"" . $row['UserCategoryID'] . "\">" . $row['UserCategoryName'] . "</option>";
+                                            } while ($row = $results->fetch_assoc());
+                                        } catch (mysqli_sql_exception $e) {
+                                            echo "<html><head><title>Error</title></head><body>";
+                                            echo "<p>Error checking user account information: ". $e->getMessage();
+                                            echo "</p></body></html>";
+                                            $db->close();
+                                            exit();
+                                        }
+
+                                    ?>                                    
                                     </select>
                                     <small id="sectionhelp" class="form-text text-muted">You need to select a primary category which your data is for.  It is possible to use data from one category different category's report.</small>
                                 </div>
@@ -110,8 +143,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                             <button class="btn btn-primary" onclick="startManualForm()">Start Data Source Creation</button>
                         </form>
                         <form style="display:none;" id="dsourceform" action="datasources.php" method="POST">
-                            <fieldset id="fieldlist">
+                            <fieldset id="dsourcelist">
                                 <legend></legend>
+                                <h2 id="catheading"></h2>
+                                <input type="hidden" id="catid" value="">
                                 <div class="form-group">
                                     <label for="sourcename">Enter the name for your data source initiative:</label>
                                     <input type="text" name="sourcename" id="sourcename" required>
@@ -146,7 +181,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                                 </div>
                             </fieldset>
                             <div class="mb-3">
-                                <button class="btn btn-primary" onclick="addFormField()">Add New Field</button>
+                                <input type="button" class="btn btn-primary" onclick="addFormField()" value="Add New Field">
                                 <input type="hidden" name="sectionid" id="sectionid" value="">
                                 <input type="hidden" name="fieldcount" id="fieldcount" value="2">
                             </div>

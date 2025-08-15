@@ -16,7 +16,7 @@ if (isset($_REQUEST["username"]) && isset($_REQUEST["pwhash"])) {
     }
 
     #Check username for safety
-    preg_match("/^[A-Za-z0-9]{5,25}$/", $_REQUEST['username'], $matches);
+    preg_match("/^[A-Za-z0-9]{2,25}$/", $_REQUEST['username'], $matches);
     if (isset($matches[0])) {
         #Get salt for this username if there is any
         $username = $matches[0];
