@@ -197,7 +197,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="../index.php">Home</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/index.php">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="index.php">Admin</a>
@@ -210,10 +210,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <div class="d-flex flex-row-reverse">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="../login.php?logout=1">(Log Out)</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/login.php?logout=1">(Log Out)</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="../settings.php">Settings</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/settings.php">Settings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" disabled aria-disabled="true">Welcome, <?php echo $_SESSION['FirstName']; ?></a>
@@ -391,7 +391,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                                 <a class="btn btn-primary btn-sm" href="users.php?action=modify&userid=<?php echo $user['UserID']; ?>">Modify User</a>
                                 <a class="btn btn-danger btn-sm" href="process.php?formtype=deleteuser&userid=<?php echo $user['UserID']; ?>" onclick="return confirm('Are you sure you wish to delete the user <?php echo $user['FirstName'] . ' ' . $user['LastName']; ?>')">Delete User</a>
                             <?php } else { ?>
-                                Use the <a href="../settings.php">Settings</a> page edit your account.
+                                Use the <a href="<?php echo $webdir; ?>/settings.php">Settings</a> page edit your account.
                             <?php } ?>
                             </td>
                         </tr>

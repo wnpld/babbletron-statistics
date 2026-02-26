@@ -14,7 +14,20 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
         if (isset($matches[1])) {
             $display = $matches[1];
         } else {
-
+            if ($_REQUEST['action'] = "createmanualdb") {
+                # Create database tables for manual entry
+                $fieldcount = $_REQUEST['fieldcount'];
+                $category = $_REQUEST['sectionid'];
+                # Other fields are fieldname(x), fieldtype(x), and fieldoptions(x)
+                # where (x) is a number between 0 and fieldcount-1
+                # fieldtype determines data type which can be:
+                # * yeartype (year)
+                # * fixed list (enum) - used for month
+                # * adjustable list (create a lookup table)
+                # * text (varchar)
+                # * number (tinyint, smallint, int, or bigint)
+                # * currency (decimal 5,2 or 8,2 or 11,2)
+            }
         }
         
     } else {
@@ -142,48 +155,56 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                             </div>
                             <button class="btn btn-primary" onclick="startManualForm()">Start Data Source Creation</button>
                         </form>
-                        <form style="display:none;" id="dsourceform" action="datasources.php" method="POST">
+                        <form style="display:none;" id="dsourceform" action="datasources.php" method="POST" onsubmit="return validateForm()">
                             <fieldset id="dsourcelist">
                                 <legend></legend>
                                 <h2 id="catheading"></h2>
-                                <input type="hidden" id="catid" value="">
                                 <div class="form-group">
                                     <label for="sourcename">Enter the name for your data source initiative:</label>
                                     <input type="text" name="sourcename" id="sourcename" required>
                                 </div>
-                                <div class="row" id="month">
-                                    <div class="col">
-                                        <label for="monthname" class="form-label">Field Name</label>
-                                        <input type="text" size="50" id="monthname" name="fieldname0" value="Month" disabled>
-                                    </div>
-                                    <div class="col">
-                                        <label for="monthtype" class="form-label">Field Type</label>
-                                        <select id="monthtype" class="form-select" name="fieldselect0" disabled>
-                                        <option value="fixedlist">List (Fixed)</option>
-                                        </select>
-                                    </div>
-                                    <div class="col">
-                                        <label for="monthoptions" class="form-label">Field Options</label>
-                                        <textarea name="fieldoptions0" id="fieldoptions0" disabled>January, February, March, April, May, June, July, August, September, October, November, December</textarea>
+                                <div class="card mt-3 mr-3 ml-3">
+                                    <div class="card-body">
+                                        <div class="row" id="month">
+                                            <div class="col form-group">
+                                                <label for="monthname" class="form-label">Field Name</label>
+                                                <input type="text" size="50" id="monthname" name="fieldname0" value="Month" disabled>
+                                            </div>
+                                            <div class="col form-group">
+                                                <label for="monthtype" class="form-label">Field Type</label>
+                                                <select id="monthtype" class="form-select" name="fieldtype0" disabled>
+                                                <option value="fixedlist">List (Fixed)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col form-group">
+                                                <label for="monthoptions" class="form-label">Field Options</label>
+                                                <textarea name="fieldoptions0" id="fieldoptions0" disabled>January, February, March, April, May, June, July, August, September, October, November, December</textarea>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="row" id="year">
-                                    <div class="col">
-                                        <label for="yearname" class="form-label">Field Name</label>
-                                        <input type="text" size="50" id="yearname" name="fieldname1" value="Year" disabled>
-                                    </div>
-                                    <div class="col">
-                                        <label for="yeartype" class="form-label">Field Type</label>
-                                        <select id="yeartype" name="fieldtype1" disabled>
-                                            <option>Year</option>
-                                        </select>
+                                <div class="card mt-3 mr-3 ml-3">
+                                    <div class="card-body">
+                                        <div class="row" id="year">
+                                            <div class="col form-group">
+                                                <label for="yearname" class="form-label">Field Name</label>
+                                                <input type="text" size="50" id="yearname" name="fieldname1" value="Year" disabled>
+                                            </div>
+                                            <div class="col form-group">
+                                                <label for="yeartype" class="form-label">Field Type</label>
+                                                <select id="yeartype" name="fieldtype1" disabled>
+                                                    <option>Year</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </fieldset>
-                            <div class="mb-3">
+                            <div class="mb-3 mt-3">
                                 <input type="button" class="btn btn-primary" onclick="addFormField()" value="Add New Field">
-                                <input type="hidden" name="sectionid" id="sectionid" value="">
+                                <input type="hidden" name="sectionid" id="catid" value="">
                                 <input type="hidden" name="fieldcount" id="fieldcount" value="2">
+                                <input type="hidden" name="action" value="createmanualdb">
                             </div>
                             <button class="btn btn-primary btn-lg" type="submit">Submit Data Source Fields</button>
                         </form>

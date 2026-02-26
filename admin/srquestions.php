@@ -440,7 +440,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="../index.php">Home</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/index.php">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="index.php">Admin</a>
@@ -453,10 +453,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <div class="d-flex flex-row-reverse">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php?logout=1">(Log Out)</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/login.php?logout=1">(Log Out)</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="settings.php">Settings</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/settings.php">Settings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" disabled aria-disabled="true">Welcome, <?php echo $_SESSION['FirstName']; ?></a>
@@ -524,7 +524,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
                 that is automatically entered into the state report or any data that is calculated from that data
                 will not be touched.
             </p>
-            <p><a class="btn btn-success btn-lg" href="/<?php echo $cgiwebdir; ?>/srxlsx.pl?action=dump" target="_blank"></a>Export All Report Data as Excel</p>
+            <p><a class="btn btn-success btn-lg" href="<?php echo $cgiwebdir; ?>/srxlsx.pl?action=dump" target="_blank"></a>Export All Report Data as Excel</p>
             <p><a class="btn btn-danger btn-lg" href="srquestions.php?action=deletesrdata" onclick="return confirm('Are you sure you wish to delete the existing report data?')">Delete Existing Report Data and Proceed</a></p>
             <div class="alert alert-danger">If you are certain of what you are doing, you can <a href="srquestions.php?action=force">proceed without deleting old data</a>, but know that you may break some things badly if you do.</div>
             <?php } else if (!isset($_REQUEST['section'])) {

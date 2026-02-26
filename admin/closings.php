@@ -399,7 +399,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="../index.php">Home</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/index.php">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="index.php">Admin</a>
@@ -412,10 +412,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <div class="d-flex flex-row-reverse">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php?logout=1">(Log Out)</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/login.php?logout=1">(Log Out)</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="settings.php">Settings</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/settings.php">Settings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" disabled aria-disabled="true">Welcome, <?php echo $_SESSION['FirstName']; ?></a>
@@ -556,7 +556,7 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="../index.php">Home</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/index.php">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="index.php">Admin</a>
@@ -569,10 +569,10 @@ if ( isset($_SESSION["UserID"]) && !empty($_SESSION["UserID"]) ) {
             <div class="d-flex flex-row-reverse">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php?logout=1">(Log Out)</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/login.php?logout=1">(Log Out)</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="settings.php">Settings</a>
+                        <a class="nav-link" href="<?php echo $webdir; ?>/settings.php">Settings</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" disabled aria-disabled="true">Welcome, <?php echo $_SESSION['FirstName']; ?></a>
